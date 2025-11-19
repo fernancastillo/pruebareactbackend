@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Button, Badge, Spinner, Alert } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import productosData from '../../data/productos.json';
 import ProductCard from '../../components/tienda/ProductCard';
 import Filters from '../../components/tienda/Filters';
 import { authService } from '../../utils/tienda/authService';
@@ -22,17 +21,18 @@ const Index = () => {
   const navigate = useNavigate();
 
   // Función para cargar productos con manejo de errores
-  const loadProductsWithStockAndOffers = () => {
+  const loadProductsWithStockAndOffers = async () => {
     try {
       setLoading(true);
       setError(null);
       
+      console.log('🔄 Cargando productos desde base de datos Oracle...');
       
-      // Verificar que los productos existan en localStorage
-      const productosEnStorage = dataService.getProductos();
+      // ✅ OBTENER PRODUCTOS DESDE LA BASE DE DATOS
+      const productosDesdeBD = await dataService.getProductos();
       
-      if (!productosEnStorage || productosEnStorage.length === 0) {
-        const errorMsg = 'No se encontraron productos en el sistema.';
+      if (!productosDesdeBD || productosDesdeBD.length === 0) {
+        const errorMsg = 'No se encontraron productos en la base de datos.';
         console.error('❌', errorMsg);
         setError(errorMsg);
         setProducts([]);
@@ -40,28 +40,37 @@ const Index = () => {
         return;
       }
       
+      console.log(`✅ ${productosDesdeBD.length} productos cargados desde BD`);
+      
       // Obtener productos con stock real considerando el carrito
-      const productosConStock = getProductosConStockActual();
+      const productosConStock = getProductosConStockActual(productosDesdeBD);
       
       if (productosConStock.length === 0) {
         console.warn('⚠️ No hay productos con stock disponible');
       }
       
       // ✅ APLICAR OFERTAS a los productos
-      const productosConOfertas = getProductosConOfertas();
+      const productosConOfertas = getProductosConOfertas(productosConStock);
       
-      // Combinar stock actualizado con ofertas
-      const productosFinales = productosConStock.map(productoStock => {
-        const productoConOferta = productosConOfertas.find(p => p.codigo === productoStock.codigo);
-        return productoConOferta || productoStock;
-      });
-      
-      setProducts(productosFinales);
-      setFilteredProducts(productosFinales);
+      setProducts(productosConOfertas);
+      setFilteredProducts(productosConOfertas);
       
       // ✅ CONTAR PRODUCTOS EN OFERTA
-      const productosOferta = getProductosEnOferta();
+      const productosOferta = getProductosEnOferta(productosConOfertas);
       setOfertasCount(productosOferta.length);
+      
+      // ✅ OBTENER CATEGORÍAS DESDE LA BD
+      try {
+        const categoriasBD = await dataService.getCategorias();
+        const uniqueCategories = ['all', ...new Set(categoriasBD.map(cat => cat.nombre))];
+        setCategories(uniqueCategories);
+        console.log(`✅ ${categoriasBD.length} categorías cargadas desde BD`);
+      } catch (catError) {
+        console.warn('⚠️ Error cargando categorías, usando categorías de productos:', catError);
+        // Fallback: obtener categorías de los productos
+        const uniqueCategories = ['all', ...new Set(productosDesdeBD.map(product => product.categoria))];
+        setCategories(uniqueCategories);
+      }
       
     } catch (err) {
       console.error('💥 Error crítico cargando productos:', err);
@@ -74,13 +83,8 @@ const Index = () => {
   };
 
   useEffect(() => {
-    
     loadProductsWithStockAndOffers();
     
-    // Obtener categorías desde los datos originales
-    const uniqueCategories = ['all', ...new Set(productosData.map((product) => product.categoria))];
-    setCategories(uniqueCategories);
-
     // Escuchar cambios en el carrito para actualizar stock
     const handleCartUpdate = () => {
       loadProductsWithStockAndOffers();
@@ -175,16 +179,11 @@ const Index = () => {
     loadProductsWithStockAndOffers();
   };
 
-  // Función para resetear datos de emergencia
+  // Función para resetear datos de emergencia (ahora solo recarga)
   const handleEmergencyReset = () => {
-    if (confirm('¿Estás seguro de que quieres resetear todos los datos? Esto cargará los datos iniciales.')) {
-      try {
-        dataService.resetData();
-        alert('✅ Datos reseteados. La página se recargará.');
-        window.location.reload();
-      } catch (error) {
-        alert('❌ Error reseteando datos: ' + error.message);
-      }
+    if (confirm('¿Estás seguro de que quieres recargar todos los datos desde la base de datos?')) {
+      loadProductsWithStockAndOffers();
+      alert('✅ Datos recargados desde la base de datos.');
     }
   };
 
@@ -214,7 +213,7 @@ const Index = () => {
             }}
           >
             <Spinner animation="border" variant="warning" style={{ width: '3rem', height: '3rem' }} />
-            <span className="ms-3 text-dark fs-5 fw-bold">Cargando productos...</span>
+            <span className="ms-3 text-dark fs-5 fw-bold">Cargando productos desde BD...</span>
           </div>
         </Container>
       )}
@@ -231,9 +230,6 @@ const Index = () => {
             <div className="d-flex justify-content-center gap-3 flex-wrap">
               <Button variant="outline-danger" onClick={handleRetry}>
                 🔄 Reintentar Carga
-              </Button>
-              <Button variant="warning" onClick={handleEmergencyReset}>
-                🚨 Resetear Datos
               </Button>
               <Button variant="secondary" onClick={() => window.location.reload()}>
                 🔃 Recargar Página

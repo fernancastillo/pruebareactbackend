@@ -2,14 +2,14 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Alert, Badge } from 'react-bootstrap';
-import productosData from '../../data/productos.json';
 import ProductoDetalleHeader from '../../components/tienda/ProductoDetalleHeader';
 import ProductoDetalleMain from '../../components/tienda/ProductoDetalleMain';
 import ProductoDetalleRelated from '../../components/tienda/ProductoDetalleRelated';
 import { formatearPrecio, categoryIcons } from '../../utils/tienda/tiendaUtils';
 import { verificarStockDisponible, getProductosConStockActual } from '../../utils/tienda/stockService';
 import { authService } from '../../utils/tienda/authService';
-import { aplicarOfertaAProducto, getProductosConOfertas } from '../../utils/tienda/ofertasService'; // ✅ NUEVO IMPORT
+import { aplicarOfertaAProducto, getProductosConOfertas } from '../../utils/tienda/ofertasService';
+import { dataService } from '../../utils/dataService'; // ✅ NUEVO IMPORT
 
 const ProductoDetalle = () => {
   const { codigo } = useParams();
@@ -19,6 +19,7 @@ const ProductoDetalle = () => {
   const [showAlert, setShowAlert] = useState(false);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // ✅ Usar authService directamente como lo tienes configurado
@@ -26,30 +27,48 @@ const ProductoDetalle = () => {
     console.log('🔐 DEBUG - Usuario en ProductoDetalle:', currentUser);
     setUser(currentUser);
 
-    const cargarProductoConOferta = () => {
-      // Buscar producto en datos base
-      const productoEncontrado = productosData.find(p => p.codigo === codigo);
-      
-      if (productoEncontrado) {
-        // ✅ APLICAR OFERTA si existe
-        const productoConOferta = aplicarOfertaAProducto(productoEncontrado);
+    const cargarProductoConOferta = async () => {
+      try {
+        setLoading(true);
         
-        const productosConStock = getProductosConStockActual();
-        const productoActualizado = productosConStock.find(p => p.codigo === codigo) || productoConOferta;
+        // ✅ BUSCAR PRODUCTO EN LA BASE DE DATOS
+        const productoDesdeBD = await dataService.getProductoById(codigo);
         
-        // Aplicar oferta también al producto actualizado con stock
-        const productoFinal = aplicarOfertaAProducto(productoActualizado);
-        
-        setProduct(productoFinal);
-        
-        // Cargar productos relacionados también con ofertas aplicadas
-        const productosConOfertas = getProductosConOfertas();
-        const relacionados = productosConOfertas
-          .filter(p => p.categoria === productoFinal.categoria && p.codigo !== codigo)
-          .slice(0, 4);
-        setRelatedProducts(relacionados);
-      } else {
-        navigate('/productos');
+        if (productoDesdeBD) {
+          console.log('✅ Producto cargado desde BD:', productoDesdeBD);
+          
+          // ✅ APLICAR OFERTA si existe
+          const productoConOferta = aplicarOfertaAProducto(productoDesdeBD);
+          
+          const productosConStock = getProductosConStockActual([productoConOferta]);
+          const productoActualizado = productosConStock.find(p => p.codigo === codigo) || productoConOferta;
+          
+          // Aplicar oferta también al producto actualizado con stock
+          const productoFinal = aplicarOfertaAProducto(productoActualizado);
+          
+          setProduct(productoFinal);
+          
+          // ✅ CARGAR PRODUCTOS RELACIONADOS DESDE BD
+          try {
+            const todosProductos = await dataService.getProductos();
+            const productosConOfertas = getProductosConOfertas(todosProductos);
+            const relacionados = productosConOfertas
+              .filter(p => p.categoria === productoFinal.categoria && p.codigo !== codigo)
+              .slice(0, 4);
+            setRelatedProducts(relacionados);
+          } catch (relError) {
+            console.warn('⚠️ Error cargando productos relacionados:', relError);
+            setRelatedProducts([]);
+          }
+        } else {
+          console.error('❌ Producto no encontrado en BD:', codigo);
+          navigate('/productos');
+        }
+      } catch (error) {
+        console.error('💥 Error cargando producto desde BD:', error);
+        setError('Error al cargar el producto desde la base de datos');
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -140,7 +159,7 @@ const ProductoDetalle = () => {
     console.log('🔐 DEBUG - Estado user actualizado:', user);
   }, [user]);
 
-  if (!product) {
+  if (loading) {
     return (
       <div 
         className="min-vh-100"
@@ -165,8 +184,34 @@ const ProductoDetalle = () => {
             >
               🌾
             </span>
-            <h4 className="text-white fw-bold">Cargando producto...</h4>
+            <h4 className="text-white fw-bold">Cargando producto desde BD...</h4>
           </div>
+        </Container>
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div 
+        className="min-vh-100"
+        style={{
+          backgroundImage: 'url("src/assets/tienda/fondostardew.png")',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed',
+          fontFamily: "'Lato', sans-serif"
+        }}
+      >
+        <div style={{ height: '100px' }}></div>
+        <Container className="text-center py-5">
+          <Alert variant="danger" className="rounded-4">
+            <h4>❌ Producto no encontrado</h4>
+            <p>El producto que buscas no existe en la base de datos.</p>
+            <Button variant="primary" onClick={() => navigate('/productos')}>
+              Volver a Productos
+            </Button>
+          </Alert>
         </Container>
       </div>
     );

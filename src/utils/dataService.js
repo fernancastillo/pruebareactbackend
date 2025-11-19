@@ -1,345 +1,251 @@
 // utils/dataService.js
-import { saveLocalstorage, loadFromLocalstorage } from './localstorageHelper';
-import productosData from '../data/productos.json';
-import usuariosData from '../data/usuarios.json';
-import ordenesData from '../data/ordenes.json';
+const API_BASE_URL = 'http://localhost:8094/v1';
 
-// Claves para localStorage
-const PRODUCTOS_KEY = 'app_productos';
-const USUARIOS_KEY = 'app_usuarios';
-const ORDENES_KEY = 'app_ordenes';
+// Servicio para manejar errores de API
+const handleApiError = (error, operation) => {
+  console.error(`Error en ${operation}:`, error);
+  throw new Error(`Error al ${operation}: ${error.message}`);
+};
+
+// Función genérica para llamadas API
+const apiCall = async (endpoint, options = {}) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+      ...options,
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    handleApiError(error, `llamar ${endpoint}`);
+  }
+};
 
 export const dataService = {
-  // ✅ INICIALIZAR DATOS MEJORADO
+  // Ya no necesitamos initializeData ya que los datos vienen de la BD
   initializeData: () => {
-    try {
-      
-      // Verificar y cargar productos
-      const productosStorage = loadFromLocalstorage(PRODUCTOS_KEY);
-      if (!productosStorage || !Array.isArray(productosStorage) || productosStorage.length === 0) {
-        const saved = saveLocalstorage(PRODUCTOS_KEY, productosData);
-        if (!saved) {
-          throw new Error('No se pudieron guardar los productos');
-        }
-      } else {
-      }
-
-      // Verificar y cargar usuarios
-      const usuariosStorage = loadFromLocalstorage(USUARIOS_KEY);
-      if (!usuariosStorage || !Array.isArray(usuariosStorage) || usuariosStorage.length === 0) {
-        saveLocalstorage(USUARIOS_KEY, usuariosData);
-      } else {
-      }
-
-      // Verificar y cargar órdenes
-      const ordenesStorage = loadFromLocalstorage(ORDENES_KEY);
-      if (!ordenesStorage || !Array.isArray(ordenesStorage)) {
-        saveLocalstorage(ORDENES_KEY, ordenesData);
-      } 
-      return true;
-    } catch (error) {
-      console.error('💥 Error en initializeData:', error);
-      return false;
-    }
+    console.log('✅ Usando base de datos Oracle Cloud');
+    return true;
   },
 
-  // ✅ PRODUCTOS - con mejor manejo de errores
-  getProductos: () => {
-    try {
-      const productos = loadFromLocalstorage(PRODUCTOS_KEY);
-      if (!productos || !Array.isArray(productos)) {
-        console.warn('⚠️ No hay productos en localStorage o formato inválido');
-        return [];
-      }
-      return productos;
-    } catch (error) {
-      console.error('💥 Error obteniendo productos:', error);
-      return [];
-    }
+  // PRODUCTOS
+  getProductos: async () => {
+    return await apiCall('/productos', { method: 'GET' });
   },
 
-  addProducto: (producto) => {
-    try {
-      const productos = dataService.getProductos();
-      
-      // Validar que el código no exista
-      const codigoExistente = productos.find(p => p.codigo === producto.codigo);
-      if (codigoExistente) {
-        throw new Error('Ya existe un producto con ese código');
-      }
-
-      const newProducto = {
-        ...producto,
-        stock: producto.stock || 0,
-        stock_critico: producto.stock_critico || 0
-      };
-      
-      productos.push(newProducto);
-      saveLocalstorage(PRODUCTOS_KEY, productos);
-      return newProducto;
-    } catch (error) {
-      console.error('💥 Error agregando producto:', error);
-      throw error;
-    }
+  getProductoById: async (codigo) => {
+    return await apiCall(`/productoById/${codigo}`, { method: 'GET' });
   },
 
-  updateProducto: (codigo, updatedProducto) => {
-    try {
-      const productos = dataService.getProductos();
-      const index = productos.findIndex(p => p.codigo === codigo);
-      if (index !== -1) {
-        productos[index] = { 
-          ...productos[index], 
-          ...updatedProducto 
-        };
-        saveLocalstorage(PRODUCTOS_KEY, productos);
-        return productos[index];
-      }
-      console.warn('⚠️ Producto no encontrado para actualizar:', codigo);
-      return null;
-    } catch (error) {
-      console.error('💥 Error actualizando producto:', error);
-      throw error;
-    }
+  getProductoByName: async (nombre) => {
+    return await apiCall(`/productoByName/${nombre}`, { method: 'GET' });
   },
 
-  deleteProducto: (codigo) => {
-    try {
-      const productos = dataService.getProductos();
-      const filteredProductos = productos.filter(p => p.codigo !== codigo);
-      const wasDeleted = filteredProductos.length !== productos.length;
-      
-      if (wasDeleted) {
-        saveLocalstorage(PRODUCTOS_KEY, filteredProductos);
-      } else {
-        console.warn('⚠️ Producto no encontrado para eliminar:', codigo);
-      }
-      
-      return wasDeleted;
-    } catch (error) {
-      console.error('💥 Error eliminando producto:', error);
-      throw error;
-    }
+  getProductosByCategoria: async (categoriaId) => {
+    return await apiCall(`/productosByCategoria/${categoriaId}`, { method: 'GET' });
   },
 
-  // ✅ USUARIOS - usando "run" como ID
-  getUsuarios: () => {
-    try {
-      const usuarios = loadFromLocalstorage(USUARIOS_KEY);
-      if (!usuarios || !Array.isArray(usuarios)) {
-        console.warn('⚠️ No hay usuarios en localStorage o formato inválido');
-        return [];
-      }
-      return usuarios;
-    } catch (error) {
-      console.error('💥 Error obteniendo usuarios:', error);
-      return [];
-    }
+  getProductosByNombre: async (nombre) => {
+    return await apiCall(`/productosByNombre?nombre=${encodeURIComponent(nombre)}`, { method: 'GET' });
   },
 
-  addUsuario: (usuario) => {
-    try {
-      const usuarios = dataService.getUsuarios();
-      
-      // Validar que el RUN no exista
-      const runExistente = usuarios.find(u => u.run === usuario.run);
-      if (runExistente) {
-        throw new Error('Ya existe un usuario con ese RUN');
-      }
-
-      const newUsuario = {
-        ...usuario,
-        tipo: usuario.tipo || 'Cliente'
-      };
-      
-      usuarios.push(newUsuario);
-      saveLocalstorage(USUARIOS_KEY, usuarios);
-      return newUsuario;
-    } catch (error) {
-      console.error('💥 Error agregando usuario:', error);
-      throw error;
-    }
+  getProductosStockCritico: async () => {
+    return await apiCall('/productosStockCritico', { method: 'GET' });
   },
 
-  updateUsuario: (run, updatedUsuario) => {
-    try {
-      const usuarios = dataService.getUsuarios();
-      const index = usuarios.findIndex(u => u.run === run);
-      if (index !== -1) {
-        usuarios[index] = { 
-          ...usuarios[index], 
-          ...updatedUsuario 
-        };
-        saveLocalstorage(USUARIOS_KEY, usuarios);
-        return usuarios[index];
-      }
-      console.warn('⚠️ Usuario no encontrado para actualizar:', run);
-      return null;
-    } catch (error) {
-      console.error('💥 Error actualizando usuario:', error);
-      throw error;
-    }
+  getProductosByPrecio: async (precioMin, precioMax) => {
+    return await apiCall(`/productosByPrecio?precioMin=${precioMin}&precioMax=${precioMax}`, { method: 'GET' });
   },
 
-  deleteUsuario: (run) => {
-    try {
-      const usuarios = dataService.getUsuarios();
-      const filteredUsuarios = usuarios.filter(u => u.run !== run);
-      const wasDeleted = filteredUsuarios.length !== usuarios.length;
-      
-      if (wasDeleted) {
-        saveLocalstorage(USUARIOS_KEY, filteredUsuarios);
-      } else {
-        console.warn('⚠️ Usuario no encontrado para eliminar:', run);
-      }
-      
-      return wasDeleted;
-    } catch (error) {
-      console.error('💥 Error eliminando usuario:', error);
-      throw error;
-    }
+  addProducto: async (producto) => {
+    return await apiCall('/addProducto', {
+      method: 'POST',
+      body: JSON.stringify(producto),
+    });
   },
 
-  // ✅ ÓRDENES - usando "numeroOrden" como ID
-  getOrdenes: () => {
-    try {
-      const ordenes = loadFromLocalstorage(ORDENES_KEY);
-      if (!ordenes || !Array.isArray(ordenes)) {
-        console.warn('⚠️ No hay órdenes en localStorage o formato inválido');
-        return [];
-      }
-      return ordenes;
-    } catch (error) {
-      console.error('💥 Error obteniendo órdenes:', error);
-      return [];
-    }
+  updateProducto: async (producto) => {
+    return await apiCall('/updateProducto', {
+      method: 'PUT',
+      body: JSON.stringify(producto),
+    });
   },
 
-  addOrden: (orden) => {
-    try {
-      const ordenes = dataService.getOrdenes();
-      
-      // Validar que el número de orden no exista
-      const ordenExistente = ordenes.find(o => o.numeroOrden === orden.numeroOrden);
-      if (ordenExistente) {
-        throw new Error('Ya existe una orden con ese número');
-      }
-
-      const newOrden = {
-        ...orden,
-        fecha: orden.fecha || new Date().toLocaleDateString('es-CL'),
-        estadoEnvio: orden.estadoEnvio || 'Pendiente',
-        total: orden.total || 0
-      };
-      
-      ordenes.push(newOrden);
-      saveLocalstorage(ORDENES_KEY, ordenes);
-      return newOrden;
-    } catch (error) {
-      console.error('💥 Error agregando orden:', error);
-      throw error;
-    }
+  deleteProducto: async (codigo) => {
+    return await apiCall(`/deleteProducto/${codigo}`, { method: 'DELETE' });
   },
 
-  updateOrden: (numeroOrden, updatedOrden) => {
-    try {
-      const ordenes = dataService.getOrdenes();
-      const index = ordenes.findIndex(o => o.numeroOrden === numeroOrden);
-      if (index !== -1) {
-        ordenes[index] = { 
-          ...ordenes[index], 
-          ...updatedOrden 
-        };
-        saveLocalstorage(ORDENES_KEY, ordenes);
-        return ordenes[index];
-      }
-      console.warn('⚠️ Orden no encontrada para actualizar:', numeroOrden);
-      return null;
-    } catch (error) {
-      console.error('💥 Error actualizando orden:', error);
-      throw error;
-    }
+  // USUARIOS
+  getUsuarios: async () => {
+    return await apiCall('/usuarios', { method: 'GET' });
   },
 
-  deleteOrden: (numeroOrden) => {
-    try {
-      const ordenes = dataService.getOrdenes();
-      const filteredOrdenes = ordenes.filter(o => o.numeroOrden !== numeroOrden);
-      const wasDeleted = filteredOrdenes.length !== ordenes.length;
-      
-      if (wasDeleted) {
-        saveLocalstorage(ORDENES_KEY, filteredOrdenes);
-      } else {
-        console.warn('⚠️ Orden no encontrada para eliminar:', numeroOrden);
-      }
-      
-      return wasDeleted;
-    } catch (error) {
-      console.error('💥 Error eliminando orden:', error);
-      throw error;
-    }
+  getUsuarioById: async (run) => {
+    return await apiCall(`/usuariosById/${run}`, { method: 'GET' });
   },
 
-  // ✅ MÉTODOS ESPECIALES PARA ÓRDENES
-  getOrdenesPorUsuario: (run) => {
-    const ordenes = dataService.getOrdenes();
+  getUsuarioByCorreo: async (correo) => {
+    return await apiCall(`/usuariosByCorreo/${correo}`, { method: 'GET' });
+  },
+
+  getUsuarioByTipo: async (tipo) => {
+    return await apiCall(`/usuariosByTipo/${tipo}`, { method: 'GET' });
+  },
+
+  addUsuario: async (usuario) => {
+    return await apiCall('/addUsuario', {
+      method: 'POST',
+      body: JSON.stringify(usuario),
+    });
+  },
+
+  updateUsuario: async (usuario) => {
+    return await apiCall('/updateUsuario', {
+      method: 'PUT',
+      body: JSON.stringify(usuario),
+    });
+  },
+
+  deleteUsuario: async (run) => {
+    return await apiCall(`/deleteUsuario/${run}`, { method: 'DELETE' });
+  },
+
+  // CATEGORÍAS
+  getCategorias: async () => {
+    return await apiCall('/categorias', { method: 'GET' });
+  },
+
+  getCategoriaById: async (id) => {
+    return await apiCall(`/categoriaById/${id}`, { method: 'GET' });
+  },
+
+  getCategoriaByName: async (nombre) => {
+    return await apiCall(`/categoriaByName/${nombre}`, { method: 'GET' });
+  },
+
+  addCategoria: async (categoria) => {
+    return await apiCall('/addCategoria', {
+      method: 'POST',
+      body: JSON.stringify(categoria),
+    });
+  },
+
+  // ÓRDENES
+  getOrdenes: async () => {
+    return await apiCall('/ordenes', { method: 'GET' });
+  },
+
+  getOrdenByNumero: async (numero) => {
+    return await apiCall(`/OrdenByNumero/${numero}`, { method: 'GET' });
+  },
+
+  addOrden: async (orden) => {
+    return await apiCall('/addOrden', {
+      method: 'POST',
+      body: JSON.stringify(orden),
+    });
+  },
+
+  updateOrden: async (orden) => {
+    return await apiCall('/updateOrden', {
+      method: 'PUT',
+      body: JSON.stringify(orden),
+    });
+  },
+
+  deleteOrden: async (numero) => {
+    return await apiCall(`/deleteOrden/${numero}`, { method: 'DELETE' });
+  },
+
+  // DETALLE ORDEN
+  getDetallesOrdenes: async () => {
+    return await apiCall('/detallesOrdenes', { method: 'GET' });
+  },
+
+  getDetalleOrdenById: async (id) => {
+    return await apiCall(`/detallesOrdenesById/${id}`, { method: 'GET' });
+  },
+
+  addDetalleOrden: async (detalle) => {
+    return await apiCall('/addDetalleOrden', {
+      method: 'POST',
+      body: JSON.stringify(detalle),
+    });
+  },
+
+  // ✅ MÉTODOS ESPECIALES PARA ÓRDENES (implementados en frontend)
+  getOrdenesPorUsuario: async (run) => {
+    const ordenes = await dataService.getOrdenes();
     return ordenes.filter(orden => orden.run === run);
   },
 
-  getOrdenesPorEstado: (estado) => {
-    const ordenes = dataService.getOrdenes();
+  getOrdenesPorEstado: async (estado) => {
+    const ordenes = await dataService.getOrdenes();
     return ordenes.filter(orden => orden.estadoEnvio === estado);
   },
 
-  // ✅ MÉTODOS ESPECIALES PARA PRODUCTOS
-  getProductosPorCategoria: (categoria) => {
-    const productos = dataService.getProductos();
-    return productos.filter(producto => producto.categoria === categoria);
+  // ✅ MÉTODOS ESPECIALES PARA PRODUCTOS (implementados en frontend)
+  getProductosPorCategoria: async (categoriaNombre) => {
+    // Primero obtener todas las categorías para encontrar el ID
+    const categorias = await dataService.getCategorias();
+    const categoria = categorias.find(cat => cat.nombre === categoriaNombre);
+    
+    if (categoria) {
+      return await dataService.getProductosByCategoria(categoria.id);
+    }
+    return [];
   },
 
-  getProductosStockCritico: () => {
-    const productos = dataService.getProductos();
-    return productos.filter(producto => producto.stock <= producto.stock_critico);
+  getProductosStockCritico: async () => {
+    return await dataService.getProductosStockCritico();
   },
 
   // ✅ MÉTODOS ESPECIALES PARA USUARIOS
-  getUsuariosPorTipo: (tipo) => {
-    const usuarios = dataService.getUsuarios();
-    return usuarios.filter(usuario => usuario.tipo === tipo);
+  getUsuariosPorTipo: async (tipo) => {
+    return await dataService.getUsuarioByTipo(tipo);
   },
 
-  // ✅ RESET DATOS COMPLETO
+  // ✅ Ya no necesitamos resetData ya que los datos vienen de la BD
   resetData: () => {
-    try {
-      saveLocalstorage(PRODUCTOS_KEY, productosData);
-      saveLocalstorage(USUARIOS_KEY, usuariosData);
-      saveLocalstorage(ORDENES_KEY, ordenesData);      
-      return true;
-    } catch (error) {
-      console.error('💥 Error reseteando datos:', error);
-      throw error;
-    }
+    console.log('ℹ️ Los datos ahora se gestionan desde la base de datos Oracle');
+    return true;
   },
 
-  // ✅ VERIFICAR ESTADO DE DATOS
-  checkDataStatus: () => {
-    const productos = dataService.getProductos();
-    const usuarios = dataService.getUsuarios();
-    const ordenes = dataService.getOrdenes();
-    
-    return {
-      productos: {
-        count: productos.length,
-        loaded: productos.length > 0
-      },
-      usuarios: {
-        count: usuarios.length,
-        loaded: usuarios.length > 0
-      },
-      ordenes: {
-        count: ordenes.length,
-        loaded: ordenes.length > 0
-      }
-    };
+  // ✅ VERIFICAR ESTADO DE DATOS (ahora desde BD)
+  checkDataStatus: async () => {
+    try {
+      const productos = await dataService.getProductos();
+      const usuarios = await dataService.getUsuarios();
+      const ordenes = await dataService.getOrdenes();
+      
+      return {
+        productos: {
+          count: productos.length,
+          loaded: productos.length > 0
+        },
+        usuarios: {
+          count: usuarios.length,
+          loaded: usuarios.length > 0
+        },
+        ordenes: {
+          count: ordenes.length,
+          loaded: ordenes.length > 0
+        }
+      };
+    } catch (error) {
+      console.error('Error verificando estado de datos:', error);
+      return {
+        productos: { count: 0, loaded: false },
+        usuarios: { count: 0, loaded: false },
+        ordenes: { count: 0, loaded: false }
+      };
+    }
   }
 };
