@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Button, Badge, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import CategoryCard from '../../components/tienda/CategoryCard';
-import CardProductos from '../../components/tienda/CardProductos';
+import ProductCard from '../../components/tienda/ProductCard';
 import { loadCategoriesAndProducts, calcularPorcentajeDescuento } from '../../utils/tienda/categoriaService';
 import { dataService } from '../../utils/dataService';
 import { ofertasConfig } from '../../utils/tienda/ofertasData';
 import { scrollToTop } from '../../utils/tienda/tiendaUtils';
+import { authService } from '../../utils/tienda/authService';
+import { verificarStockDisponible, obtenerStockDisponible } from '../../utils/tienda/stockService';
 
 const Categorias = () => {
   const [categories, setCategories] = useState([]);
@@ -18,10 +20,8 @@ const Categorias = () => {
 
   const navigate = useNavigate();
 
-  // Función para aplicar ofertas usando tu configuración (igual que en Index)
   const aplicarOfertasConfiguradas = (productos) => {
     return productos.map(producto => {
-      // Buscar oferta por código exacto
       const ofertaConfig = ofertasConfig.find(oferta => 
         oferta.codigo === producto.codigo
       );
@@ -44,25 +44,20 @@ const Categorias = () => {
     });
   };
 
-  // Función para contar productos en oferta - NOMBRE CORREGIDO
   const contarProductosEnOferta = (productos) => {
     return productos.filter(producto => producto.enOferta).length;
   };
 
-  // Función para adaptar productos desde BD
   const adaptarProductosDesdeBD = (productosBD) => {
     return productosBD.map(producto => {
-      // Extraer nombre de categoría si es objeto
       let categoriaNombre = producto.categoria;
       if (typeof producto.categoria === 'object' && producto.categoria !== null) {
         categoriaNombre = producto.categoria.nombre || producto.categoria.name || 'Sin categoría';
       }
 
-      // Adaptar nombres de campos de stock
       const stock = producto.stock || producto.stockActual || 0;
       const stockCritico = producto.stock_critico || producto.stockCritico || 5;
 
-      // Asegurar que la imagen tenga una ruta válida
       let imagen = producto.imagen || producto.img || producto.url_imagen;
       if (!imagen) {
         imagen = '/src/assets/placeholder-producto.png';
@@ -82,33 +77,74 @@ const Categorias = () => {
     });
   };
 
-  // Cargar categorías y productos desde la base de datos CON OFERTAS
+  const handleAddToCart = async (product) => {
+    const user = authService.getCurrentUser();
+    if (!user) {
+      alert('Debes iniciar sesión para agregar productos al carrito');
+      navigate('/login');
+      return;
+    }
+
+    try {
+      const stockDisponible = await verificarStockDisponible(product.codigo, 1);
+      
+      if (!stockDisponible) {
+        const stockActual = await obtenerStockDisponible(product.codigo);
+        alert(`No hay stock disponible de ${product.nombre}. Stock actual: ${stockActual}`);
+        return;
+      }
+
+      const carritoActual = JSON.parse(localStorage.getItem('junimoCart')) || [];
+      const productoEnCarrito = carritoActual.find(item => item.codigo === product.codigo);
+      
+      let nuevoCarrito;
+      if (productoEnCarrito) {
+        nuevoCarrito = carritoActual.map(item =>
+          item.codigo === product.codigo
+            ? {
+                ...item,
+                cantidad: item.cantidad + 1,
+                subtotal: (item.cantidad + 1) * (product.precioOferta || product.precio)
+              }
+            : item
+        );
+      } else {
+        nuevoCarrito = [...carritoActual, {
+          ...product,
+          cantidad: 1,
+          subtotal: product.precioOferta || product.precio
+        }];
+      }
+
+      localStorage.setItem('junimoCart', JSON.stringify(nuevoCarrito));
+      
+      alert(`${product.nombre} agregado al carrito`);
+
+      window.dispatchEvent(new Event('cartUpdated'));
+      window.dispatchEvent(new Event('stockUpdated'));
+
+    } catch (error) {
+      alert('Error al agregar producto al carrito: ' + error.message);
+    }
+  };
+
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
       try {
-        // Obtener productos desde la base de datos
         const productosDesdeBD = await dataService.getProductos();
         
         if (productosDesdeBD && productosDesdeBD.length > 0) {
-          // Adaptar productos al formato que espera la aplicación
           const productosAdaptados = adaptarProductosDesdeBD(productosDesdeBD);
-          
-          // APLICAR OFERTAS a todos los productos
           const productosConOfertas = aplicarOfertasConfiguradas(productosAdaptados);
           
-          // CONTAR PRODUCTOS EN OFERTA - NOMBRE CORREGIDO
           const totalOfertas = contarProductosEnOferta(productosConOfertas);
           setOfertasCount(totalOfertas);
           
-          // Obtener categorías únicas de los productos
           const categoriasUnicas = [...new Set(productosConOfertas.map(product => product.categoria))];
           
-          // Crear array de categorías con información adicional
           const categoriasConInfo = categoriasUnicas.map(categoria => {
             const productosCategoria = productosConOfertas.filter(product => product.categoria === categoria);
-            
-            // Contar productos en oferta por categoría
             const ofertasEnCategoria = productosCategoria.filter(product => product.enOferta).length;
             
             return {
@@ -119,10 +155,8 @@ const Categorias = () => {
             };
           });
 
-          console.log('📂 Categorías cargadas:', categoriasConInfo);
           setCategories(categoriasConInfo);
         } else {
-          console.log('❌ No se encontraron productos en la BD');
           setCategories([]);
           setOfertasCount(0);
         }
@@ -138,9 +172,7 @@ const Categorias = () => {
     loadData();
   }, []);
 
-  // Manejar click en categoría
   const handleCategoryClick = (categoria) => {
-    console.log('🔄 Clic en categoría:', categoria.nombre);
     setProductsLoading(true);
     
     setTimeout(() => {
@@ -159,15 +191,12 @@ const Categorias = () => {
     }, 300);
   };
 
-  // Volver a categorías
   const handleBackToCategories = () => {
     setSelectedCategory(null);
     scrollToTop();
   };
 
-  // Ver detalles del producto
   const handleProductDetails = (productCode) => {
-    console.log('🔍 Ver detalles del producto:', productCode);
     navigate(`/producto/${productCode}`);
     setTimeout(scrollToTop, 100);
   };
@@ -187,7 +216,6 @@ const Categorias = () => {
       <div style={{ height: '80px' }}></div>
 
       <Container className="py-5">
-        {/* Encabezado con imagen */}
         <Row className="justify-content-center mb-5">
           <Col lg={8} className="text-center">
             {!headerImageError ? (
@@ -229,10 +257,9 @@ const Categorias = () => {
               }
             </p>
 
-            {/* Mostrar contador de ofertas cuando no hay categoría seleccionada */}
             {!selectedCategory && ofertasCount > 0 && (
               <Badge bg="danger" className="fs-6 px-3 py-2 mb-3">
-                🎯 {ofertasCount} productos en oferta
+                {ofertasCount} productos en oferta
               </Badge>
             )}
 
@@ -247,10 +274,9 @@ const Categorias = () => {
                   }}
                   onClick={handleBackToCategories}
                 >
-                  ← Volver a Categorías
+                  Volver a Categorías
                 </Button>
                 
-                {/* Mostrar ofertas en la categoría seleccionada */}
                 {selectedCategory.ofertasEnCategoria > 0 && (
                   <Badge bg="warning" text="dark" className="fs-6 px-3 py-2">
                     {selectedCategory.ofertasEnCategoria} oferta(s) en esta categoría
@@ -261,7 +287,6 @@ const Categorias = () => {
           </Col>
         </Row>
 
-        {/* Contenido Principal */}
         {loading ? (
           <Row className="justify-content-center py-5">
             <Col className="text-center">
@@ -270,7 +295,6 @@ const Categorias = () => {
             </Col>
           </Row>
         ) : selectedCategory ? (
-          // Vista de productos de categoría seleccionada
           <>
             <div id="productos-categoria">
               <Row className="mb-4">
@@ -312,10 +336,11 @@ const Categorias = () => {
               ) : (
                 <Row>
                   {selectedCategory.productos.map((product) => (
-                    <CardProductos
+                    <ProductCard
                       key={product.codigo}
                       product={product}
-                      onDetailsClick={handleProductDetails}
+                      handleAddToCart={handleAddToCart}
+                      handleDetailsClick={handleProductDetails}
                       calcularPorcentajeDescuento={calcularPorcentajeDescuento}
                     />
                   ))}
@@ -344,7 +369,7 @@ const Categorias = () => {
                           className="mt-3"
                           onClick={handleBackToCategories}
                         >
-                          ← Volver a Categorías
+                          Volver a Categorías
                         </Button>
                       </div>
                     </Col>
@@ -354,9 +379,7 @@ const Categorias = () => {
             </div>
           </>
         ) : (
-          // Vista de todas las categorías
           <>
-            {/* Sección de ofertas destacadas */}
             {ofertasCount > 0 && (
               <Row className="mb-4">
                 <Col>
@@ -375,7 +398,7 @@ const Categorias = () => {
                         textShadow: '2px 2px 4px rgba(0,0,0,0.5)'
                       }}
                     >
-                      ¡Ofertas Activas en Todas las Categorías!
+                      Ofertas Activas en Todas las Categorías
                     </h3>
                     <p className="fs-5 text-white mb-3 fw-semibold">
                       Tenemos <Badge bg="danger" className="fs-4">{ofertasCount}</Badge> productos en oferta con descuentos increíbles

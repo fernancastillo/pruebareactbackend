@@ -1,32 +1,32 @@
-// src/utils/tienda/orderCreationService.js
-import { loadFromLocalstorage, saveLocalstorage } from '../localstorageHelper';
-
-const ORDENES_KEY = 'app_ordenes';
+import { orderService } from './orderService';
 
 export const orderCreationService = {
-  // ✅ GENERAR NÚMERO DE ORDEN AUTOMÁTICO
-  generateOrderNumber: () => {
-    const ordenes = orderCreationService.getOrdenes();
+  // Generar número de orden automático
+  generateOrderNumber: async () => {
+    const ordenes = await orderService.getAllOrders();
     
     if (ordenes.length === 0) {
-      return 'SO1001'; // Primera orden
+      return 'SO1001';
     }
 
     // Encontrar el número más alto
-    const lastOrder = ordenes.reduce((max, orden) => {
-      const currentNum = parseInt(orden.numeroOrden.replace('SO', ''));
-      const maxNum = parseInt(max.numeroOrden.replace('SO', ''));
-      return currentNum > maxNum ? orden : max;
-    }, ordenes[0]);
+    const orderNumbers = ordenes
+      .map(order => order.numeroOrden)
+      .filter(num => num && num.startsWith('SO'))
+      .map(num => parseInt(num.replace('SO', '')))
+      .filter(num => !isNaN(num));
 
-    // Incrementar en 1
-    const lastNumber = parseInt(lastOrder.numeroOrden.replace('SO', ''));
+    if (orderNumbers.length === 0) {
+      return 'SO1001';
+    }
+
+    const lastNumber = Math.max(...orderNumbers);
     const newNumber = lastNumber + 1;
     
     return `SO${newNumber}`;
   },
 
-  // ✅ OBTENER FECHA ACTUAL EN FORMATO DD/MM/YYYY
+  // Obtener fecha actual
   getCurrentDate: () => {
     const now = new Date();
     const day = String(now.getDate()).padStart(2, '0');
@@ -35,77 +35,43 @@ export const orderCreationService = {
     return `${day}/${month}/${year}`;
   },
 
-  // ✅ CREAR NUEVA ORDEN
-  createOrder: (user, cartItems, total, discountCode = '', paymentData = null) => {
+  // Crear nueva orden
+  createOrder: async (user, cartItems, total, discountCode = '', paymentData = null) => {
+    const orderNumber = await orderCreationService.generateOrderNumber();
+    
     const nuevaOrden = {
-      numeroOrden: orderCreationService.generateOrderNumber(),
+      numeroOrden: orderNumber,
       fecha: orderCreationService.getCurrentDate(),
-      run: user.id, // El run del usuario está en user.id según authService
+      run: user.run || user.id,
+      usuario: user.nombre || user.email,
       estadoEnvio: 'Pendiente',
       total: total,
       productos: cartItems.map(item => ({
         codigo: item.codigo,
         nombre: item.nombre,
         cantidad: item.cantidad,
-        precio: item.precio
+        precio: item.precioOferta || item.precio,
+        imagen: item.imagen
       })),
-      // Información adicional
       descuentoAplicado: discountCode || '',
-      metodoPago: 'Tarjeta de Crédito',
+      metodoPago: paymentData?.paymentMethod || 'Tarjeta de Crédito',
       transaccionId: paymentData?.transactionId || '',
-      fechaPago: paymentData?.timestamp ? new Date(paymentData.timestamp).toLocaleDateString('es-CL') : orderCreationService.getCurrentDate()
+      fechaPago: orderCreationService.getCurrentDate()
     };
 
     return nuevaOrden;
   },
 
-  // ✅ GUARDAR ORDEN EN LOCALSTORAGE
-  saveOrder: (orden) => {
+  // Guardar orden
+  saveOrder: async (orden) => {
     try {
-      const ordenes = orderCreationService.getOrdenes();
-      ordenes.push(orden);
-      saveLocalstorage(ORDENES_KEY, ordenes);
-      
-      console.log('✅ Orden guardada:', orden.numeroOrden);
-      return true;
+      const success = await orderService.createOrder(orden);
+      if (success) {
+        console.log('✅ Orden guardada exitosamente:', orden.numeroOrden);
+      }
+      return success;
     } catch (error) {
       console.error('❌ Error al guardar orden:', error);
-      return false;
-    }
-  },
-
-  // ✅ OBTENER TODAS LAS ÓRDENES (para uso interno de este servicio)
-  getOrdenes: () => {
-    try {
-      const ordenes = loadFromLocalstorage(ORDENES_KEY);
-      return ordenes || [];
-    } catch (error) {
-      console.error('Error al obtener órdenes:', error);
-      return [];
-    }
-  },
-
-  // ✅ OBTENER ÓRDENES POR USUARIO (para uso interno)
-  getOrdersByUser: (run) => {
-    const ordenes = orderCreationService.getOrdenes();
-    return ordenes.filter(orden => orden.run === run);
-  },
-
-  // ✅ ACTUALIZAR ESTADO DE ORDEN
-  updateOrderStatus: (numeroOrden, nuevoEstado) => {
-    try {
-      const ordenes = orderCreationService.getOrdenes();
-      const ordenIndex = ordenes.findIndex(orden => orden.numeroOrden === numeroOrden);
-      
-      if (ordenIndex !== -1) {
-        ordenes[ordenIndex].estadoEnvio = nuevoEstado;
-        ordenes[ordenIndex].fechaActualizacion = orderCreationService.getCurrentDate();
-        saveLocalstorage(ORDENES_KEY, ordenes);
-        return true;
-      }
-      return false;
-    } catch (error) {
-      console.error('Error al actualizar orden:', error);
       return false;
     }
   }

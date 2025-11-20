@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col } from 'react-bootstrap';
+import { Container, Row, Col, Button, Spinner, Alert, Card } from 'react-bootstrap';
 import { orderService } from '../../utils/tienda/orderService';
 import { authService } from '../../utils/tienda/authService';
 import { Link } from 'react-router-dom';
@@ -11,40 +11,69 @@ const Pedidos = () => {
   const [orders, setOrders] = useState([]);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [debugInfo, setDebugInfo] = useState('');
+  const [allOrders, setAllOrders] = useState([]);
 
   useEffect(() => {
-    const currentUser = authService.getCurrentUser();
-    console.log('👤 Usuario actual:', currentUser);
-    setUser(currentUser);
-    
-    if (currentUser) {
-      const userRun = currentUser.run;
-      console.log('🔍 Buscando órdenes para RUN:', userRun);
+    const loadUserOrders = async () => {
+      console.log('=== INICIANDO CARGA DE PEDIDOS ===');
       
-      if (userRun) {
-        const userOrders = orderService.getUserOrders(userRun);
-        console.log('📦 Órdenes encontradas:', userOrders);
+      const currentUser = authService.getCurrentUser();
+      console.log('Usuario actual desde authService:', currentUser);
+      setUser(currentUser);
+      
+      if (!currentUser) {
+        console.log('No hay usuario autenticado');
+        setLoading(false);
+        return;
+      }
+
+      const userRun = currentUser.run || currentUser.id;
+      console.log('RUN del usuario a buscar:', userRun);
+
+      try {
+        // Obtener todas las órdenes para diagnóstico
+        const allOrders = await orderService.getAllOrders();
+        setAllOrders(allOrders);
         
-        // ✅ ORDENAR: De más reciente a más antigua
-        const sortedOrders = userOrders
-          .map(order => ({
-            ...order,
-            productos: order.productos || []
-          }))
-          .sort((a, b) => {
-            // Convertir fechas DD/MM/YYYY a formato comparable
-            const dateA = a.fecha.split('/').reverse().join('-');
-            const dateB = b.fecha.split('/').reverse().join('-');
-            return new Date(dateB) - new Date(dateA);
-          });
+        // Obtener órdenes del usuario
+        const userOrders = await orderService.getUserOrders(userRun);
+        console.log('Órdenes encontradas para el usuario:', userOrders);
+
+        if (userOrders.length === 0) {
+          setDebugInfo(`No se encontraron órdenes para el RUN: ${userRun}. Mostrando todas las órdenes para diagnóstico.`);
+          // TEMPORAL: Mostrar todas las órdenes para debugging
+          setOrders(allOrders.slice(0, 3)); // Mostrar solo 3 para no saturar
+        } else {
+          const sortedOrders = userOrders
+            .map(order => ({
+              ...order,
+              productos: order.productos || [],
+              fecha: order.fecha || new Date().toLocaleDateString('es-CL')
+            }))
+            .sort((a, b) => {
+              try {
+                const dateA = a.fecha.split('/').reverse().join('-');
+                const dateB = b.fecha.split('/').reverse().join('-');
+                return new Date(dateB) - new Date(dateA);
+              } catch (error) {
+                return 0;
+              }
+            });
+
+          setOrders(sortedOrders);
+        }
         
-        setOrders(sortedOrders);
-      } else {
-        console.error('❌ No se encontró RUN del usuario');
+      } catch (error) {
+        console.error('Error crítico al cargar órdenes:', error);
+        setDebugInfo(`Error al cargar órdenes: ${error.message}`);
         setOrders([]);
       }
-    }
-    setLoading(false);
+      
+      setLoading(false);
+    };
+
+    loadUserOrders();
   }, []);
 
   if (loading) {
@@ -61,10 +90,8 @@ const Pedidos = () => {
       >
         <div className="navbar-spacer"></div>
         <Container className="text-center py-5">
-          <div className="spinner-border text-primary" role="status">
-            <span className="visually-hidden">Cargando...</span>
-          </div>
-          <p className="mt-2">Cargando tus pedidos...</p>
+          <Spinner animation="border" variant="primary" />
+          <p className="mt-2 text-white">Cargando tus pedidos...</p>
         </Container>
       </div>
     );
@@ -75,7 +102,7 @@ const Pedidos = () => {
       <div 
         className="min-vh-100 w-100"
         style={{
-          backgroundImage: 'url("https://images3.alphacoders.com/126/1269904.png")',
+          backgroundImage: 'url("src/assets/tienda/fondostardew.png")',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundAttachment: 'fixed',
@@ -84,10 +111,19 @@ const Pedidos = () => {
       >
         <div className="navbar-spacer"></div>
         <Container className="text-center py-5">
-          <h3>Debes iniciar sesión para ver tus pedidos</h3>
-          <Button as={Link} to="/login" variant="primary" className="mt-3">
-            Iniciar Sesión
-          </Button>
+          <div 
+            className="rounded-4 p-5 mx-auto"
+            style={{
+              backgroundColor: 'rgba(222, 221, 143, 0.95)',
+              border: '3px solid #000000',
+              maxWidth: '500px'
+            }}
+          >
+            <h3 className="text-dark mb-3">Debes iniciar sesión para ver tus pedidos</h3>
+            <Button as={Link} to="/login" variant="primary" className="mt-3">
+              Iniciar Sesión
+            </Button>
+          </div>
         </Container>
       </div>
     );
@@ -97,7 +133,7 @@ const Pedidos = () => {
     <div 
       className="min-vh-100 w-100"
       style={{
-        backgroundImage: 'url("https://images3.alphacoders.com/126/1269904.png")',
+        backgroundImage: 'url("src/assets/tienda/fondostardew.png")',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundAttachment: 'fixed',
@@ -107,23 +143,45 @@ const Pedidos = () => {
       <div className="navbar-spacer"></div>
       
       <Container className="py-4">
-        {/* Header Component */}
         <PedidosHeader />
         
-        {/* Contenido Principal */}
+        {/* Información de diagnóstico */}
+        {debugInfo && (
+          <Alert variant="warning" className="mb-4">
+            <Alert.Heading>Diagnóstico del Sistema</Alert.Heading>
+            {debugInfo}
+            <hr />
+            <div className="small">
+              <strong>Usuario:</strong> {user.nombre} (RUN: {user.run || user.id})<br />
+              <strong>Total de órdenes en BD:</strong> {allOrders.length}<br />
+              <strong>Órdenes que coinciden:</strong> {orders.length}
+            </div>
+          </Alert>
+        )}
+        
         {orders.length === 0 ? (
           <EmptyOrders user={user} />
         ) : (
-          <Row>
-            <Col>
-              {orders.map(order => (
-                <OrderCard 
-                  key={order.numeroOrden} 
-                  order={order} 
-                />
-              ))}
-            </Col>
-          </Row>
+          <>
+            {/* Mostrar advertencia si estamos mostrando órdenes de otros usuarios */}
+            {debugInfo && (
+              <Alert variant="info" className="mb-4">
+                <strong>Nota:</strong> Se están mostrando órdenes de ejemplo para diagnóstico. 
+                En producción, solo se mostrarán tus órdenes.
+              </Alert>
+            )}
+            
+            <Row>
+              <Col>
+                {orders.map(order => (
+                  <OrderCard 
+                    key={order.numeroOrden} 
+                    order={order} 
+                  />
+                ))}
+              </Col>
+            </Row>
+          </>
         )}
       </Container>
     </div>
