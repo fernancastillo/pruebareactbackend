@@ -1,15 +1,14 @@
-// src/pages/tienda/ProductoDetalle.jsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Container, Row, Col, Alert, Badge } from 'react-bootstrap';
+import { Container, Row, Col, Alert, Badge, Button, Spinner } from 'react-bootstrap';
 import ProductoDetalleHeader from '../../components/tienda/ProductoDetalleHeader';
 import ProductoDetalleMain from '../../components/tienda/ProductoDetalleMain';
 import ProductoDetalleRelated from '../../components/tienda/ProductoDetalleRelated';
 import { formatearPrecio, categoryIcons } from '../../utils/tienda/tiendaUtils';
-import { verificarStockDisponible, getProductosConStockActual } from '../../utils/tienda/stockService';
+import { verificarStockDisponible, obtenerStockDisponible, getProductosConStockActual } from '../../utils/tienda/stockService';
 import { authService } from '../../utils/tienda/authService';
-import { aplicarOfertaAProducto, getProductosConOfertas } from '../../utils/tienda/ofertasService';
-import { dataService } from '../../utils/dataService'; // ✅ NUEVO IMPORT
+import { dataService } from '../../utils/dataService';
+import { ofertasConfig } from '../../utils/tienda/ofertasData';
 
 const ProductoDetalle = () => {
   const { codigo } = useParams();
@@ -20,66 +19,119 @@ const ProductoDetalle = () => {
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const adaptarProductoDesdeBD = (productoBD) => {
+    if (!productoBD) return null;
+
+    let categoriaNombre = productoBD.categoria;
+    if (typeof productoBD.categoria === 'object' && productoBD.categoria !== null) {
+      categoriaNombre = productoBD.categoria.nombre || productoBD.categoria.name || 'Sin categoría';
+    }
+
+    const stock = productoBD.stock || productoBD.stockActual || 0;
+    const stockCritico = productoBD.stock_critico || productoBD.stockCritico || 5;
+
+    let imagen = productoBD.imagen || productoBD.img || productoBD.url_imagen;
+    if (!imagen) {
+      imagen = '/src/assets/placeholder-producto.png';
+    }
+
+    return {
+      ...productoBD,
+      imagen: imagen,
+      categoria: categoriaNombre,
+      stock: stock,
+      stock_critico: stockCritico,
+      stock_disponible: stock,
+      enOferta: false,
+      precioOferta: null,
+      descuento: 0
+    };
+  };
+
+  const aplicarOfertasConfiguradas = (producto) => {
+    const ofertaConfig = ofertasConfig.find(oferta => 
+      oferta.codigo === producto.codigo
+    );
+    
+    if (ofertaConfig) {
+      const precioOferta = Math.round(producto.precio * (1 - ofertaConfig.descuento / 100));
+      
+      return {
+        ...producto,
+        precioOriginal: producto.precio,
+        precioOferta: precioOferta,
+        descuento: ofertaConfig.descuento,
+        tiempoRestante: ofertaConfig.tiempoRestante,
+        exclusivo: ofertaConfig.exclusivo,
+        enOferta: true
+      };
+    }
+    
+    return producto;
+  };
 
   useEffect(() => {
-    // ✅ Usar authService directamente como lo tienes configurado
     const currentUser = authService.getCurrentUser();
-    console.log('🔐 DEBUG - Usuario en ProductoDetalle:', currentUser);
     setUser(currentUser);
 
     const cargarProductoConOferta = async () => {
       try {
         setLoading(true);
+        setError(null);
         
-        // ✅ BUSCAR PRODUCTO EN LA BASE DE DATOS
         const productoDesdeBD = await dataService.getProductoById(codigo);
         
         if (productoDesdeBD) {
-          console.log('✅ Producto cargado desde BD:', productoDesdeBD);
+          const productoAdaptado = adaptarProductoDesdeBD(productoDesdeBD);
+          const productoConOferta = aplicarOfertasConfiguradas(productoAdaptado);
           
-          // ✅ APLICAR OFERTA si existe
-          const productoConOferta = aplicarOfertaAProducto(productoDesdeBD);
-          
-          const productosConStock = getProductosConStockActual([productoConOferta]);
-          const productoActualizado = productosConStock.find(p => p.codigo === codigo) || productoConOferta;
-          
-          // Aplicar oferta también al producto actualizado con stock
-          const productoFinal = aplicarOfertaAProducto(productoActualizado);
+          let productosConStock = [];
+          try {
+            productosConStock = await getProductosConStockActual([productoConOferta]);
+          } catch (stockError) {
+            productosConStock = [productoConOferta];
+          }
+
+          if (!Array.isArray(productosConStock)) {
+            productosConStock = [productoConOferta];
+          }
+
+          const productoConStock = productosConStock.find(p => p.codigo === codigo) || productoConOferta;
+          const productoFinal = aplicarOfertasConfiguradas(productoConStock);
           
           setProduct(productoFinal);
           
-          // ✅ CARGAR PRODUCTOS RELACIONADOS DESDE BD
           try {
             const todosProductos = await dataService.getProductos();
-            const productosConOfertas = getProductosConOfertas(todosProductos);
+            const productosAdaptados = todosProductos.map(adaptarProductoDesdeBD);
+            const productosConOfertas = productosAdaptados.map(aplicarOfertasConfiguradas);
+            
             const relacionados = productosConOfertas
               .filter(p => p.categoria === productoFinal.categoria && p.codigo !== codigo)
               .slice(0, 4);
+            
             setRelatedProducts(relacionados);
           } catch (relError) {
-            console.warn('⚠️ Error cargando productos relacionados:', relError);
             setRelatedProducts([]);
           }
         } else {
-          console.error('❌ Producto no encontrado en BD:', codigo);
-          navigate('/productos');
+          setError('Producto no encontrado en la base de datos');
         }
       } catch (error) {
-        console.error('💥 Error cargando producto desde BD:', error);
-        setError('Error al cargar el producto desde la base de datos');
+        setError('Error al cargar el producto desde la base de datos: ' + error.message);
       } finally {
         setLoading(false);
       }
     };
 
     cargarProductoConOferta();
-  }, [codigo, navigate]);
+  }, [codigo]);
 
-  // ✅ Escuchar cambios en la autenticación
   useEffect(() => {
     const handleAuthChange = () => {
       const currentUser = authService.getCurrentUser();
-      console.log('🔐 DEBUG - Evento authStateChanged recibido:', currentUser);
       setUser(currentUser);
     };
 
@@ -89,62 +141,62 @@ const ProductoDetalle = () => {
     };
   }, []);
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!product) return;
 
-    console.log('🛒 DEBUG - Intentando agregar al carrito. Usuario:', user);
-    console.log('🛒 DEBUG - Producto:', product.nombre);
-    console.log('🛒 DEBUG - Cantidad:', cantidad);
-
-    // Verificar si el usuario ha iniciado sesión
     if (!user) {
-      console.log('❌ DEBUG - Usuario no autenticado, redirigiendo a login');
-      alert('🔐 Debes iniciar sesión para agregar productos al carrito');
+      alert('Debes iniciar sesión para agregar productos al carrito');
       navigate('/login');
       return;
     }
 
-    // Verificar stock usando tu servicio
-    if (!verificarStockDisponible(product.codigo, cantidad)) {
-      alert('❌ No hay suficiente stock disponible');
-      return;
-    }
+    try {
+      const stockDisponible = await verificarStockDisponible(product.codigo, cantidad);
+      
+      if (!stockDisponible) {
+        const stockActual = await obtenerStockDisponible(product.codigo);
+        alert(`No hay suficiente stock disponible de ${product.nombre}. Stock actual: ${stockActual}`);
+        return;
+      }
 
-    const savedCart = localStorage.getItem('junimoCart');
-    let cartItems = savedCart ? JSON.parse(savedCart) : [];
-    
-    const existingItem = cartItems.find(item => item.codigo === product.codigo);
-    
-    let newCartItems;
-    if (existingItem) {
-      newCartItems = cartItems.map(item =>
-        item.codigo === product.codigo
-          ? { ...item, cantidad: item.cantidad + cantidad }
-          : item
-      );
-    } else {
-      newCartItems = [...cartItems, { 
-        ...product, 
-        cantidad: cantidad,
-        // ✅ Usar precio de oferta si existe, sino precio normal
-        precio: product.precioOferta || product.precio
-      }];
-    }
+      const savedCart = localStorage.getItem('junimoCart');
+      let cartItems = savedCart ? JSON.parse(savedCart) : [];
+      
+      const existingItem = cartItems.find(item => item.codigo === product.codigo);
+      
+      let newCartItems;
+      if (existingItem) {
+        newCartItems = cartItems.map(item =>
+          item.codigo === product.codigo
+            ? { 
+                ...item, 
+                cantidad: item.cantidad + cantidad,
+                subtotal: (item.cantidad + cantidad) * (product.precioOferta || product.precio)
+              }
+            : item
+        );
+      } else {
+        newCartItems = [...cartItems, { 
+          ...product, 
+          cantidad: cantidad,
+          subtotal: cantidad * (product.precioOferta || product.precio)
+        }];
+      }
 
-    localStorage.setItem('junimoCart', JSON.stringify(newCartItems));
-    window.dispatchEvent(new Event('cartUpdated'));
-    
-    // Obtener stock actualizado después de agregar al carrito
-    const stockActualizado = getProductosConStockActual().find(p => p.codigo === product.codigo)?.stock_disponible;
-    
-    setShowAlert(true);
-    setTimeout(() => setShowAlert(false), 3000);
-    
-    console.log('✅ DEBUG - Producto agregado exitosamente al carrito');
-    alert(`✅ ¡${cantidad} ${product.nombre} agregado(s) al carrito! Stock restante: ${stockActualizado}`);
-    
-    // Resetear cantidad a 1 después de agregar al carrito
-    setCantidad(1);
+      localStorage.setItem('junimoCart', JSON.stringify(newCartItems));
+      
+      window.dispatchEvent(new Event('cartUpdated'));
+      window.dispatchEvent(new Event('stockUpdated'));
+
+      setShowAlert(true);
+      setTimeout(() => setShowAlert(false), 2000);
+      
+      setCantidad(1);
+      
+    } catch (error) {
+      console.error('Error agregando al carrito:', error);
+      alert('Error al agregar producto al carrito: ' + error.message);
+    }
   };
 
   const handleRelatedProductClick = (productCode) => {
@@ -153,11 +205,6 @@ const ProductoDetalle = () => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }, 100);
   };
-
-  // ✅ DEBUG: Mostrar estado del usuario en la consola
-  useEffect(() => {
-    console.log('🔐 DEBUG - Estado user actualizado:', user);
-  }, [user]);
 
   if (loading) {
     return (
@@ -174,24 +221,15 @@ const ProductoDetalle = () => {
         <div style={{ height: '100px' }}></div>
         <Container className="text-center py-5">
           <div className="d-flex flex-column align-items-center justify-content-center py-5">
-            <span 
-              className="display-1 mb-3"
-              style={{ 
-                color: '#dedd8ff5',
-                filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.5))',
-                animation: 'spin 2s linear infinite'
-              }}
-            >
-              🌾
-            </span>
-            <h4 className="text-white fw-bold">Cargando producto desde BD...</h4>
+            <Spinner animation="border" variant="warning" style={{ width: '3rem', height: '3rem' }} />
+            <h4 className="text-white fw-bold mt-3">Cargando producto desde BD...</h4>
           </div>
         </Container>
       </div>
     );
   }
 
-  if (!product) {
+  if (error || !product) {
     return (
       <div 
         className="min-vh-100"
@@ -206,10 +244,10 @@ const ProductoDetalle = () => {
         <div style={{ height: '100px' }}></div>
         <Container className="text-center py-5">
           <Alert variant="danger" className="rounded-4">
-            <h4>❌ Producto no encontrado</h4>
+            <h4>{error || 'Producto no encontrado'}</h4>
             <p>El producto que buscas no existe en la base de datos.</p>
-            <Button variant="primary" onClick={() => navigate('/productos')}>
-              Volver a Productos
+            <Button variant="primary" onClick={() => navigate('/')}>
+              Volver a la Tienda
             </Button>
           </Alert>
         </Container>
@@ -241,7 +279,6 @@ const ProductoDetalle = () => {
       )}
 
       <Container className="py-4">
-        {/* ✅ MOSTRAR BADGE DE OFERTA EN EL HEADER */}
         {product.enOferta && (
           <div className="text-center mb-4">
             <Badge 
@@ -249,7 +286,7 @@ const ProductoDetalle = () => {
               className="fs-4 px-4 py-3 border-3 border-white fw-bold"
               style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}
             >
-              🔥 OFERTA ESPECIAL - {product.descuento}% DE DESCUENTO
+              OFERTA ESPECIAL - {product.descuento}% DE DESCUENTO
             </Badge>
           </div>
         )}
@@ -275,15 +312,6 @@ const ProductoDetalle = () => {
           />
         )}
       </Container>
-
-      <style>
-        {`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-        `}
-      </style>
     </div>
   );
 };

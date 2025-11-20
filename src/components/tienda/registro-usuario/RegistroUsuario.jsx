@@ -156,16 +156,18 @@ const RegistroUsuario = () => {
     return validacion.esValido;
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  
+  console.log('📝 Iniciando validación del formulario...');
+  
+  if (validarFormulario()) {
+    console.log('✅ Formulario válido, procediendo con registro...');
+    console.log('📦 Datos del formulario:', formData);
     
-    console.log('📝 Iniciando validación del formulario...');
-    
-    if (validarFormulario()) {
-      console.log('✅ Formulario válido, procediendo con registro...');
-      console.log('📦 Datos del formulario:', formData);
-      
-      const resultado = registroService.registrarUsuario(formData);
+    try {
+      // ✅ CORREGIDO: Agregar await
+      const resultado = await registroService.registrarUsuario(formData);
       
       console.log('🔍 Resultado del registro:', resultado);
       
@@ -202,11 +204,17 @@ const RegistroUsuario = () => {
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }, 100);
       }
-    } else {
-      console.log('❌ Formulario inválido, errores:', errores);
-      setMostrarAlerta(false);
+    } catch (error) {
+      console.error('💥 Error inesperado en registro:', error);
+      setMensajeAlerta('Error inesperado al registrar. Intente nuevamente.');
+      setRegistroExitoso(false);
+      setMostrarAlerta(true);
     }
-  };
+  } else {
+    console.log('❌ Formulario inválido, errores:', errores);
+    setMostrarAlerta(false);
+  }
+};
 
   const handleContinue = () => {
     setShowSuccessModal(false);

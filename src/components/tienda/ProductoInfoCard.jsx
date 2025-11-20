@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Badge, Form, Button, Row, Col, Alert } from 'react-bootstrap';
 import { getProductosConStockActual } from '../../utils/tienda/stockService';
-import { useNavigate } from 'react-router-dom'; // ✅ Importar useNavigate
+import { useNavigate } from 'react-router-dom';
 
 const ProductoInfoCard = ({ 
   product, 
@@ -10,30 +10,33 @@ const ProductoInfoCard = ({
   handleAddToCart, 
   formatearPrecio, 
   categoryIcons,
-  user // ✅ Recibir el estado del usuario
+  user
 }) => {
   const [stockActual, setStockActual] = useState(product.stock_disponible || product.stock);
-  const navigate = useNavigate(); // ✅ Hook para navegación
+  const navigate = useNavigate();
 
-  // Efecto para actualizar stock en tiempo real
   useEffect(() => {
-    const actualizarStock = () => {
-      const productosActualizados = getProductosConStockActual();
-      const productoActualizado = productosActualizados.find(p => p.codigo === product.codigo);
-      if (productoActualizado) {
-        setStockActual(productoActualizado.stock_disponible);
+    const actualizarStock = async () => {
+      try {
+        const productosActualizados = await getProductosConStockActual();
         
-        // Ajustar la cantidad si excede el nuevo stock disponible
-        if (cantidad > productoActualizado.stock_disponible) {
-          setCantidad(Math.max(1, productoActualizado.stock_disponible));
+        if (Array.isArray(productosActualizados)) {
+          const productoActualizado = productosActualizados.find(p => p.codigo === product.codigo);
+          if (productoActualizado) {
+            setStockActual(productoActualizado.stock_disponible);
+            
+            if (cantidad > productoActualizado.stock_disponible) {
+              setCantidad(Math.max(1, productoActualizado.stock_disponible));
+            }
+          }
         }
+      } catch (error) {
+        console.error('Error actualizando stock:', error);
       }
     };
 
-    // Actualizar inicialmente
     actualizarStock();
 
-    // Escuchar cambios en el carrito
     window.addEventListener('cartUpdated', actualizarStock);
     
     return () => {
@@ -41,9 +44,8 @@ const ProductoInfoCard = ({
     };
   }, [product.codigo, cantidad, setCantidad]);
 
-  // ✅ Función para manejar el inicio de sesión
   const handleLoginRedirect = () => {
-    alert('🔐 Debes iniciar sesión para agregar productos al carrito');
+    alert('Debes iniciar sesión para agregar productos al carrito');
     navigate('/login');
   };
 
@@ -55,7 +57,6 @@ const ProductoInfoCard = ({
         backgroundColor: '#87CEEB'
       }}
     >
-      {/* Categoría */}
       <div className="mb-4">
         <Badge 
           className="fs-6 px-3 py-2 rounded-3 border-2 border-dark fw-bold me-2"
@@ -71,21 +72,19 @@ const ProductoInfoCard = ({
             bg="warning" 
             className="fs-6 px-3 py-2 rounded-3 border-2 border-dark fw-bold text-dark"
           >
-            ⚠️ Stock Bajo
+            Stock Bajo
           </Badge>
         )}
-        {/* ✅ Badge para usuario no logueado */}
         {!user && (
           <Badge 
             bg="secondary" 
             className="fs-6 px-3 py-2 rounded-3 border-2 border-dark fw-bold text-white"
           >
-            🔐 Inicia Sesión
+            Inicia Sesión
           </Badge>
         )}
       </div>
 
-      {/* Nombre del Producto */}
       <h1 
         className="display-5 fw-bold mb-4 text-dark"
         style={{ 
@@ -96,48 +95,43 @@ const ProductoInfoCard = ({
         {product.nombre}
       </h1>
       
-     {/* Precio - ACTUALIZADO PARA MOSTRAR OFERTAS */}
-  <div className="border-bottom border-3 border-warning pb-4 mb-4">
-  {product.enOferta ? (
-    <>
-      {/* Precio original tachado */}
-      <div className="text-muted text-decoration-line-through fs-4 mb-2">
-        {formatearPrecio(product.precioOriginal)}
+      <div className="border-bottom border-3 border-warning pb-4 mb-4">
+        {product.enOferta ? (
+          <>
+            <div className="text-muted text-decoration-line-through fs-4 mb-2">
+              {formatearPrecio(product.precioOriginal)}
+            </div>
+            <span 
+              className="fw-bolder text-danger"
+              style={{ 
+                fontSize: '2.8rem',
+                fontFamily: "'Lato', sans-serif",
+                textShadow: '1px 1px 2px rgba(255,255,255,0.5)'
+              }}
+            >
+              {formatearPrecio(product.precioOferta)}
+            </span>
+            <Badge 
+              bg="danger" 
+              className="fs-6 ms-3 px-3 py-2 border-2 border-dark"
+            >
+              -{product.descuento}%
+            </Badge>
+          </>
+        ) : (
+          <span 
+            className="fw-bolder text-dark"
+            style={{ 
+              fontSize: '2.8rem',
+              fontFamily: "'Lato', sans-serif",
+              textShadow: '1px 1px 2px rgba(255,255,255,0.5)'
+            }}
+          >
+            {formatearPrecio(product.precio)}
+          </span>
+        )}
       </div>
-      {/* Precio de oferta */}
-      <span 
-        className="fw-bolder text-danger"
-        style={{ 
-          fontSize: '2.8rem',
-          fontFamily: "'Lato', sans-serif",
-          textShadow: '1px 1px 2px rgba(255,255,255,0.5)'
-        }}
-      >
-        {formatearPrecio(product.precioOferta)}
-      </span>
-      {/* Badge de descuento */}
-      <Badge 
-        bg="danger" 
-        className="fs-6 ms-3 px-3 py-2 border-2 border-dark"
-      >
-        -{product.descuento}%
-      </Badge>
-    </>
-  ) : (
-    <span 
-      className="fw-bolder text-dark"
-      style={{ 
-        fontSize: '2.8rem',
-        fontFamily: "'Lato', sans-serif",
-        textShadow: '1px 1px 2px rgba(255,255,255,0.5)'
-      }}
-    >
-      {formatearPrecio(product.precio)}
-    </span>
-  )}
-</div>
 
-      {/* Descripción */}
       <div className="mb-4">
         <h5 
           className="fw-bold mb-3 text-dark"
@@ -162,7 +156,6 @@ const ProductoInfoCard = ({
         </p>
       </div>
 
-      {/* Información de Stock - ACTUALIZADO PARA TIEMPO REAL */}
       <div className="mb-4">
         <h5 
           className="fw-bold mb-3 text-dark"
@@ -187,7 +180,7 @@ const ProductoInfoCard = ({
               textShadow: '1px 1px 2px rgba(255,255,255,0.5)'
             }}
           >
-            {stockActual > 0 ? '✅ En Stock' : '❌ Agotado'}
+            {stockActual > 0 ? 'En Stock' : 'Agotado'}
           </span>
           <span 
             className="text-dark fw-semibold"
@@ -201,11 +194,10 @@ const ProductoInfoCard = ({
         </div>
       </div>
 
-      {/* ✅ Alert para usuario no logueado */}
       {!user && (
         <Alert variant="info" className="mb-4">
           <div className="d-flex align-items-center">
-            <span className="me-2">🔐</span>
+            <span className="me-2"></span>
             <span>
               <strong>Inicia sesión</strong> para agregar productos al carrito y realizar compras.
             </span>
@@ -221,24 +213,21 @@ const ProductoInfoCard = ({
         </Alert>
       )}
 
-      {/* Selector de Cantidad y Botón de Compra */}
       <PurchaseSection 
         product={product}
         cantidad={cantidad}
         setCantidad={setCantidad}
         handleAddToCart={handleAddToCart}
-        handleLoginRedirect={handleLoginRedirect} // ✅ Nueva prop
+        handleLoginRedirect={handleLoginRedirect}
         stockActual={stockActual}
-        user={user} // ✅ Pasar el estado del usuario
+        user={user}
       />
 
-      {/* Información Adicional */}
       <AdditionalInfo />
     </Card>
   );
 };
 
-// Componente PurchaseSection actualizado con validación de autenticación
 const PurchaseSection = ({ 
   product, 
   cantidad, 
@@ -251,7 +240,6 @@ const PurchaseSection = ({
   const handleCantidadChange = (e) => {
     const value = parseInt(e.target.value) || 0;
     
-    // Validar que esté entre 1 y stockActual
     if (value < 1) {
       setCantidad(1);
     } else if (value > stockActual) {
@@ -273,35 +261,32 @@ const PurchaseSection = ({
     }
   };
 
-  // ✅ Determinar texto y acción del botón
   const getButtonConfig = () => {
-  console.log('🔐 DEBUG - getButtonConfig - user:', user); // ✅ Agregar este log
-  
-  if (!user) {
+    if (!user) {
+      return {
+        text: 'INICIAR SESIÓN PARA COMPRAR',
+        action: handleLoginRedirect,
+        disabled: false,
+        variant: 'secondary'
+      };
+    }
+    
+    if (stockActual === 0) {
+      return {
+        text: 'PRODUCTO AGOTADO',
+        action: () => {},
+        disabled: true,
+        variant: 'danger'
+      };
+    }
+    
     return {
-      text: '🔐 INICIAR SESIÓN PARA COMPRAR',
-      action: handleLoginRedirect,
+      text: `AGREGAR ${cantidad} AL CARRITO`,
+      action: handleAddToCart,
       disabled: false,
-      variant: 'secondary'
+      variant: 'warning'
     };
-  }
-  
-  if (stockActual === 0) {
-    return {
-      text: '❌ PRODUCTO AGOTADO',
-      action: () => {},
-      disabled: true,
-      variant: 'danger'
-    };
-  }
-  
-  return {
-    text: `🛒 AGREGAR ${cantidad} AL CARRITO`,
-    action: handleAddToCart,
-    disabled: false,
-    variant: 'warning'
   };
-};
 
   const buttonConfig = getButtonConfig();
 
@@ -326,13 +311,12 @@ const PurchaseSection = ({
               Cantidad
             </label>
             
-            {/* Input numérico con botones +/- */}
             <div className="d-flex align-items-center">
               <Button
                 variant="outline-secondary"
                 size="sm"
                 onClick={decrementarCantidad}
-                disabled={cantidad <= 1 || stockActual === 0 || !user} // ✅ Deshabilitar si no hay usuario
+                disabled={cantidad <= 1 || stockActual === 0 || !user}
                 style={{
                   border: '2px solid #87CEEB',
                   fontWeight: 'bold',
@@ -350,7 +334,7 @@ const PurchaseSection = ({
                 onChange={handleCantidadChange}
                 min="1"
                 max={stockActual}
-                disabled={stockActual === 0 || !user} // ✅ Deshabilitar si no hay usuario
+                disabled={stockActual === 0 || !user}
                 className="mx-2 text-center fw-bold"
                 style={{
                   border: '2px solid #87CEEB',
@@ -366,7 +350,7 @@ const PurchaseSection = ({
                 variant="outline-secondary"
                 size="sm"
                 onClick={incrementarCantidad}
-                disabled={cantidad >= stockActual || stockActual === 0 || !user} // ✅ Deshabilitar si no hay usuario
+                disabled={cantidad >= stockActual || stockActual === 0 || !user}
                 style={{
                   border: '2px solid #87CEEB',
                   fontWeight: 'bold',
@@ -379,7 +363,6 @@ const PurchaseSection = ({
               </Button>
             </div>
             
-            {/* Mensaje de stock disponible */}
             <div className="mt-2">
               <small 
                 className="text-dark fw-medium"
@@ -420,7 +403,7 @@ const PurchaseSection = ({
 const AdditionalInfo = () => (
   <div className="border-top border-3 border-warning pt-4">
     <div className="d-flex align-items-center gap-3 mb-3 p-2 rounded-3 transition-all">
-      <span className="fs-4">🚚</span>
+      <span className="fs-4"></span>
       <span 
         className="text-dark fw-medium"
         style={{ 
@@ -432,7 +415,7 @@ const AdditionalInfo = () => (
       </span>
     </div>
     <div className="d-flex align-items-center gap-3 mb-3 p-2 rounded-3 transition-all">
-      <span className="fs-4">↩️</span>
+      <span className="fs-4"></span>
       <span 
         className="text-dark fw-medium"
         style={{ 
@@ -444,7 +427,7 @@ const AdditionalInfo = () => (
       </span>
     </div>
     <div className="d-flex align-items-center gap-3 p-2 rounded-3 transition-all">
-      <span className="fs-4">🛡️</span>
+      <span className="fs-4"></span>
       <span 
         className="text-dark fw-medium"
         style={{ 

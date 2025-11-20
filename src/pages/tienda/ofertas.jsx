@@ -1,50 +1,118 @@
-// src/pages/tienda/Ofertas.jsx
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../../utils/tienda/authService';
-import { actualizarStockEnProductos } from '../../utils/tienda/stockService'; // ✅ CORREGIR IMPORT
-import OfertasHeader from '../../components/tienda/OfertasHeader'; // ✅ AGREGAR /ofertas/
-import OfertasInfoCard from '../../components/tienda/OfertasInfoCard'; // ✅ AGREGAR /ofertas/
-import OfertasGrid from '../../components/tienda/OfertasGrid'; // ✅ AGREGAR /ofertas/
-import { aplicarOfertasAProductos } from '../../utils/tienda/ofertasData';
+import { actualizarStockEnProductos } from '../../utils/tienda/stockService';
+import OfertasHeader from '../../components/tienda/OfertasHeader';
+import OfertasInfoCard from '../../components/tienda/OfertasInfoCard';
+import OfertasGrid from '../../components/tienda/OfertasGrid';
+import { ofertasConfig } from '../../utils/tienda/ofertasData';
+import { dataService } from '../../utils/dataService';
 
 const Ofertas = () => {
   const [ofertas, setOfertas] = useState([]);
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  // Función simplificada: Cargar productos con ofertas
-  const cargarOfertas = () => {
-    try {
-      // Obtener productos del localStorage
-      const productosStorage = localStorage.getItem('app_productos');
-      
-      if (productosStorage) {
-        const productos = JSON.parse(productosStorage);
-        
-        // Aplicar ofertas a los productos
-        const productosConOfertas = aplicarOfertasAProductos(productos);
-        
-        console.log('🔄 Ofertas cargadas:', productosConOfertas);
-        setOfertas(productosConOfertas);
-      } else {
-        console.log('❌ No hay productos en localStorage');
-        // Si no hay productos en localStorage, cargar desde JSON local
-        import('../../data/productos.json')
-          .then(productosData => {
-            const productosConOfertas = aplicarOfertasAProductos(productosData.default);
-            setOfertas(productosConOfertas);
-            
-            // Guardar en localStorage para futuras cargas
-            localStorage.setItem('app_productos', JSON.stringify(productosData.default));
-          })
-          .catch(error => {
-            console.error('Error cargando productos desde JSON:', error);
-          });
+  // Función para adaptar productos desde BD
+  const adaptarProductosDesdeBD = (productosBD) => {
+    return productosBD.map(producto => {
+      // Extraer nombre de categoría si es objeto
+      let categoriaNombre = producto.categoria;
+      if (typeof producto.categoria === 'object' && producto.categoria !== null) {
+        categoriaNombre = producto.categoria.nombre || producto.categoria.name || 'Sin categoría';
       }
+
+      // Adaptar nombres de campos de stock
+      const stock = producto.stock || producto.stockActual || 0;
+      const stockCritico = producto.stock_critico || producto.stockCritico || 5;
+
+      // Asegurar que la imagen tenga una ruta válida
+      let imagen = producto.imagen || producto.img || producto.url_imagen;
+      if (!imagen) {
+        imagen = '/src/assets/placeholder-producto.png';
+      }
+
+      return {
+        ...producto,
+        imagen: imagen,
+        categoria: categoriaNombre,
+        stock: stock,
+        stock_critico: stockCritico,
+        stock_disponible: stock,
+        enOferta: false,
+        precioOferta: null,
+        descuento: 0
+      };
+    });
+  };
+
+  // Función para aplicar ofertas usando tu configuración
+  const aplicarOfertasConfiguradas = (productos) => {
+    return productos.map(producto => {
+      // Buscar oferta por código exacto
+      const ofertaConfig = ofertasConfig.find(oferta => 
+        oferta.codigo === producto.codigo
+      );
+      
+      if (ofertaConfig) {
+        const precioOferta = Math.round(producto.precio * (1 - ofertaConfig.descuento / 100));
+        
+        return {
+          ...producto,
+          precioOriginal: producto.precio,
+          precioOferta: precioOferta,
+          descuento: ofertaConfig.descuento,
+          tiempoRestante: ofertaConfig.tiempoRestante,
+          exclusivo: ofertaConfig.exclusivo,
+          enOferta: true
+        };
+      }
+      
+      return producto;
+    });
+  };
+
+  // Función para obtener solo productos en oferta
+  const obtenerProductosEnOferta = (productos) => {
+    return productos.filter(producto => producto.enOferta);
+  };
+
+  // Cargar ofertas desde la base de datos
+  const cargarOfertas = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Obtener productos desde la base de datos
+      const productosDesdeBD = await dataService.getProductos();
+      
+      if (!productosDesdeBD || productosDesdeBD.length === 0) {
+        setError('No se encontraron productos en la base de datos.');
+        setOfertas([]);
+        return;
+      }
+      
+      // Adaptar productos al formato que espera la aplicación
+      const productosAdaptados = adaptarProductosDesdeBD(productosDesdeBD);
+      
+      // APLICAR OFERTAS a todos los productos
+      const productosConOfertas = aplicarOfertasConfiguradas(productosAdaptados);
+      
+      // FILTRAR SOLO LOS PRODUCTOS QUE ESTÁN EN OFERTA
+      const productosEnOferta = obtenerProductosEnOferta(productosConOfertas);
+      
+      console.log('🔄 Productos en oferta cargados:', productosEnOferta.length);
+      setOfertas(productosEnOferta);
+      
     } catch (error) {
       console.error('Error cargando ofertas:', error);
+      setError('Error al cargar las ofertas desde la base de datos.');
+      setOfertas([]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -85,10 +153,18 @@ const Ofertas = () => {
 
       <Container className="py-5">
         <OfertasHeader user={user} />
-        <OfertasInfoCard user={user} ofertasCount={ofertas.length} navigate={navigate} />
+        <OfertasInfoCard 
+          user={user} 
+          ofertasCount={ofertas.length} 
+          navigate={navigate}
+          loading={loading}
+          error={error}
+        />
         <OfertasGrid 
           ofertas={ofertas}
           user={user}
+          loading={loading}
+          error={error}
         />
       </Container>
     </div>

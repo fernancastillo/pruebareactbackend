@@ -10,7 +10,8 @@ const CategoryCard = ({ categoria, onCategoryClick }) => {
           cursor: 'pointer',
           transition: 'all 0.3s ease',
           backgroundColor: '#87CEEB',
-          backdropFilter: 'blur(10px)'
+          backdropFilter: 'blur(10px)',
+          border: '2px solid #000000'
         }}
         onClick={() => onCategoryClick(categoria)}
         onMouseEnter={(e) => {
@@ -32,18 +33,30 @@ const CategoryCard = ({ categoria, onCategoryClick }) => {
           >
             {categoria.nombre}
           </Card.Title>
-          <Card.Text>
+          
+          <div className="mb-3">
             <Badge 
               style={{ 
                 backgroundColor: '#dedd8ff5',
                 color: '#000000',
                 border: 'none'
               }} 
-              className="fs-6"
+              className="fs-6 me-1"
             >
               {categoria.cantidadProductos} producto{categoria.cantidadProductos !== 1 ? 's' : ''}
             </Badge>
-          </Card.Text>
+            
+            {/* Mostrar badge de ofertas si hay productos en oferta */}
+            {categoria.ofertasEnCategoria > 0 && (
+              <Badge 
+                bg="danger"
+                className="fs-6"
+              >
+                {categoria.ofertasEnCategoria} oferta{categoria.ofertasEnCategoria !== 1 ? 's' : ''}
+              </Badge>
+            )}
+          </div>
+          
           <Button 
             style={{ 
               backgroundColor: '#dedd8ff5',
@@ -53,7 +66,7 @@ const CategoryCard = ({ categoria, onCategoryClick }) => {
             }}
             className="mt-2"
           >
-            Ver Productos
+            Explorar
           </Button>
         </Card.Body>
       </Card>

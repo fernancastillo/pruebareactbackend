@@ -29,7 +29,6 @@ const apiCall = async (endpoint, options = {}) => {
 };
 
 export const dataService = {
-  // Ya no necesitamos initializeData ya que los datos vienen de la BD
   initializeData: () => {
     console.log('✅ Usando base de datos Oracle Cloud');
     return true;
@@ -37,7 +36,9 @@ export const dataService = {
 
   // PRODUCTOS
   getProductos: async () => {
-    return await apiCall('/productos', { method: 'GET' });
+    const productos = await apiCall('/productos', { method: 'GET' });
+    console.log('📦 Productos crudos desde BD:', productos);
+    return productos;
   },
 
   getProductoById: async (codigo) => {
@@ -180,45 +181,24 @@ export const dataService = {
     });
   },
 
-  // ✅ MÉTODOS ESPECIALES PARA ÓRDENES (implementados en frontend)
-  getOrdenesPorUsuario: async (run) => {
-    const ordenes = await dataService.getOrdenes();
-    return ordenes.filter(orden => orden.run === run);
-  },
-
-  getOrdenesPorEstado: async (estado) => {
-    const ordenes = await dataService.getOrdenes();
-    return ordenes.filter(orden => orden.estadoEnvio === estado);
-  },
-
-  // ✅ MÉTODOS ESPECIALES PARA PRODUCTOS (implementados en frontend)
+  // ✅ MÉTODOS ESPECIALES (adaptados para BD)
   getProductosPorCategoria: async (categoriaNombre) => {
-    // Primero obtener todas las categorías para encontrar el ID
-    const categorias = await dataService.getCategorias();
-    const categoria = categorias.find(cat => cat.nombre === categoriaNombre);
-    
-    if (categoria) {
-      return await dataService.getProductosByCategoria(categoria.id);
+    try {
+      // Primero obtener todas las categorías para encontrar el ID
+      const categorias = await dataService.getCategorias();
+      const categoria = categorias.find(cat => cat.nombre === categoriaNombre);
+      
+      if (categoria) {
+        return await dataService.getProductosByCategoria(categoria.id);
+      }
+      return [];
+    } catch (error) {
+      console.error('Error en getProductosPorCategoria:', error);
+      return [];
     }
-    return [];
   },
 
-  getProductosStockCritico: async () => {
-    return await dataService.getProductosStockCritico();
-  },
-
-  // ✅ MÉTODOS ESPECIALES PARA USUARIOS
-  getUsuariosPorTipo: async (tipo) => {
-    return await dataService.getUsuarioByTipo(tipo);
-  },
-
-  // ✅ Ya no necesitamos resetData ya que los datos vienen de la BD
-  resetData: () => {
-    console.log('ℹ️ Los datos ahora se gestionan desde la base de datos Oracle');
-    return true;
-  },
-
-  // ✅ VERIFICAR ESTADO DE DATOS (ahora desde BD)
+  // VERIFICAR ESTADO DE DATOS
   checkDataStatus: async () => {
     try {
       const productos = await dataService.getProductos();

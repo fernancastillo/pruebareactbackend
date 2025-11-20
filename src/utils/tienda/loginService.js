@@ -1,10 +1,23 @@
+// src/utils/tienda/loginService.js
 import { authService } from './authService';
 
 export const useLoginLogic = () => {
   const handleLogin = async (email, password) => {
     try {
-      console.log('🔄 Iniciando proceso de login...');
+      console.log('🔄 Iniciando proceso de login con BD Oracle...');
       console.log('📧 Email:', email);
+      
+      // Verificar conexión con BD primero
+      const dbStatus = await authService.checkDatabaseConnection();
+      if (!dbStatus.connected) {
+        console.error('❌ No hay conexión con la base de datos');
+        return {
+          success: false,
+          error: 'Error de conexión con el servidor. Intente más tarde.'
+        };
+      }
+      
+      console.log('✅ Estado BD:', dbStatus.message);
       
       const result = await authService.login(email, password);
       
@@ -13,12 +26,15 @@ export const useLoginLogic = () => {
       return result;
     } catch (error) {
       console.error('💥 Error en login:', error);
-      throw error;
+      return {
+        success: false,
+        error: 'Error inesperado al iniciar sesión. Por favor, intente nuevamente.'
+      };
     }
   };
 
   const getRedirectPath = (userType) => {
-    const isAdmin = userType === 'Administrador' || userType === 'Admin';
+    const isAdmin = userType === 'Administrador';
     return isAdmin ? '/admin/dashboard' : '/index';
   };
 

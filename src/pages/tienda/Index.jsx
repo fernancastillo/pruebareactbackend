@@ -4,8 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import ProductCard from '../../components/tienda/ProductCard';
 import Filters from '../../components/tienda/Filters';
 import { authService } from '../../utils/tienda/authService';
-import { getProductosConStockActual, verificarStockDisponible } from '../../utils/tienda/stockService';
-import { getProductosConOfertas, getProductosEnOferta } from '../../utils/tienda/ofertasService';
+import { verificarStockDisponible, obtenerStockDisponible, getProductosConStockActual } from '../../utils/tienda/stockService';
+import { ofertasConfig } from '../../utils/tienda/ofertasData';
 import { dataService } from '../../utils/dataService';
 
 const Index = () => {
@@ -17,63 +17,112 @@ const Index = () => {
   const [ofertasCount, setOfertasCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showSuccessNotification, setShowSuccessNotification] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [isAddingToCart, setIsAddingToCart] = useState({}); // Para prevenir clicks rápidos
 
   const navigate = useNavigate();
 
-  // Función para cargar productos con manejo de errores
+  const contarProductosEnOferta = (productos) => {
+    return productos.filter(producto => producto.enOferta).length;
+  };
+
+  const adaptarProductosDesdeBD = (productosBD) => {
+    return productosBD.map(producto => {
+      let categoriaNombre = producto.categoria;
+      if (typeof producto.categoria === 'object' && producto.categoria !== null) {
+        categoriaNombre = producto.categoria.nombre || producto.categoria.name || 'Sin categoría';
+      }
+
+      const stock = producto.stock || producto.stockActual || 0;
+      const stockCritico = producto.stock_critico || producto.stockCritico || 5;
+
+      let imagen = producto.imagen || producto.img || producto.url_imagen;
+      if (!imagen) {
+        imagen = '/src/assets/placeholder-producto.png';
+      }
+
+      return {
+        ...producto,
+        imagen: imagen,
+        categoria: categoriaNombre,
+        stock: stock,
+        stock_critico: stockCritico,
+        stock_disponible: stock,
+        enOferta: false,
+        precioOferta: null,
+        descuento: 0
+      };
+    });
+  };
+
+  const aplicarOfertasConfiguradas = (productos) => {
+    return productos.map(producto => {
+      const ofertaConfig = ofertasConfig.find(oferta => 
+        oferta.codigo === producto.codigo
+      );
+      
+      if (ofertaConfig) {
+        const precioOferta = Math.round(producto.precio * (1 - ofertaConfig.descuento / 100));
+        
+        return {
+          ...producto,
+          precioOriginal: producto.precio,
+          precioOferta: precioOferta,
+          descuento: ofertaConfig.descuento,
+          tiempoRestante: ofertaConfig.tiempoRestante,
+          exclusivo: ofertaConfig.exclusivo,
+          enOferta: true
+        };
+      }
+      
+      return producto;
+    });
+  };
+
   const loadProductsWithStockAndOffers = async () => {
     try {
       setLoading(true);
       setError(null);
       
-      console.log('🔄 Cargando productos desde base de datos Oracle...');
-      
-      // ✅ OBTENER PRODUCTOS DESDE LA BASE DE DATOS
       const productosDesdeBD = await dataService.getProductos();
       
       if (!productosDesdeBD || productosDesdeBD.length === 0) {
         const errorMsg = 'No se encontraron productos en la base de datos.';
-        console.error('❌', errorMsg);
         setError(errorMsg);
         setProducts([]);
         setFilteredProducts([]);
         return;
       }
       
-      console.log(`✅ ${productosDesdeBD.length} productos cargados desde BD`);
+      const productosAdaptados = adaptarProductosDesdeBD(productosDesdeBD);
+      const productosParaMostrar = aplicarOfertasConfiguradas(productosAdaptados);
       
-      // Obtener productos con stock real considerando el carrito
-      const productosConStock = getProductosConStockActual(productosDesdeBD);
+      const productosOferta = contarProductosEnOferta(productosParaMostrar);
+      setOfertasCount(productosOferta);
       
-      if (productosConStock.length === 0) {
-        console.warn('⚠️ No hay productos con stock disponible');
-      }
+      setProducts(productosParaMostrar);
+      setFilteredProducts(productosParaMostrar);
       
-      // ✅ APLICAR OFERTAS a los productos
-      const productosConOfertas = getProductosConOfertas(productosConStock);
-      
-      setProducts(productosConOfertas);
-      setFilteredProducts(productosConOfertas);
-      
-      // ✅ CONTAR PRODUCTOS EN OFERTA
-      const productosOferta = getProductosEnOferta(productosConOfertas);
-      setOfertasCount(productosOferta.length);
-      
-      // ✅ OBTENER CATEGORÍAS DESDE LA BD
       try {
         const categoriasBD = await dataService.getCategorias();
-        const uniqueCategories = ['all', ...new Set(categoriasBD.map(cat => cat.nombre))];
+        
+        const nombresCategorias = categoriasBD.map(cat => {
+          if (typeof cat === 'object' && cat !== null) {
+            return cat.nombre || cat.name || String(cat);
+          }
+          return String(cat);
+        });
+        
+        const uniqueCategories = ['all', ...new Set(nombresCategorias)];
         setCategories(uniqueCategories);
-        console.log(`✅ ${categoriasBD.length} categorías cargadas desde BD`);
       } catch (catError) {
-        console.warn('⚠️ Error cargando categorías, usando categorías de productos:', catError);
-        // Fallback: obtener categorías de los productos
-        const uniqueCategories = ['all', ...new Set(productosDesdeBD.map(product => product.categoria))];
+        const categoriasProductos = productosAdaptados.map(product => product.categoria);
+        const uniqueCategories = ['all', ...new Set(categoriasProductos)];
         setCategories(uniqueCategories);
       }
       
     } catch (err) {
-      console.error('💥 Error crítico cargando productos:', err);
       setError(`Error al cargar los productos: ${err.message}`);
       setProducts([]);
       setFilteredProducts([]);
@@ -82,28 +131,12 @@ const Index = () => {
     }
   };
 
+  // SOLO cargar productos una vez al inicio
   useEffect(() => {
     loadProductsWithStockAndOffers();
-    
-    // Escuchar cambios en el carrito para actualizar stock
-    const handleCartUpdate = () => {
-      loadProductsWithStockAndOffers();
-    };
-
-    // Escuchar cambios de autenticación
-    const handleAuthChange = () => {
-      loadProductsWithStockAndOffers();
-    };
-
-    window.addEventListener('cartUpdated', handleCartUpdate);
-    window.addEventListener('authStateChanged', handleAuthChange);
-    
-    return () => {
-      window.removeEventListener('cartUpdated', handleCartUpdate);
-      window.removeEventListener('authStateChanged', handleAuthChange);
-    };
   }, []);
 
+  // Actualizar filtros sin recargar productos
   useEffect(() => {
     let filtered = products;
     if (selectedCategory !== 'all') {
@@ -113,77 +146,126 @@ const Index = () => {
       filtered = filtered.filter(
         (product) =>
           product.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          product.descripcion.toLowerCase().includes(searchTerm.toLowerCase())
+          (product.descripcion && product.descripcion.toLowerCase().includes(searchTerm.toLowerCase()))
       );
     }
     setFilteredProducts(filtered);
   }, [selectedCategory, searchTerm, products]);
 
-  const handleAddToCart = (product) => {
+  const showSuccessMessage = (message) => {
+    setSuccessMessage(message);
+    setShowSuccessNotification(true);
+    setTimeout(() => {
+      setShowSuccessNotification(false);
+    }, 3000);
+  };
+
+  const handleAddToCart = async (product) => {
     const user = authService.getCurrentUser();
     if (!user) {
-      alert('🔐 Debes iniciar sesión para agregar productos al carrito');
+      alert('Debes iniciar sesión para agregar productos al carrito');
       navigate('/login');
       return;
     }
 
-    // Usar tu función verificarStockDisponible
-    if (!verificarStockDisponible(product.codigo, 1)) {
-      alert('❌ No hay stock disponible de este producto');
+    // Prevenir clicks rápidos
+    if (isAddingToCart[product.codigo]) {
       return;
     }
 
-    // Obtener el carrito actual
-    const carritoActual = JSON.parse(localStorage.getItem('junimoCart')) || [];
-    
-    // Verificar si el producto ya está en el carrito
-    const productoExistente = carritoActual.find(item => item.codigo === product.codigo);
-    
-    if (productoExistente) {
-      productoExistente.cantidad += 1;
-      productoExistente.subtotal = productoExistente.cantidad * (product.precioOferta || product.precio);
-    } else {
-      carritoActual.push({
-        ...product,
-        cantidad: 1,
-        subtotal: product.precioOferta || product.precio
-      });
+    // Bloquear botón inmediatamente
+    setIsAddingToCart(prev => ({ ...prev, [product.codigo]: true }));
+
+    try {
+      // Verificar stock inmediatamente con datos locales primero
+      const carritoActual = JSON.parse(localStorage.getItem('junimoCart')) || [];
+      const productoEnCarrito = carritoActual.find(item => item.codigo === product.codigo);
+      const cantidadEnCarrito = productoEnCarrito ? productoEnCarrito.cantidad : 0;
+      const stockDisponibleLocal = Math.max(0, product.stock - cantidadEnCarrito);
+
+      if (stockDisponibleLocal <= 0) {
+        alert(`No hay stock disponible de ${product.nombre}`);
+        return;
+      }
+
+      // Verificación adicional con el servicio
+      const stockDisponible = await verificarStockDisponible(product.codigo, 1);
+      
+      if (!stockDisponible) {
+        const stockActual = await obtenerStockDisponible(product.codigo);
+        alert(`No hay stock disponible de ${product.nombre}. Stock actual: ${stockActual}`);
+        return;
+      }
+
+      // Actualizar carrito localmente
+      let nuevoCarrito;
+      if (productoEnCarrito) {
+        nuevoCarrito = carritoActual.map(item =>
+          item.codigo === product.codigo
+            ? {
+                ...item,
+                cantidad: item.cantidad + 1,
+                subtotal: (item.cantidad + 1) * (product.precioOferta || product.precio)
+              }
+            : item
+        );
+      } else {
+        nuevoCarrito = [...carritoActual, {
+          ...product,
+          cantidad: 1,
+          subtotal: product.precioOferta || product.precio
+        }];
+      }
+
+      localStorage.setItem('junimoCart', JSON.stringify(nuevoCarrito));
+      
+      // Mostrar notificación INMEDIATAMENTE
+      showSuccessMessage(`${product.nombre} agregado al carrito`);
+
+      // Disparar eventos para actualizar otros componentes SIN recargar esta página
+      window.dispatchEvent(new Event('cartUpdated'));
+      window.dispatchEvent(new Event('stockUpdated'));
+
+      // Actualizar stock localmente en los productos sin recargar todo
+      setProducts(prevProducts => 
+        prevProducts.map(p => 
+          p.codigo === product.codigo 
+            ? { ...p, stock_disponible: Math.max(0, p.stock_disponible - 1) }
+            : p
+        )
+      );
+      
+    } catch (error) {
+      alert('Error al agregar producto al carrito: ' + error.message);
+    } finally {
+      // Liberar bloqueo después de un tiempo
+      setTimeout(() => {
+        setIsAddingToCart(prev => ({ ...prev, [product.codigo]: false }));
+      }, 1000);
     }
-
-    // Guardar en localStorage
-    localStorage.setItem('junimoCart', JSON.stringify(carritoActual));
-
-    // Disparar evento para actualizar todos los componentes
-    window.dispatchEvent(new Event('cartUpdated'));
-
-    // Recalcular stock disponible después de agregar al carrito
-    const nuevoStock = getProductosConStockActual().find(p => p.codigo === product.codigo)?.stock_disponible || 0;
-    
-    alert(`✅ ¡${product.nombre} agregado al carrito! Stock restante: ${nuevoStock}`);
   };
 
   const handleDetailsClick = (productCode) => {
     navigate(`/producto/${productCode}`);
-    setTimeout(() => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, 100);
   };
 
-  // ✅ FUNCIÓN PARA IR A OFERTAS
   const handleGoToOfertas = () => {
     navigate('/ofertas');
   };
 
-  // Función para reintentar carga
   const handleRetry = () => {
     loadProductsWithStockAndOffers();
   };
 
-  // Función para resetear datos de emergencia (ahora solo recarga)
   const handleEmergencyReset = () => {
-    if (confirm('¿Estás seguro de que quieres recargar todos los datos desde la base de datos?')) {
-      loadProductsWithStockAndOffers();
-      alert('✅ Datos recargados desde la base de datos.');
+    if (confirm('¿Estás seguro de que quieres resetear todos los datos? Esto cargará los datos iniciales.')) {
+      try {
+        dataService.resetData();
+        alert('Datos reseteados. La página se recargará.');
+        window.location.reload();
+      } catch (error) {
+        alert('Error reseteando datos: ' + error.message);
+      }
     }
   };
 
@@ -201,7 +283,24 @@ const Index = () => {
     >
       <div style={{ height: '80px' }}></div>
 
-      {/* ✅ MOSTRAR ESTADO DE CARGA */}
+      {showSuccessNotification && (
+        <div 
+          className="position-fixed top-0 end-0 m-3 p-3 rounded-3 border-3 border-success shadow-lg"
+          style={{
+            backgroundColor: '#d4edda',
+            color: '#155724',
+            zIndex: 9999,
+            maxWidth: '300px',
+            animation: 'slideInRight 0.3s ease-out'
+          }}
+        >
+          <div className="d-flex align-items-center">
+            <span className="me-2">✅</span>
+            <strong>{successMessage}</strong>
+          </div>
+        </div>
+      )}
+
       {loading && (
         <Container className="py-5 text-center">
           <div 
@@ -213,33 +312,33 @@ const Index = () => {
             }}
           >
             <Spinner animation="border" variant="warning" style={{ width: '3rem', height: '3rem' }} />
-            <span className="ms-3 text-dark fs-5 fw-bold">Cargando productos desde BD...</span>
+            <span className="ms-3 text-dark fs-5 fw-bold">Cargando productos...</span>
           </div>
         </Container>
       )}
 
-      {/* ✅ MOSTRAR ERROR */}
       {error && !loading && (
         <Container className="py-4">
           <Alert variant="danger" className="text-center rounded-4">
-            <Alert.Heading className="d-flex align-items-center justify-content-center">
-              <span className="me-2">❌</span>
+            <Alert.Heading>
               Error al Cargar Productos
             </Alert.Heading>
             <p className="mb-3">{error}</p>
             <div className="d-flex justify-content-center gap-3 flex-wrap">
               <Button variant="outline-danger" onClick={handleRetry}>
-                🔄 Reintentar Carga
+                Reintentar Carga
+              </Button>
+              <Button variant="warning" onClick={handleEmergencyReset}>
+                Resetear Datos
               </Button>
               <Button variant="secondary" onClick={() => window.location.reload()}>
-                🔃 Recargar Página
+                Recargar Página
               </Button>
             </div>
           </Alert>
         </Container>
       )}
 
-      {/* ✅ CONTENIDO PRINCIPAL - Solo mostrar si no está cargando y no hay error */}
       {!loading && !error && (
         <>
           <section className="py-4 text-center">
@@ -260,7 +359,6 @@ const Index = () => {
             </Container>
           </section>
 
-          {/* ✅ SECCIÓN DE OFERTAS DESTACADA */}
           {ofertasCount > 0 && (
             <section className="py-3">
               <Container>
@@ -281,7 +379,7 @@ const Index = () => {
                           textShadow: '2px 2px 4px rgba(0,0,0,0.5)'
                         }}
                       >
-                        🔥 ¡Ofertas Activas!
+                        Ofertas Activas
                       </h3>
                       <p className="fs-5 text-white mb-3 fw-semibold">
                         Tenemos <Badge bg="danger" className="fs-4">{ofertasCount}</Badge> productos en oferta con descuentos increíbles
@@ -292,7 +390,7 @@ const Index = () => {
                         className="fw-bold border-3 border-dark rounded-3 px-4"
                         onClick={handleGoToOfertas}
                       >
-                        🎁 Ver Todas las Ofertas
+                        Ver Todas las Ofertas
                       </Button>
                     </div>
                   </Col>
@@ -319,13 +417,17 @@ const Index = () => {
                   <p className="fs-5" style={{ color: 'rgba(255,255,255,0.9)', textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }} >
                     Descubre la magia de Stardew Valley en nuestra colección exclusiva
                   </p>
-                  {/* ✅ CONTADOR DE PRODUCTOS */}
                   <Badge 
                     bg="success" 
                     className="fs-6 px-3 py-2 mt-2"
                   >
-                    📦 {filteredProducts.length} productos encontrados
+                    {filteredProducts.length} productos encontrados
                   </Badge>
+                  {ofertasCount > 0 && (
+                    <Badge bg="danger" className="fs-6 px-3 py-2 mt-2 ms-2">
+                      {ofertasCount} en oferta
+                    </Badge>
+                  )}
                 </Col>
               </Row>
             </Container>
@@ -349,6 +451,7 @@ const Index = () => {
                       product={product}
                       handleAddToCart={handleAddToCart}
                       handleDetailsClick={handleDetailsClick}
+                      isAddingToCart={isAddingToCart[product.codigo] || false}
                     />
                   </Col>
                 ))}
@@ -390,14 +493,14 @@ const Index = () => {
                             color: '#ffffff'
                           }}
                         >
-                          🔄 Ver Todos los Productos
+                          Ver Todos los Productos
                         </Button>
                         <Button
                           variant="outline-warning"
                           className="mt-2 fw-bold"
                           onClick={handleRetry}
                         >
-                          🔃 Reintentar Carga
+                          Reintentar Carga
                         </Button>
                       </div>
                     </div>

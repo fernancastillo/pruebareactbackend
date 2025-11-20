@@ -1,5 +1,4 @@
-import { getProductosConStockActual } from './stockService';
-import { getProductosConOfertas } from './ofertasService';
+import { dataService } from '../dataService';
 
 // Función para calcular porcentaje de descuento
 export const calcularPorcentajeDescuento = (precioOriginal, precioOferta) => {
@@ -11,25 +10,58 @@ export const calcularPorcentajeDescuento = (precioOriginal, precioOferta) => {
   return Math.round(descuento);
 };
 
-// Función para cargar categorías y productos
-export const loadCategoriesAndProducts = () => {
+// Función para adaptar productos desde BD
+const adaptarProductosDesdeBD = (productosBD) => {
+  return productosBD.map(producto => {
+    // Extraer nombre de categoría si es objeto
+    let categoriaNombre = producto.categoria;
+    if (typeof producto.categoria === 'object' && producto.categoria !== null) {
+      categoriaNombre = producto.categoria.nombre || producto.categoria.name || 'Sin categoría';
+    }
+
+    // Adaptar nombres de campos de stock
+    const stock = producto.stock || producto.stockActual || 0;
+    const stockCritico = producto.stock_critico || producto.stockCritico || 5;
+
+    // Asegurar que la imagen tenga una ruta válida
+    let imagen = producto.imagen || producto.img || producto.url_imagen;
+    if (!imagen) {
+      imagen = '/src/assets/placeholder-producto.png';
+    }
+
+    return {
+      ...producto,
+      imagen: imagen,
+      categoria: categoriaNombre,
+      stock: stock,
+      stock_critico: stockCritico,
+      stock_disponible: stock,
+      enOferta: false,
+      precioOferta: null,
+      descuento: 0
+    };
+  });
+};
+
+// Función para cargar categorías y productos desde la base de datos
+export const loadCategoriesAndProducts = async () => {
   try {
-    // Obtener productos con stock y ofertas
-    const productosConStock = getProductosConStockActual();
-    const productosConOfertas = getProductosConOfertas();
+    // Obtener productos desde la base de datos
+    const productosDesdeBD = await dataService.getProductos();
     
-    // Combinar productos con ofertas aplicadas
-    const productosFinales = productosConStock.map(productoStock => {
-      const productoConOferta = productosConOfertas.find(p => p.codigo === productoStock.codigo);
-      return productoConOferta || productoStock;
-    });
+    if (!productosDesdeBD || productosDesdeBD.length === 0) {
+      return [];
+    }
+
+    // Adaptar productos al formato que espera la aplicación
+    const productosAdaptados = adaptarProductosDesdeBD(productosDesdeBD);
 
     // Obtener categorías únicas de los productos
-    const categoriasUnicas = [...new Set(productosFinales.map(product => product.categoria))];
+    const categoriasUnicas = [...new Set(productosAdaptados.map(product => product.categoria))];
     
     // Crear array de categorías con información adicional
     const categoriasConInfo = categoriasUnicas.map(categoria => {
-      const productosCategoria = productosFinales.filter(product => product.categoria === categoria);
+      const productosCategoria = productosAdaptados.filter(product => product.categoria === categoria);
       return {
         nombre: categoria,
         cantidadProductos: productosCategoria.length,
@@ -37,11 +69,10 @@ export const loadCategoriesAndProducts = () => {
       };
     });
 
-    console.log('📂 Categorías cargadas:', categoriasConInfo.length);
     return categoriasConInfo;
     
   } catch (error) {
-    console.error('💥 Error cargando categorías:', error);
+    console.error('Error cargando categorías:', error);
     return [];
   }
 };
@@ -50,4 +81,24 @@ export const loadCategoriesAndProducts = () => {
 export const getProductosPorCategoria = (categoriaNombre, categorias) => {
   const categoria = categorias.find(cat => cat.nombre === categoriaNombre);
   return categoria ? categoria.productos : [];
+};
+
+// Función para obtener todas las categorías desde la base de datos
+export const getCategoriasDesdeBD = async () => {
+  try {
+    const categoriasBD = await dataService.getCategorias();
+    
+    // Extraer solo los nombres de las categorías
+    const nombresCategorias = categoriasBD.map(cat => {
+      if (typeof cat === 'object' && cat !== null) {
+        return cat.nombre || cat.name || String(cat);
+      }
+      return String(cat);
+    });
+    
+    return [...new Set(nombresCategorias)];
+  } catch (error) {
+    console.error('Error obteniendo categorías desde BD:', error);
+    return [];
+  }
 };
