@@ -12,6 +12,7 @@ const Ordenes = () => {
     ordenes,
     ordenesFiltradas,
     loading,
+    error,
     editingOrden,
     showModal,
     filtros,
@@ -25,8 +26,8 @@ const Ordenes = () => {
   } = useOrdenes();
 
   const [showReporteModal, setShowReporteModal] = useState(false);
+  const [actionError, setActionError] = useState('');
 
-  // Aplicar el fondo al body
   useEffect(() => {
     document.body.style.backgroundImage = 'url("../src/assets/tienda/fondostardew.png")';
     document.body.style.backgroundSize = 'cover';
@@ -37,7 +38,6 @@ const Ordenes = () => {
     document.body.style.padding = '0';
     document.body.style.minHeight = '100vh';
     
-    // Limpiar cuando el componente se desmonte
     return () => {
       document.body.style.backgroundImage = '';
       document.body.style.backgroundSize = '';
@@ -51,22 +51,24 @@ const Ordenes = () => {
   }, []);
 
   const handleGenerarReporte = (formato) => {
-    if (formato === 'csv') {
-      // Mostrar modal para que el usuario elija CSV o CSV Excel
-      setShowReporteModal(true);
-    } else if (formato === 'json') {
-      // Generar directamente el JSON
-      generarReporteOrdenes('json', ordenesFiltradas);
-    } else {
-      // Cualquier otro formato (por compatibilidad futura)
-      generarReporteOrdenes(formato, ordenesFiltradas);
+    try {
+      if (formato === 'csv') {
+        setShowReporteModal(true);
+      } else {
+        generarReporteOrdenes(formato, ordenesFiltradas);
+      }
+    } catch (error) {
+      setActionError('Error al generar el reporte: ' + error.message);
     }
   };
 
   const handleSeleccionFormato = (formato) => {
-    // CORREGIDO: Usar el nuevo orden de parámetros
-    generarReporteOrdenes(formato, ordenesFiltradas);
-    setShowReporteModal(false);
+    try {
+      generarReporteOrdenes(formato, ordenesFiltradas);
+      setShowReporteModal(false);
+    } catch (error) {
+      setActionError('Error al generar el reporte: ' + error.message);
+    }
   };
 
   if (loading) {
@@ -74,8 +76,26 @@ const Ordenes = () => {
       <div className="container-fluid" style={{ padding: '20px', minHeight: '100vh' }}>
         <div className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
           <div className="spinner-border text-white" role="status">
-            <span className="visually-hidden">Cargando...</span>
+            <span className="visually-hidden">Cargando órdenes...</span>
           </div>
+          <span className="ms-2 text-white">Cargando órdenes desde Oracle...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container-fluid" style={{ padding: '20px', minHeight: '100vh' }}>
+        <div className="alert alert-danger">
+          <h4>Error al cargar órdenes</h4>
+          <p>{error}</p>
+          <button 
+            className="btn btn-primary"
+            onClick={() => window.location.reload()}
+          >
+            Reintentar
+          </button>
         </div>
       </div>
     );
@@ -83,7 +103,18 @@ const Ordenes = () => {
 
   return (
     <div className="container-fluid" style={{ padding: '20px', minHeight: '100vh' }}>
-      {/* Header */}
+      
+      {actionError && (
+        <div className="alert alert-danger alert-dismissible fade show" role="alert">
+          <strong>Error:</strong> {actionError}
+          <button 
+            type="button" 
+            className="btn-close" 
+            onClick={() => setActionError('')}
+          ></button>
+        </div>
+      )}
+
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h1 className="h3 mb-0 text-white fw-bold" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.7)' }}>
           Gestión de Órdenes
@@ -106,10 +137,8 @@ const Ordenes = () => {
         </div>
       </div>
 
-      {/* Estadísticas */}
       <OrdenesStats estadisticas={estadisticas} />
 
-      {/* Filtros */}
       <OrdenesFiltros
         filtros={filtros}
         onFiltroChange={handleFiltroChange}
@@ -120,7 +149,6 @@ const Ordenes = () => {
         }}
       />
 
-      {/* Tabla de órdenes */}
       <OrdenesTable
         ordenes={ordenesFiltradas}
         onEdit={handleEdit}
@@ -128,7 +156,6 @@ const Ordenes = () => {
         onUpdateEstado={handleUpdateEstado}
       />
 
-      {/* Modal para ver detalles de orden */}
       <OrdenModal
         show={showModal}
         orden={editingOrden}
@@ -136,7 +163,6 @@ const Ordenes = () => {
         onUpdateEstado={handleUpdateEstado}
       />
 
-      {/* Modal de reportes */}
       <ReporteModal
         show={showReporteModal}
         estadisticas={estadisticas}

@@ -1,3 +1,4 @@
+// src/utils/admin/dashboardUtils.js
 export const formatCurrency = (amount) => {
   return new Intl.NumberFormat('es-CL', {
     style: 'currency',
@@ -5,40 +6,22 @@ export const formatCurrency = (amount) => {
   }).format(amount);
 };
 
-/**
- * Formatea una fecha en formato DD/MM/YYYY
- * Maneja diferentes formatos de fecha que puedan venir del JSON
- */
 export const formatDate = (dateString) => {
   if (!dateString) return 'Fecha no disponible';
   
   try {
-    // Si la fecha ya está en formato DD/MM/YYYY, devolverla tal cual
-    if (typeof dateString === 'string' && dateString.includes('/')) {
-      const parts = dateString.split('/');
-      if (parts.length === 3) {
-        const [day, month, year] = parts;
-        // Validar que sea una fecha válida
-        const date = new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`);
-        if (!isNaN(date.getTime())) {
-          return dateString; // Ya está en el formato correcto
-        }
-      }
-    }
-    
-    // Intentar parsear como fecha ISO o otros formatos
+    // Manejar diferentes formatos de fecha desde Oracle
     const date = new Date(dateString);
     
     if (isNaN(date.getTime())) {
-      // Si no se puede parsear, intentar con formato DD-MM-YYYY
-      const altDate = new Date(dateString.split('-').reverse().join('-'));
-      if (!isNaN(altDate.getTime())) {
-        return altDate.toLocaleDateString('es-CL');
+      // Intentar con formato de Oracle SQL Date
+      const oracleDate = new Date(dateString.split(' ')[0]);
+      if (!isNaN(oracleDate.getTime())) {
+        return oracleDate.toLocaleDateString('es-CL');
       }
       return 'Fecha inválida';
     }
     
-    // Formatear a DD/MM/YYYY
     return date.toLocaleDateString('es-CL');
   } catch (error) {
     console.error('Error formateando fecha:', dateString, error);
@@ -47,22 +30,25 @@ export const formatDate = (dateString) => {
 };
 
 export const getEstadoBadge = (estado) => {
+  if (!estado) return 'bg-secondary';
+  
+  const estadoLower = estado.toLowerCase();
   const badgeClasses = {
-    'Entregado': 'bg-success',
-    'Pendiente': 'bg-warning',
-    'Enviado': 'bg-info',
-    'Cancelado': 'bg-danger'
+    'entregado': 'bg-success',
+    'pendiente': 'bg-warning',
+    'enviado': 'bg-info',
+    'cancelado': 'bg-danger',
+    'procesando': 'bg-primary'
   };
-  return badgeClasses[estado] || 'bg-secondary';
+  return badgeClasses[estadoLower] || 'bg-secondary';
 };
 
 export const calculateTasaEntrega = (entregadas, total) => {
   return total > 0 ? Math.round((entregadas / total) * 100) : 0;
 };
 
-export const getProductosPorCategoria = (productos) => {
-  return productos.reduce((acc, producto) => {
-    acc[producto.categoria] = (acc[producto.categoria] || 0) + 1;
-    return acc;
-  }, {});
+// Función auxiliar para validar datos desde Oracle
+export const validateOracleData = (data) => {
+  if (!data) return [];
+  return Array.isArray(data) ? data : [data];
 };

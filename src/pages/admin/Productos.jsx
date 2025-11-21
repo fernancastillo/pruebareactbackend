@@ -1,4 +1,3 @@
-// src/pages/admin/Productos.jsx
 import { useState, useEffect } from 'react';
 import { useProductos } from '../../utils/admin/useProductos';
 import ProductosTable from '../../components/admin/ProductosTable';
@@ -14,7 +13,6 @@ import {
   formatearFecha
 } from '../../utils/admin/reportUtils';
 
-// ✅ NUEVO: Componente para el mensaje de éxito
 const SuccessAlert = ({ message, show, onClose }) => {
   if (!show) return null;
 
@@ -41,10 +39,10 @@ const Productos = () => {
     productosFiltrados,
     categorias,
     loading,
+    error,
     editingProducto,
     showModal,
     filtros,
-    // ✅ NUEVO: Recibir los nuevos estados y funciones
     successMessage,
     showSuccessMessage,
     clearSuccessMessage,
@@ -60,10 +58,9 @@ const Productos = () => {
     handleLimpiarFiltros
   } = useProductos();
 
-  // Estado para controlar el modal de reportes
   const [showReporteModal, setShowReporteModal] = useState(false);
+  const [actionError, setActionError] = useState('');
 
-  // Aplicar el fondo al body
   useEffect(() => {
     document.body.style.backgroundImage = 'url("../src/assets/tienda/fondostardew.png")';
     document.body.style.backgroundSize = 'cover';
@@ -74,7 +71,6 @@ const Productos = () => {
     document.body.style.padding = '0';
     document.body.style.minHeight = '100vh';
     
-    // Limpiar cuando el componente se desmonte
     return () => {
       document.body.style.backgroundImage = '';
       document.body.style.backgroundSize = '';
@@ -87,29 +83,29 @@ const Productos = () => {
     };
   }, []);
 
-  const handleSave = (productoData) => {
-    if (editingProducto) {
-      const result = handleUpdate(editingProducto.codigo, productoData);
+  const handleSave = async (productoData) => {
+    try {
+      setActionError('');
+      let result;
+      
+      if (editingProducto) {
+        result = await handleUpdate(editingProducto.codigo, productoData);
+      } else {
+        result = await handleCreate(productoData);
+      }
+      
       if (!result.success) {
-        alert(result.error);
+        setActionError(result.error);
       } else {
         setTimeout(() => {
           actualizarCategorias();
         }, 100);
       }
-    } else {
-      const result = handleCreate(productoData);
-      if (!result.success) {
-        alert(result.error);
-      } else {
-        setTimeout(() => {
-          actualizarCategorias();
-        }, 100);
-      }
+    } catch (error) {
+      setActionError(`Error: ${error.message}`);
     }
   };
 
-  // Función para generar reportes
   const handleGenerarReporte = (formato = 'csv') => {
     try {
       const fecha = formatearFecha();
@@ -132,31 +128,25 @@ const Productos = () => {
       descargarArchivo(contenido, nombreArchivo, tipoMIME);
 
       const estadisticas = generarEstadisticas(productosFiltrados);
-      console.log('Estadísticas del reporte:', estadisticas);
 
     } catch (error) {
-      console.error('Error al generar reporte:', error);
-      alert('Error al generar el reporte. Por favor, intenta nuevamente.');
+      setActionError('Error al generar el reporte. Por favor, intenta nuevamente.');
     }
   };
 
-  // Función para manejar selección de formato CSV
   const handleSeleccionCSV = (formato) => {
     handleGenerarReporte(formato);
     setShowReporteModal(false);
   };
 
-  // Función para abrir modal de selección CSV
   const handleAbrirModalCSV = () => {
     setShowReporteModal(true);
   };
 
-  // Función para cerrar modal de reportes
   const handleCerrarModalReporte = () => {
     setShowReporteModal(false);
   };
 
-  // Función para manejar reporte JSON
   const handleReporteJSON = () => {
     const estadisticas = generarEstadisticas(productosFiltrados);
 
@@ -177,7 +167,6 @@ ESTADÍSTICAS DEL REPORTE:
     }
   };
 
-  // Función principal para manejar reportes
   const handleReporteSolicitado = (formato) => {
     if (formato === 'csv') {
       handleAbrirModalCSV();
@@ -191,8 +180,26 @@ ESTADÍSTICAS DEL REPORTE:
       <div className="container-fluid" style={{ padding: '20px', minHeight: '100vh' }}>
         <div className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
           <div className="spinner-border text-white" role="status">
-            <span className="visually-hidden">Cargando...</span>
+            <span className="visually-hidden">Cargando productos...</span>
           </div>
+          <span className="ms-2 text-white">Cargando productos desde Oracle...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container-fluid" style={{ padding: '20px', minHeight: '100vh' }}>
+        <div className="alert alert-danger">
+          <h4>Error al cargar productos</h4>
+          <p>{error}</p>
+          <button 
+            className="btn btn-primary"
+            onClick={() => window.location.reload()}
+          >
+            Reintentar
+          </button>
         </div>
       </div>
     );
@@ -203,14 +210,23 @@ ESTADÍSTICAS DEL REPORTE:
   return (
     <div className="container-fluid" style={{ padding: '20px', minHeight: '100vh' }}>
       
-      {/* ✅ NUEVO: Mensaje de éxito */}
       <SuccessAlert 
         message={successMessage}
         show={showSuccessMessage}
         onClose={clearSuccessMessage}
       />
 
-      {/* Header */}
+      {actionError && (
+        <div className="alert alert-danger alert-dismissible fade show" role="alert">
+          <strong>Error:</strong> {actionError}
+          <button 
+            type="button" 
+            className="btn-close" 
+            onClick={() => setActionError('')}
+          ></button>
+        </div>
+      )}
+
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h1 className="h3 mb-0 text-white fw-bold" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.7)' }}>
           Gestión de Productos
@@ -240,7 +256,6 @@ ESTADÍSTICAS DEL REPORTE:
         </div>
       </div>
 
-      {/* ✅ ESTADÍSTICAS - AHORA PRIMERO */}
       <div className="row mb-4">
         <div className="col-xl-3 col-md-6 mb-4">
           <div className="card border-left-primary shadow h-100 py-2" style={{ opacity: 0.95 }}>
@@ -323,7 +338,6 @@ ESTADÍSTICAS DEL REPORTE:
         </div>
       </div>
 
-      {/* ✅ FILTROS - AHORA DESPUÉS DE LAS ESTADÍSTICAS */}
       <ProductosFiltros
         filtros={filtros}
         categorias={categorias}
@@ -335,7 +349,6 @@ ESTADÍSTICAS DEL REPORTE:
         }}
       />
 
-      {/* Tabla de productos - usar productosFiltrados */}
       <ProductosTable
         productos={productosFiltrados}
         onEdit={handleEdit}
@@ -343,7 +356,6 @@ ESTADÍSTICAS DEL REPORTE:
         onGenerarReporte={handleReporteSolicitado}
       />
 
-      {/* Modal para agregar/editar productos */}
       <ProductoModal
         show={showModal}
         producto={editingProducto}
@@ -353,7 +365,6 @@ ESTADÍSTICAS DEL REPORTE:
         onClose={handleCloseModal}
       />
 
-      {/* Modal para reportes */}
       <ReporteModal
         show={showReporteModal}
         estadisticas={estadisticas}

@@ -2,9 +2,7 @@ import { formatCurrency, formatDate } from '../../utils/admin/dashboardUtils';
 
 const OrdenesTable = ({ ordenes, onEdit, onDelete, onUpdateEstado }) => {
   
-  // Función para manejar la eliminación de orden
   const handleEliminarOrden = async (orden) => {
-    // Mensaje de confirmación más específico
     const mensajeConfirmacion = `
 ¿Estás seguro de que quieres eliminar la orden ${orden.numeroOrden}?
 
@@ -21,14 +19,12 @@ const OrdenesTable = ({ ordenes, onEdit, onDelete, onUpdateEstado }) => {
         if (!resultado.success) {
           alert(`Error al eliminar orden: ${resultado.error}`);
         }
-        // No mostrar mensaje de éxito - eliminación silenciosa
       } catch (error) {
         alert('Error inesperado al eliminar la orden');
       }
     }
   };
 
-  // Función para obtener el texto y clase del badge según el estado
   const getEstadoInfo = (estado) => {
     const estadoMap = {
       'Pendiente': { 
@@ -66,7 +62,6 @@ const OrdenesTable = ({ ordenes, onEdit, onDelete, onUpdateEstado }) => {
         <h6 className="m-0 font-weight-bold text-primary">Lista de Órdenes</h6>
       </div>
       <div className="card-body">
-        {/* Estilos personalizados para todos los badges */}
         <style>
           {`
             .pendiente-custom {
@@ -139,17 +134,15 @@ const OrdenesTable = ({ ordenes, onEdit, onDelete, onUpdateEstado }) => {
                         >
                           <i className="bi bi-eye"></i>
                         </button>
-                        {/* ✅ NUEVO BOTÓN ELIMINAR */}
                         <button
                           className="btn btn-danger"
                           onClick={() => handleEliminarOrden(orden)}
                           title="Eliminar orden"
-                          disabled={orden.estadoEnvio === 'Entregado'} // Deshabilitar para órdenes entregadas
+                          disabled={orden.estadoEnvio === 'Entregado'}
                         >
                           <i className="bi bi-trash"></i>
                         </button>
                       </div>
-                      {/* Mensaje para órdenes entregadas */}
                       {orden.estadoEnvio === 'Entregado' && (
                         <small className="text-muted d-block mt-1">
                           No se puede eliminar

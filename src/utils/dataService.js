@@ -1,4 +1,3 @@
-// utils/dataService.js
 const API_BASE_URL = 'http://localhost:8094/v1';
 
 const apiCall = async (endpoint, options = {}) => {

@@ -1,5 +1,6 @@
+// src/components/admin/Dashboard.jsx
 import { useEffect } from 'react';
-import { authService } from '../../utils/tienda/auth';
+import { authService } from '../../utils/tienda/authService';
 import { useDashboardData } from '../../utils/admin/useDashboardData';
 import DashboardStats from '../../components/admin/DashboardStats';
 import StockCriticoAlert from '../../components/admin/StockCriticoAlert';
@@ -7,7 +8,7 @@ import UltimasOrdenes from '../../components/admin/UltimasOrdenes';
 import { calculateTasaEntrega } from '../../utils/admin/dashboardUtils';
 
 const Dashboard = () => {
-  const { stats, productosStockCritico, ultimasOrdenes, loading } = useDashboardData();
+  const { stats, productosStockCritico, ultimasOrdenes, loading, error } = useDashboardData();
 
   // Aplicar el fondo al body
   useEffect(() => {
@@ -20,7 +21,6 @@ const Dashboard = () => {
     document.body.style.padding = '0';
     document.body.style.minHeight = '100vh';
     
-    // Limpiar cuando el componente se desmonte
     return () => {
       document.body.style.backgroundImage = '';
       document.body.style.backgroundSize = '';
@@ -38,8 +38,26 @@ const Dashboard = () => {
       <div className="container-fluid" style={{ padding: '20px', minHeight: '100vh' }}>
         <div className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
           <div className="spinner-border text-white" role="status">
-            <span className="visually-hidden">Cargando...</span>
+            <span className="visually-hidden">Cargando datos del dashboard...</span>
           </div>
+          <span className="ms-2 text-white">Cargando dashboard...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container-fluid" style={{ padding: '20px', minHeight: '100vh' }}>
+        <div className="alert alert-danger">
+          <h4>Error al cargar el dashboard</h4>
+          <p>{error}</p>
+          <button 
+            className="btn btn-primary"
+            onClick={() => window.location.reload()}
+          >
+            Reintentar
+          </button>
         </div>
       </div>
     );
@@ -52,7 +70,7 @@ const Dashboard = () => {
       {/* Header del Dashboard */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h1 className="h3 mb-0 text-white fw-bold" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.7)' }}>
-          Dashboard
+          Dashboard - Oracle Cloud
         </h1>
         <div className="text-white fw-medium" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.7)' }}>
           Bienvenido, <strong>{authService.getCurrentUser()?.nombre || 'Administrador'}</strong>
@@ -75,28 +93,31 @@ const Dashboard = () => {
       </div>
 
       {/* Estadísticas Adicionales */}
-      <div className="row">
+      <div className="row mt-4">
         <div className="col-lg-4 mb-4">
           <div className="card bg-primary text-white shadow-lg" style={{ opacity: 0.95 }}>
             <div className="card-body">
               <div className="text-white-50 small">Órdenes Entregadas</div>
               <div className="h2 mb-0">{stats.ordenesEntregadas}</div>
+              <small>De {stats.totalOrdenes} total</small>
             </div>
           </div>
         </div>
         <div className="col-lg-4 mb-4">
           <div className="card bg-success text-white shadow-lg" style={{ opacity: 0.95 }}>
             <div className="card-body">
-              <div className="text-white-50 small">Total Órdenes</div>
-              <div className="h2 mb-0">{stats.totalOrdenes}</div>
+              <div className="text-white-50 small">Tasa de Entrega</div>
+              <div className="h2 mb-0">{tasaEntrega}%</div>
+              <small>Eficiencia en entregas</small>
             </div>
           </div>
         </div>
         <div className="col-lg-4 mb-4">
           <div className="card bg-info text-white shadow-lg" style={{ opacity: 0.95 }}>
             <div className="card-body">
-              <div className="text-white-50 small">Tasa de Entrega</div>
-              <div className="h2 mb-0">{tasaEntrega}%</div>
+              <div className="text-white-50 small">Stock Crítico</div>
+              <div className="h2 mb-0">{productosStockCritico.length}</div>
+              <small>Productos que necesitan atención</small>
             </div>
           </div>
         </div>
