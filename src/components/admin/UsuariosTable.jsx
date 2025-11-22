@@ -1,7 +1,7 @@
 import { formatCurrency, formatDate } from '../../utils/admin/dashboardUtils';
 
 const UsuariosTable = ({ usuarios, onEdit, onDelete }) => {
-  
+
   const handleEliminarUsuario = async (usuario) => {
     // Verificar si es administrador
     if (usuario.tipo === 'Admin') {
@@ -43,7 +43,11 @@ const UsuariosTable = ({ usuarios, onEdit, onDelete }) => {
   };
 
   const getTipoBadgeClass = (tipo) => {
-    return tipo === 'Admin' ? 'bg-danger text-white' : 'bg-info text-white';
+    return tipo === 'Admin'
+      ? 'bg-danger text-white'
+      : tipo === 'Vendedor'
+        ? 'bg-success text-white'
+        : 'bg-info text-white';
   };
 
   const getComprasBadgeClass = (compras) => {
@@ -139,7 +143,7 @@ const UsuariosTable = ({ usuarios, onEdit, onDelete }) => {
             </tbody>
           </table>
         </div>
-        
+
         {usuarios.length === 0 && (
           <div className="text-center py-4">
             <i className="bi bi-people fa-3x text-muted mb-3"></i>

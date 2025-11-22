@@ -1,26 +1,6 @@
 import { useState, useEffect } from 'react';
 import { dataService } from '../dataService';
 
-const getCategorias = () => {
-  const categoriasGuardadas = localStorage.getItem('admin_categorias');
-  const categoriasBase = [
-    'Accesorios',
-    'Decoración',
-    'Guías',
-    'Juego De Mesa',
-    'Mods Digitales',
-    'Peluches',
-    'Polera Personalizada'
-  ];
-  
-  if (categoriasGuardadas) {
-    const categoriasPersonalizadas = JSON.parse(categoriasGuardadas);
-    return [...new Set([...categoriasBase, ...categoriasPersonalizadas])];
-  }
-  
-  return categoriasBase;
-};
-
 const guardarCategoria = (nuevaCategoria) => {
   const categoriasGuardadas = localStorage.getItem('admin_categorias');
   let categoriasPersonalizadas = [];
@@ -180,7 +160,7 @@ const generarCodigo = (categoria, productos) => {
 export const useProductos = () => {
   const [productos, setProductos] = useState([]);
   const [productosFiltrados, setProductosFiltrados] = useState([]);
-  const [categorias, setCategorias] = useState(getCategorias());
+  const [categorias, setCategorias] = useState([]);
   const [categoriasCompletas, setCategoriasCompletas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingProducto, setEditingProducto] = useState(null);
@@ -222,12 +202,35 @@ export const useProductos = () => {
       const productosNormalizados = normalizarProductos(productosResponse);
       
       setProductos(productosNormalizados);
-      setCategorias(getCategorias());
-      setCategoriasCompletas(categoriasResponse || []);
+      
+      if (categoriasResponse && Array.isArray(categoriasResponse)) {
+        const nombresCategorias = categoriasResponse.map(cat => cat.nombre);
+        setCategorias(nombresCategorias);
+        setCategoriasCompletas(categoriasResponse);
+      } else {
+        const categoriasGuardadas = localStorage.getItem('admin_categorias');
+        const categoriasBase = [
+          'Accesorios',
+          'Decoración',
+          'Guías',
+          'Juego De Mesa',
+          'Mods Digitales',
+          'Peluches',
+          'Polera Personalizada'
+        ];
+        
+        if (categoriasGuardadas) {
+          const categoriasPersonalizadas = JSON.parse(categoriasGuardadas);
+          setCategorias([...new Set([...categoriasBase, ...categoriasPersonalizadas])]);
+        } else {
+          setCategorias(categoriasBase);
+        }
+      }
       
     } catch (error) {
       setError(`Error al cargar productos: ${error.message}`);
       setProductos([]);
+      setCategorias([]);
       setCategoriasCompletas([]);
     } finally {
       setLoading(false);
@@ -248,6 +251,7 @@ export const useProductos = () => {
       
       if (nuevaCategoria) {
         setCategoriasCompletas(prev => [...prev, nuevaCategoria]);
+        setCategorias(prev => [...prev, nombreCategoria]);
         return nuevaCategoria;
       }
       
@@ -272,6 +276,25 @@ export const useProductos = () => {
     };
     
     return productoParaBackend;
+  };
+
+  const guardarCategoriaEnBD = async (nuevaCategoria) => {
+    try {
+      const categoriaCreada = await dataService.addCategoria({
+        nombre: nuevaCategoria
+      });
+      
+      if (categoriaCreada) {
+        setCategorias(prev => [...new Set([...prev, nuevaCategoria])]);
+        setCategoriasCompletas(prev => [...prev, categoriaCreada]);
+        return true;
+      }
+      
+      return guardarCategoria(nuevaCategoria);
+      
+    } catch (error) {
+      return guardarCategoria(nuevaCategoria);
+    }
   };
 
   const aplicarFiltros = () => {
@@ -395,7 +418,7 @@ export const useProductos = () => {
   const handleCreate = async (productoData) => {
     try {
       if (productoData.esNuevaCategoria && productoData.nuevaCategoria) {
-        guardarCategoria(productoData.nuevaCategoria);
+        await guardarCategoriaEnBD(productoData.nuevaCategoria);
         productoData.categoria = productoData.nuevaCategoria;
       }
       
@@ -425,7 +448,7 @@ export const useProductos = () => {
   const handleUpdate = async (codigo, productoData) => {
     try {
       if (productoData.esNuevaCategoria && productoData.nuevaCategoria) {
-        guardarCategoria(productoData.nuevaCategoria);
+        await guardarCategoriaEnBD(productoData.nuevaCategoria);
         productoData.categoria = productoData.nuevaCategoria;
       }
       
@@ -477,7 +500,7 @@ export const useProductos = () => {
   };
 
   const actualizarCategorias = () => {
-    setCategorias(getCategorias());
+    loadProductos();
   };
 
   return {

@@ -1,4 +1,3 @@
-// src/utils/admin/useUsuarios.js
 import { useState, useEffect, useCallback } from 'react';
 import { usuarioService } from './usuarioService';
 import { calcularEstadisticasUsuarios, aplicarFiltrosUsuarios } from './usuarioStats';
@@ -18,7 +17,6 @@ export const useUsuarios = () => {
     tipo: ''
   });
 
-  // Estados para mensajes
   const [successMessage, setSuccessMessage] = useState('');
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [error, setError] = useState(null);
@@ -26,7 +24,6 @@ export const useUsuarios = () => {
 
   useEffect(() => {
     loadUsuarios();
-    verificarConexion();
   }, []);
 
   useEffect(() => {
@@ -38,7 +35,6 @@ export const useUsuarios = () => {
     try {
       const info = await usuarioService.verificarConexion();
       setConexionInfo(info);
-      console.log('Info conexión:', info);
     } catch (error) {
       setConexionInfo({
         conectado: false,
@@ -51,14 +47,11 @@ export const useUsuarios = () => {
     try {
       setLoading(true);
       setError(null);
-      console.log('Cargando usuarios desde base de datos...');
       
       const data = await usuarioService.getUsuarios();
       setUsuarios(data);
       
-      console.log('Usuarios cargados exitosamente:', data.length);
     } catch (error) {
-      console.error('Error cargando usuarios:', error);
       setError(error.message);
       setUsuarios([]);
     } finally {
@@ -86,8 +79,6 @@ export const useUsuarios = () => {
 
   const handleUpdateUsuario = async (run, datosActualizados) => {
     try {
-      console.log('Iniciando actualización de usuario:', run);
-      
       const usuarioOriginal = usuarios.find(u => u.run.toString() === run.toString());
       if (usuarioOriginal && usuarioOriginal.tipo === 'Admin') {
         throw new Error('No se pueden modificar usuarios administradores');
@@ -96,7 +87,7 @@ export const useUsuarios = () => {
       await usuarioService.updateUsuario(run, datosActualizados);
       await loadUsuarios();
       
-      setSuccessMessage('¡Usuario actualizado con éxito!');
+      setSuccessMessage('Usuario actualizado con éxito');
       setShowSuccessMessage(true);
       
       setTimeout(() => {
@@ -104,15 +95,12 @@ export const useUsuarios = () => {
       }, 3000);
       
     } catch (error) {
-      console.error('Error actualizando usuario:', error);
       throw error;
     }
   };
 
   const handleDelete = async (run) => {
     try {
-      console.log('Iniciando eliminación de usuario:', run);
-      
       const usuario = usuarios.find(u => u.run.toString() === run.toString());
       if (usuario && usuario.tipo === 'Admin') {
         throw new Error('No se pueden eliminar usuarios administradores');
@@ -121,7 +109,7 @@ export const useUsuarios = () => {
       await usuarioService.deleteUsuario(run);
       await loadUsuarios();
       
-      setSuccessMessage('¡Usuario eliminado con éxito!');
+      setSuccessMessage('Usuario eliminado con éxito');
       setShowSuccessMessage(true);
       
       setTimeout(() => {
@@ -130,7 +118,6 @@ export const useUsuarios = () => {
       
       return { success: true };
     } catch (error) {
-      console.error('Error eliminando usuario:', error);
       return { success: false, error: error.message };
     }
   };
@@ -147,9 +134,6 @@ export const useUsuarios = () => {
 
   const handleCreateUsuario = async (usuarioData) => {
     try {
-      console.log('Iniciando creación de usuario:', usuarioData);
-      
-      // Verificar si el RUN ya existe
       const usuarioExistente = await usuarioService.getUsuarioByRun(usuarioData.run);
       if (usuarioExistente) {
         throw new Error('Ya existe un usuario con este RUN');
@@ -159,7 +143,7 @@ export const useUsuarios = () => {
       await loadUsuarios();
       setShowCreateModal(false);
       
-      setSuccessMessage('¡Usuario creado con éxito!');
+      setSuccessMessage('Usuario creado con éxito');
       setShowSuccessMessage(true);
       
       setTimeout(() => {
@@ -167,7 +151,6 @@ export const useUsuarios = () => {
       }, 3000);
       
     } catch (error) {
-      console.error('Error creando usuario:', error);
       throw error;
     }
   };
@@ -202,7 +185,6 @@ export const useUsuarios = () => {
   const estadisticas = calcularEstadisticasUsuarios(usuarios);
 
   return {
-    // Estados
     usuarios,
     usuariosFiltrados,
     loading,
@@ -214,14 +196,10 @@ export const useUsuarios = () => {
     estadisticas,
     error,
     conexionInfo,
-    
-    // Mensajes
     successMessage,
     showSuccessMessage,
     clearSuccessMessage,
     clearError,
-    
-    // Acciones
     handleEdit,
     handleUpdateUsuario,
     handleDelete,
@@ -232,8 +210,6 @@ export const useUsuarios = () => {
     handleFiltroChange,
     handleLimpiarFiltros,
     refreshData,
-    
-    // Aliases
     onEdit: handleEdit,
     onUpdate: handleUpdateUsuario,
     onDelete: handleDelete,

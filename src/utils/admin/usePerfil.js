@@ -1,7 +1,7 @@
-// src/utils/admin/usePerfil.js
 import { useState, useEffect } from 'react';
-import { authService } from '../tienda/auth';
+import { authService } from '../tienda/authService';
 import { dataService } from '../dataService';
+import { usuarioService } from './usuarioService';
 
 export const usePerfil = () => {
   const [usuario, setUsuario] = useState(null);
@@ -15,14 +15,13 @@ export const usePerfil = () => {
     cargarPerfil();
   }, []);
 
-  const cargarPerfil = () => {
+  const cargarPerfil = async () => {
     try {
       setLoading(true);
       const usuarioActual = authService.getCurrentUser();
       
       if (usuarioActual) {
-        const usuarios = dataService.getUsuarios();
-        const usuarioCompleto = usuarios.find(u => u.run === usuarioActual.id);
+        const usuarioCompleto = await usuarioService.getUsuarioByRun(usuarioActual.id);
         
         if (usuarioCompleto) {
           setUsuario(usuarioCompleto);
@@ -38,11 +37,12 @@ export const usePerfil = () => {
             password: '',
             confirmarPassword: ''
           });
+        } else {
+          setMensaje({ tipo: 'error', texto: 'Usuario no encontrado en la base de datos' });
         }
       }
     } catch (error) {
-      console.error('Error cargando perfil:', error);
-      setMensaje({ tipo: 'error', texto: 'Error al cargar el perfil' });
+      setMensaje({ tipo: 'error', texto: 'Error al cargar el perfil desde la base de datos' });
     } finally {
       setLoading(false);
     }
@@ -61,61 +61,61 @@ export const usePerfil = () => {
     
     setGuardando(true);
     try {
-      const usuarios = dataService.getUsuarios();
-      const usuarioIndex = usuarios.findIndex(u => u.run === usuario.run);
-      
-      if (usuarioIndex !== -1) {
-        // Validar email único (si se está modificando)
-        if (formData.correo && formData.correo !== usuarios[usuarioIndex].correo) {
-          const emailExistente = usuarios.find(u => u.correo === formData.correo && u.run !== usuario.run);
-          if (emailExistente) {
-            throw new Error('Ya existe un usuario con este email');
-          }
-        }
-
-        const datosActualizados = {
-          nombre: formData.nombre.trim(),
-          apellidos: formData.apellidos.trim(),
-          correo: formData.correo.trim(),
-          telefono: formData.telefono ? formData.telefono.replace(/\s/g, '') : '',
-          direccion: formData.direccion || '',
-          comuna: formData.comuna || '',
-          region: formData.region || '',
-          fecha_nacimiento: formData.fecha_nacimiento || ''
-        };
-
-        // Solo actualizar contraseña si se proporcionó una nueva
-        if (formData.password && formData.password.trim()) {
-          datosActualizados.contrasenha = formData.password;
-        }
-
-        usuarios[usuarioIndex] = {
-          ...usuarios[usuarioIndex],
-          ...datosActualizados
-        };
-        
-        localStorage.setItem('app_usuarios', JSON.stringify(usuarios));
-        
-        const usuarioActualizado = usuarios[usuarioIndex];
-        setUsuario(usuarioActualizado);
-        
-        const userData = {
-          id: usuarioActualizado.run,
-          nombre: usuarioActualizado.nombre,
-          email: usuarioActualizado.correo,
-          type: usuarioActualizado.tipo,
-          loginTime: new Date().toISOString()
-        };
-        
-        localStorage.setItem('auth_user', JSON.stringify(userData));
-        
-        setShowModal(false);
-        setMensaje({ tipo: 'success', texto: 'Perfil actualizado correctamente' });
-        
-        setTimeout(() => setMensaje({ tipo: '', texto: '' }), 3000);
+      const usuarioActual = authService.getCurrentUser();
+      if (!usuarioActual || !usuario) {
+        throw new Error('Usuario no autenticado');
       }
+
+      if (formData.correo && formData.correo !== usuario.correo) {
+        const emailExistente = await usuarioService.verificarEmailExistente(formData.correo);
+        if (emailExistente) {
+          throw new Error('Ya existe un usuario con este email');
+        }
+      }
+
+      const datosActualizados = {
+        run: usuario.run,
+        nombre: formData.nombre.trim(),
+        apellidos: formData.apellidos.trim(),
+        correo: formData.correo.trim(),
+        telefono: formData.telefono ? parseInt(formData.telefono.replace(/\s/g, '')) : null,
+        direccion: formData.direccion.trim(),
+        comuna: formData.comuna || '',
+        region: formData.region || '',
+        fecha_nacimiento: formData.fecha_nacimiento || '',
+        tipo: usuario.tipo,
+        contrasenha: formData.password && formData.password.trim() 
+          ? await usuarioService.hashPasswordSHA256(formData.password)
+          : usuario.contrasenha
+      };
+
+      await usuarioService.updateUsuario(usuario.run, datosActualizados);
+      
+      const usuarioActualizado = await usuarioService.getUsuarioByRun(usuario.run);
+      setUsuario(usuarioActualizado);
+      
+      const userData = {
+        id: usuarioActualizado.run,
+        nombre: usuarioActualizado.nombre,
+        email: usuarioActualizado.correo,
+        type: usuarioActualizado.tipo,
+        loginTime: new Date().toISOString()
+      };
+      
+      localStorage.setItem('auth_user', JSON.stringify(userData));
+      
+      setFormData(prev => ({
+        ...prev,
+        password: '',
+        confirmarPassword: ''
+      }));
+      
+      setShowModal(false);
+      setMensaje({ tipo: 'success', texto: 'Perfil actualizado correctamente' });
+      
+      setTimeout(() => setMensaje({ tipo: '', texto: '' }), 3000);
+      
     } catch (error) {
-      console.error('Error actualizando perfil:', error);
       setMensaje({ tipo: 'error', texto: error.message || 'Error al actualizar el perfil' });
     } finally {
       setGuardando(false);
@@ -123,47 +123,44 @@ export const usePerfil = () => {
   };
 
   const handleDelete = async () => {
-    // Verificar si hay al menos otro administrador
-    const usuarios = dataService.getUsuarios();
-    const otrosAdmins = usuarios.filter(u => 
-      u.tipo === 'Admin' && u.run !== usuario.run
-    );
-
-    if (otrosAdmins.length === 0) {
-      setMensaje({ 
-        tipo: 'error', 
-        texto: 'No se puede eliminar el perfil. Debe haber al menos otro usuario administrador en el sistema.' 
-      });
-      return;
-    }
-
-    const confirmacion = window.confirm(
-      `¿Estás seguro de que quieres eliminar tu perfil?\n\n` +
-      `• Nombre: ${usuario.nombre} ${usuario.apellidos}\n` +
-      `• RUN: ${usuario.run}\n` +
-      `• Email: ${usuario.correo}\n\n` +
-      `⚠️ Esta acción no se puede deshacer.`
-    );
-
-    if (!confirmacion) return;
+    if (!usuario) return;
 
     try {
-      const success = dataService.deleteUsuario(usuario.run);
-      
-      if (success) {
+      const usuarios = await usuarioService.getUsuarios();
+      const otrosAdmins = usuarios.filter(u => 
+        u.tipo === 'Admin' && u.run !== usuario.run
+      );
+
+      if (otrosAdmins.length === 0) {
         setMensaje({ 
-          tipo: 'success', 
-          texto: 'Perfil eliminado correctamente. Serás redirigido al login.' 
+          tipo: 'error', 
+          texto: 'No se puede eliminar el perfil. Debe haber al menos otro usuario administrador en el sistema.' 
         });
-        
-        setTimeout(() => {
-          authService.logout();
-        }, 2000);
-      } else {
-        setMensaje({ tipo: 'error', texto: 'Error al eliminar el perfil' });
+        return;
       }
+
+      const confirmacion = window.confirm(
+        `¿Estás seguro de que quieres eliminar tu perfil?\n\n` +
+        `• Nombre: ${usuario.nombre} ${usuario.apellidos}\n` +
+        `• RUN: ${usuario.run}\n` +
+        `• Email: ${usuario.correo}\n\n` +
+        `Esta acción no se puede deshacer.`
+      );
+
+      if (!confirmacion) return;
+
+      await usuarioService.deleteUsuario(usuario.run);
+      
+      setMensaje({ 
+        tipo: 'success', 
+        texto: 'Perfil eliminado correctamente. Serás redirigido al login.' 
+      });
+      
+      setTimeout(() => {
+        authService.logout();
+      }, 2000);
+      
     } catch (error) {
-      console.error('Error eliminando perfil:', error);
       setMensaje({ tipo: 'error', texto: error.message || 'Error al eliminar el perfil' });
     }
   };

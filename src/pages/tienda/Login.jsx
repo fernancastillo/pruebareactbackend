@@ -57,10 +57,6 @@ const Login = () => {
       const result = await handleLogin(formData.email, formData.password);
       
       if (result.success) {
-        console.log('✅ Login exitoso');
-        console.log('👤 Usuario logueado:', result.user);
-        console.log('👤 Tipo de usuario normalizado:', result.user.type);
-        
         // Guardar resultado para mostrar en el modal
         setLoginResult({
           success: true,
@@ -69,7 +65,6 @@ const Login = () => {
         });
         setShowSuccessModal(true);
       } else {
-        console.log('❌ Error en login:', result.error);
         setLoginResult({
           success: false,
           error: result.error
@@ -77,7 +72,6 @@ const Login = () => {
         setShowErrorModal(true);
       }
     } catch (err) {
-      console.error('💥 Error en login:', err);
       setLoginResult({
         success: false,
         error: 'Error al iniciar sesión. Por favor, intenta nuevamente.'
@@ -95,7 +89,6 @@ const Login = () => {
     const userType = authService.getUserType();
     const finalRedirectTo = getRedirectPath(userType);
     
-    console.log('🔄 Redirección final a:', finalRedirectTo);
     navigate(finalRedirectTo, { replace: true });
   };
 

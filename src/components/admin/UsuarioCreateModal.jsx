@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Modal, Form, Button, Row, Col, InputGroup, Alert } from 'react-bootstrap';
 import regionesComunasData from '../../data/regiones_comunas.json';
 
 const UsuarioCreateModal = ({ show, usuario, onSave, onClose }) => {
@@ -11,21 +12,48 @@ const UsuarioCreateModal = ({ show, usuario, onSave, onClose }) => {
     direccion: '',
     comuna: '',
     region: '',
-    fecha_nacimiento: '',
     tipo: 'Cliente',
+    fecha_nacimiento: '',
     password: '',
     confirmarPassword: ''
   });
 
-  const [errores, setErrores] = useState({});
-  const [cargando, setCargando] = useState(false);
-  const [mostrarPassword, setMostrarPassword] = useState(false);
-  const [mostrarConfirmarPassword, setMostrarConfirmarPassword] = useState(false);
+  const [errors, setErrors] = useState({});
   const [comunasFiltradas, setComunasFiltradas] = useState([]);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
-  // Resetear el formulario cuando se abre/cierra el modal
   useEffect(() => {
-    if (show) {
+    if (usuario) {
+      // Modo edición
+      setFormData({
+        run: usuario.run || '',
+        nombre: usuario.nombre || '',
+        apellidos: usuario.apellidos || '',
+        correo: usuario.correo || usuario.email || '',
+        telefono: usuario.telefono || '',
+        direccion: usuario.direccion || '',
+        comuna: usuario.comuna || '',
+        region: usuario.region || '',
+        tipo: usuario.tipo || 'Cliente',
+        fecha_nacimiento: usuario.fecha_nacimiento || '',
+        password: '', // No mostrar contraseña en edición por seguridad
+        confirmarPassword: ''
+      });
+
+      // Si hay región seleccionada, cargar sus comunas
+      if (usuario.region) {
+        const regionEncontrada = regionesComunasData.regiones.find(
+          r => r.nombre === usuario.region
+        );
+        if (regionEncontrada) {
+          setComunasFiltradas(regionEncontrada.comunas);
+        }
+      }
+    } else {
+      // Modo creación - resetear formulario
       setFormData({
         run: '',
         nombre: '',
@@ -35,21 +63,20 @@ const UsuarioCreateModal = ({ show, usuario, onSave, onClose }) => {
         direccion: '',
         comuna: '',
         region: '',
-        fecha_nacimiento: '',
         tipo: 'Cliente',
+        fecha_nacimiento: '',
         password: '',
         confirmarPassword: ''
       });
-      setErrores({});
-      setMostrarPassword(false);
-      setMostrarConfirmarPassword(false);
       setComunasFiltradas([]);
+      setErrors({});
+      setSubmitError('');
     }
-  }, [show]);
+  }, [usuario, show]);
 
   // Función para validar RUN con algoritmo módulo 11
   const validarRUN = (run) => {
-    if (!run.trim()) return 'El RUN es obligatorio';
+    if (!run.trim()) return 'El RUN es requerido';
     
     // Solo números, sin puntos ni dígito verificador
     if (!/^\d+$/.test(run)) {
@@ -61,48 +88,18 @@ const UsuarioCreateModal = ({ show, usuario, onSave, onClose }) => {
       return 'El RUN debe tener entre 8 y 9 dígitos';
     }
     
-    // Validar con algoritmo módulo 11
-    const runStr = run.padStart(9, '0'); // Asegurar 9 dígitos para cálculo
-    const factores = [3, 2, 7, 6, 5, 4, 3, 2];
-    let suma = 0;
-    
-    for (let i = 0; i < 8; i++) {
-      suma += parseInt(runStr[i]) * factores[i];
-    }
-    
-    const resto = suma % 11;
-    const digitoVerificador = 11 - resto;
-    
-    // Validar dígito verificador
-    let digitoEsperado;
-    if (digitoVerificador === 11) {
-      digitoEsperado = 0;
-    } else if (digitoVerificador === 10) {
-      digitoEsperado = 'K';
-    } else {
-      digitoEsperado = digitoVerificador;
-    }
-    
-    // El RUN sin dígito verificador debe ser válido
-    if (digitoEsperado === 'K') {
-      // RUN válido pero con K
-      return '';
-    } else if (typeof digitoEsperado === 'number' && digitoEsperado >= 0 && digitoEsperado <= 9) {
-      return '';
-    } else {
-      return 'RUN no válido';
-    }
+    return '';
   };
 
   // Función para validar email con dominios específicos
   const validarEmail = (email) => {
-    if (!email.trim()) return 'El correo electrónico es obligatorio';
+    if (!email.trim()) return 'El email es requerido';
     
     const dominiosPermitidos = ['gmail.com', 'duoc.cl', 'profesor.duoc.cl'];
     const regex = new RegExp(`^[a-zA-Z0-9._%+-]+@(${dominiosPermitidos.join('|')})$`);
     
     if (!regex.test(email)) {
-      return `Solo se permiten correos @duoc.cl, @profesor.duoc.cl o @gmail.com`;
+      return `El email debe ser de uno de estos dominios: ${dominiosPermitidos.join(', ')}`;
     }
     
     return '';
@@ -129,13 +126,13 @@ const UsuarioCreateModal = ({ show, usuario, onSave, onClose }) => {
 
   // Función para validar nombre y apellidos
   const validarNombre = (nombre) => {
-    if (!nombre.trim()) return 'El nombre es obligatorio';
+    if (!nombre.trim()) return 'El nombre es requerido';
     if (nombre.trim().length < 3) return 'El nombre debe tener al menos 3 caracteres';
     return '';
   };
 
   const validarApellidos = (apellidos) => {
-    if (!apellidos.trim()) return 'Los apellidos son obligatorios';
+    if (!apellidos.trim()) return 'Los apellidos son requeridos';
     if (apellidos.trim().length < 3) return 'Los apellidos deben tener al menos 3 caracteres';
     return '';
   };
@@ -155,6 +152,24 @@ const UsuarioCreateModal = ({ show, usuario, onSave, onClose }) => {
     return '';
   };
 
+  // Función para validar contraseña (6-10 caracteres)
+  const validarPassword = (password) => {
+    if (!password.trim()) return 'La contraseña es requerida';
+    if (password.length < 6 || password.length > 10) {
+      return 'La contraseña debe tener entre 6 y 10 caracteres';
+    }
+    return '';
+  };
+
+  // Función para validar confirmación de contraseña
+  const validarConfirmarPassword = (password, confirmarPassword) => {
+    if (!confirmarPassword.trim()) return 'Debes confirmar la contraseña';
+    if (password !== confirmarPassword) {
+      return 'Las contraseñas no coinciden';
+    }
+    return '';
+  };
+
   // Función para calcular edad exacta
   const calcularEdad = (fechaNacimiento) => {
     const hoy = new Date();
@@ -169,6 +184,91 @@ const UsuarioCreateModal = ({ show, usuario, onSave, onClose }) => {
     }
     
     return edad;
+  };
+
+  // FUNCIÓN VALIDATEFORM
+  const validateForm = () => {
+    const newErrors = {};
+
+    // Validar RUN
+    const errorRUN = validarRUN(formData.run);
+    if (errorRUN) newErrors.run = errorRUN;
+
+    // Validar nombre
+    const errorNombre = validarNombre(formData.nombre);
+    if (errorNombre) newErrors.nombre = errorNombre;
+
+    // Validar apellidos
+    const errorApellidos = validarApellidos(formData.apellidos);
+    if (errorApellidos) newErrors.apellidos = errorApellidos;
+
+    // Validar email
+    const errorEmail = validarEmail(formData.correo);
+    if (errorEmail) newErrors.correo = errorEmail;
+
+    // Validar teléfono (solo si se ingresó)
+    if (formData.telefono && formData.telefono.trim() !== '') {
+      const errorTelefono = validarTelefono(formData.telefono);
+      if (errorTelefono) newErrors.telefono = errorTelefono;
+    }
+
+    // ✅ Validar dirección (OBLIGATORIA)
+    const errorDireccion = validarDireccion(formData.direccion);
+    if (errorDireccion) newErrors.direccion = errorDireccion;
+
+    // Validar región y comuna (si se selecciona una, debe seleccionar la otra)
+    if (formData.region && !formData.comuna) {
+      newErrors.comuna = 'Debe seleccionar una comuna para la región elegida';
+    }
+    if (formData.comuna && !formData.region) {
+      newErrors.region = 'Debe seleccionar una región para la comuna elegida';
+    }
+
+    // Validar fecha de nacimiento
+    if (!formData.fecha_nacimiento) {
+      newErrors.fecha_nacimiento = 'La fecha de nacimiento es requerida';
+    } else {
+      const edad = calcularEdad(formData.fecha_nacimiento);
+      
+      if (edad < 10) {
+        newErrors.fecha_nacimiento = 'El usuario debe ser mayor de 10 años';
+      }
+      
+      // Validar que no sea una fecha futura
+      const fechaNac = new Date(formData.fecha_nacimiento);
+      const hoy = new Date();
+      if (fechaNac > hoy) {
+        newErrors.fecha_nacimiento = 'La fecha de nacimiento no puede ser futura';
+      }
+    }
+
+    // Validar contraseña (solo en creación, no en edición)
+    if (!usuario) {
+      const errorPassword = validarPassword(formData.password);
+      if (errorPassword) newErrors.password = errorPassword;
+
+      const errorConfirmarPassword = validarConfirmarPassword(formData.password, formData.confirmarPassword);
+      if (errorConfirmarPassword) newErrors.confirmarPassword = errorConfirmarPassword;
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // Función para formatear RUN mientras se escribe (solo números)
+  const handleRunChange = (e) => {
+    const value = e.target.value.replace(/\D/g, ''); // Solo números
+    setFormData(prev => ({
+      ...prev,
+      run: value
+    }));
+
+    if (errors.run) {
+      setErrors(prev => ({
+        ...prev,
+        run: ''
+      }));
+    }
   };
 
   // Función para manejar cambio de región
@@ -196,8 +296,8 @@ const UsuarioCreateModal = ({ show, usuario, onSave, onClose }) => {
     }
 
     // Limpiar errores
-    if (errores.region) {
-      setErrores(prev => ({
+    if (errors.region) {
+      setErrors(prev => ({
         ...prev,
         region: ''
       }));
@@ -214,575 +314,578 @@ const UsuarioCreateModal = ({ show, usuario, onSave, onClose }) => {
     }));
 
     // Limpiar errores
-    if (errores.comuna) {
-      setErrores(prev => ({
+    if (errors.comuna) {
+      setErrors(prev => ({
         ...prev,
         comuna: ''
       }));
     }
   };
 
-  const validarFormulario = () => {
-    const nuevosErrores = {};
-
-    // Validar RUN con módulo 11
-    const errorRUN = validarRUN(formData.run);
-    if (errorRUN) nuevosErrores.run = errorRUN;
-
-    // Validar nombre (mínimo 3 caracteres)
-    const errorNombre = validarNombre(formData.nombre);
-    if (errorNombre) nuevosErrores.nombre = errorNombre;
-
-    // Validar apellidos (mínimo 3 caracteres)
-    const errorApellidos = validarApellidos(formData.apellidos);
-    if (errorApellidos) nuevosErrores.apellidos = errorApellidos;
-
-    // Validar email con dominios específicos
-    const errorEmail = validarEmail(formData.correo);
-    if (errorEmail) nuevosErrores.correo = errorEmail;
-
-    // Validar teléfono (opcional)
-    if (formData.telefono && formData.telefono.trim() !== '') {
-      const errorTelefono = validarTelefono(formData.telefono);
-      if (errorTelefono) nuevosErrores.telefono = errorTelefono;
-    }
-
-    // ✅ Validar dirección (OBLIGATORIA)
-    const errorDireccion = validarDireccion(formData.direccion);
-    if (errorDireccion) nuevosErrores.direccion = errorDireccion;
-
-    // Validar región y comuna (si se selecciona una, debe seleccionar la otra)
-    if (formData.region && !formData.comuna) {
-      nuevosErrores.comuna = 'Debe seleccionar una comuna para la región elegida';
-    }
-    if (formData.comuna && !formData.region) {
-      nuevosErrores.region = 'Debe seleccionar una región para la comuna elegida';
-    }
-
-    // Validar fecha de nacimiento (obligatoria y mayor a 10 años)
-    if (!formData.fecha_nacimiento) {
-      nuevosErrores.fecha_nacimiento = 'La fecha de nacimiento es obligatoria';
-    } else {
-      const edad = calcularEdad(formData.fecha_nacimiento);
-      
-      if (edad < 10) {
-        nuevosErrores.fecha_nacimiento = 'El usuario debe ser mayor de 10 años';
-      }
-      
-      // Validar que no sea una fecha futura
-      const fechaNac = new Date(formData.fecha_nacimiento);
-      const hoy = new Date();
-      if (fechaNac > hoy) {
-        nuevosErrores.fecha_nacimiento = 'La fecha de nacimiento no puede ser futura';
-      }
-    }
-
-    // Validar contraseña (6-10 caracteres)
-    if (!formData.password) {
-      nuevosErrores.password = 'La contraseña es obligatoria';
-    } else if (formData.password.length < 6 || formData.password.length > 10) {
-      nuevosErrores.password = 'La contraseña debe tener entre 6 y 10 caracteres';
-    }
-
-    // Validar confirmación de contraseña
-    if (!formData.confirmarPassword) {
-      nuevosErrores.confirmarPassword = 'Debe confirmar la contraseña';
-    } else if (formData.password !== formData.confirmarPassword) {
-      nuevosErrores.confirmarPassword = 'Las contraseñas no coinciden';
-    }
-
-    setErrores(nuevosErrores);
-    return Object.keys(nuevosErrores).length === 0;
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!validarFormulario()) {
-      return;
-    }
-
-    setCargando(true);
-    try {
-      // Preparar datos para enviar (sin confirmarPassword)
-      const datosParaEnviar = {
-        run: formData.run, // Ya está limpio (solo números)
-        nombre: formData.nombre.trim(),
-        apellidos: formData.apellidos.trim(),
-        correo: formData.correo,
-        telefono: formData.telefono.replace(/\D/g, '') || '', // Limpiar teléfono
-        direccion: formData.direccion.trim(), // ✅ Dirección obligatoria
-        comuna: formData.comuna || '',
-        region: formData.region || '',
-        fecha_nacimiento: formData.fecha_nacimiento,
-        tipo: formData.tipo,
-        password: formData.password,
-        // Campos por defecto para nuevo usuario
-        estado: 'Activo',
-        totalCompras: 0,
-        totalGastado: 0
-      };
-
-      await onSave(datosParaEnviar);
-    } catch (error) {
-      if (error.message.includes('RUN')) {
-        setErrores(prev => ({ ...prev, run: error.message }));
-      } else if (error.message.includes('correo') || error.message.includes('email')) {
-        setErrores(prev => ({ ...prev, correo: error.message }));
-      } else {
-        setErrores(prev => ({ ...prev, general: error.message }));
-      }
-    } finally {
-      setCargando(false);
-    }
-  };
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     
-    // Para RUN: solo permitir números y limitar a 9 dígitos
-    if (name === 'run') {
-      const soloNumeros = value.replace(/\D/g, '').slice(0, 9); // ✅ 9 dígitos máximo
-      setFormData(prev => ({
-        ...prev,
-        [name]: soloNumeros
-      }));
-    } 
-    // Para teléfono: solo permitir números y limitar a 9 dígitos
-    else if (name === 'telefono') {
-      const soloNumeros = value.replace(/\D/g, '').slice(0, 9);
-      setFormData(prev => ({
-        ...prev,
-        [name]: soloNumeros
-      }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: value
-      }));
-    }
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
 
-    // Limpiar error del campo cuando el usuario empiece a escribir
-    if (errores[name]) {
-      setErrores(prev => ({
+    // Limpiar error del campo
+    if (errors[name]) {
+      setErrors(prev => ({
         ...prev,
         [name]: ''
       }));
     }
+
+    // Limpiar error general al cambiar cualquier campo
+    if (submitError) {
+      setSubmitError('');
+    }
   };
 
-  const getInputClass = (campo) => {
-    return errores[campo] ? 'form-control is-invalid' : 'form-control';
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
+
+  const toggleConfirmPasswordVisibility = () => {
+    setShowConfirmPassword(!showConfirmPassword);
+  };
+
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  
+  console.log('📝 Iniciando validación del formulario...');
+  
+  if (validateForm()) {
+    console.log('✅ Formulario válido, procediendo con guardado...');
+    console.log('📦 Datos del formulario:', {
+      ...formData,
+      password: '***', // No mostrar contraseña en logs
+      confirmarPassword: '***'
+    });
+    
+    try {
+      setLoading(true);
+      setSubmitError('');
+      
+      // ✅ CORREGIDO: Enviar la contraseña del campo password
+      const usuarioData = {
+        run: parseInt(formData.run), // ✅ Asegurar que sea número
+        nombre: formData.nombre.trim(),
+        apellidos: formData.apellidos.trim(),
+        correo: formData.correo.trim(),
+        telefono: formData.telefono ? parseInt(formData.telefono) : null,
+        direccion: formData.direccion.trim(), 
+        comuna: formData.comuna || '',
+        region: formData.region || '',
+        tipo: formData.tipo,
+        fecha_nacimiento: formData.fecha_nacimiento,
+        contrasenha: formData.password // ✅ ENVIAR LA CONTRASEÑA DEL CAMPO PASSWORD
+      };
+
+      console.log('Enviando datos de usuario (contraseña del campo password):', {
+        ...usuarioData,
+        contrasenha: '***' // No mostrar contraseña en logs
+      });
+
+      await onSave(usuarioData);
+      
+    } catch (error) {
+      console.error('💥 Error guardando usuario:', error);
+      setSubmitError(error.message || 'Error al guardar el usuario');
+    } finally {
+      setLoading(false);
+    }
+  } else {
+    console.log('❌ Formulario inválido, errores:', errors);
+  }
+};
 
   if (!show) return null;
 
   return (
-    <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-      <div className="modal-dialog modal-lg">
-        <div className="modal-content">
-          <div className="modal-header bg-success text-white">
-            <h5 className="modal-title fw-bold">
-              <i className="bi bi-person-plus me-2"></i>
-              Crear Nuevo Usuario
-            </h5>
-            <button 
-              type="button" 
-              className="btn-close btn-close-white" 
-              onClick={onClose}
-              disabled={cargando}
-            ></button>
+    <Modal show={show} onHide={onClose} size="lg" centered>
+      <Modal.Header 
+        closeButton 
+        className="border-3 border-dark"
+        style={{
+          backgroundColor: '#87CEEB',
+        }}
+      >
+        <Modal.Title className="fw-bold text-center w-100" style={{ color: '#000000' }}>
+          <span style={{ fontFamily: "'Indie Flower', cursive", fontSize: '1.8rem' }}>
+            <i className="bi bi-person-plus me-2"></i>
+            {usuario ? 'Editar Usuario' : 'Crear Nuevo Usuario'}
+          </span>
+        </Modal.Title>
+      </Modal.Header>
+      
+      <Modal.Body
+        style={{
+          backgroundColor: '#87CEEB',
+        }}
+      >
+        {submitError && (
+          <Alert 
+            variant="danger" 
+            className="mb-3 border-3 border-dark rounded-3"
+            style={{
+              backgroundColor: '#FFB6C1',
+              color: '#000000',
+              fontWeight: '600'
+            }}
+          >
+            <i className="bi bi-exclamation-triangle me-2"></i>
+            {submitError}
+          </Alert>
+        )}
+        
+        <Form onSubmit={handleSubmit}>
+          <div className="row">
+            <div className="col-md-6">
+              <Form.Group className="mb-3">
+                <Form.Label className="fw-bold" style={{ color: '#000000' }}>
+                  RUN *
+                </Form.Label>
+                <Form.Control
+                  type="text"
+                  className={`form-control border-3 border-dark rounded-3 ${errors.run ? 'is-invalid' : ''}`}
+                  style={{
+                    backgroundColor: '#FFFFFF',
+                    color: '#000000',
+                    fontFamily: "'Lato', sans-serif"
+                  }}
+                  name="run"
+                  value={formData.run}
+                  onChange={handleRunChange}
+                  placeholder="Ej: 123456789"
+                  disabled={!!usuario} // No permitir modificar RUN en edición
+                  maxLength={9}
+                />
+                {errors.run && <div className="invalid-feedback" style={{ fontFamily: "'Lato', sans-serif" }}>{errors.run}</div>}
+                <Form.Text className="text-muted" style={{ fontFamily: "'Lato', sans-serif" }}>
+                  Solo números, sin puntos ni dígito verificador (8-9 dígitos)
+                </Form.Text>
+              </Form.Group>
+            </div>
+
+            <div className="col-md-6">
+              <Form.Group className="mb-3">
+                <Form.Label className="fw-bold" style={{ color: '#000000' }}>
+                  Tipo de Usuario *
+                </Form.Label>
+                <Form.Select
+                  className={`form-select border-3 border-dark rounded-3 ${errors.tipo ? 'is-invalid' : ''}`}
+                  style={{
+                    backgroundColor: '#FFFFFF',
+                    color: '#000000',
+                    fontFamily: "'Lato', sans-serif"
+                  }}
+                  name="tipo"
+                  value={formData.tipo}
+                  onChange={handleChange}
+                >
+                  <option value="Cliente">Cliente</option>
+                  <option value="Vendedor">Vendedor</option>
+                  <option value="Admin">Administrador</option>
+                </Form.Select>
+                {errors.tipo && <div className="invalid-feedback" style={{ fontFamily: "'Lato', sans-serif" }}>{errors.tipo}</div>}
+                <Form.Text className="text-muted" style={{ fontFamily: "'Lato', sans-serif" }}>
+                  Selecciona el rol del usuario en el sistema
+                </Form.Text>
+              </Form.Group>
+            </div>
           </div>
-          
-          <form onSubmit={handleSubmit}>
-            <div className="modal-body">
-              {/* Mensaje de error general */}
-              {errores.general && (
-                <div className="alert alert-danger d-flex align-items-center" role="alert">
-                  <i className="bi bi-exclamation-triangle-fill me-2"></i>
-                  <div>{errores.general}</div>
-                </div>
-              )}
 
+          <div className="row">
+            <div className="col-md-6">
+              <Form.Group className="mb-3">
+                <Form.Label className="fw-bold" style={{ color: '#000000' }}>
+                  Nombre *
+                </Form.Label>
+                <Form.Control
+                  type="text"
+                  className={`form-control border-3 border-dark rounded-3 ${errors.nombre ? 'is-invalid' : ''}`}
+                  style={{
+                    backgroundColor: '#FFFFFF',
+                    color: '#000000',
+                    fontFamily: "'Lato', sans-serif"
+                  }}
+                  name="nombre"
+                  value={formData.nombre}
+                  onChange={handleChange}
+                  placeholder="Ej: Ana María"
+                  minLength={3}
+                  required
+                />
+                {errors.nombre && <div className="invalid-feedback" style={{ fontFamily: "'Lato', sans-serif" }}>{errors.nombre}</div>}
+                <Form.Text className="text-muted" style={{ fontFamily: "'Lato', sans-serif" }}>
+                  Mínimo 3 caracteres
+                </Form.Text>
+              </Form.Group>
+            </div>
+
+            <div className="col-md-6">
+              <Form.Group className="mb-3">
+                <Form.Label className="fw-bold" style={{ color: '#000000' }}>
+                  Apellidos *
+                </Form.Label>
+                <Form.Control
+                  type="text"
+                  className={`form-control border-3 border-dark rounded-3 ${errors.apellidos ? 'is-invalid' : ''}`}
+                  style={{
+                    backgroundColor: '#FFFFFF',
+                    color: '#000000',
+                    fontFamily: "'Lato', sans-serif"
+                  }}
+                  name="apellidos"
+                  value={formData.apellidos}
+                  onChange={handleChange}
+                  placeholder="Ej: González Pérez"
+                  minLength={3}
+                  required
+                />
+                {errors.apellidos && <div className="invalid-feedback" style={{ fontFamily: "'Lato', sans-serif" }}>{errors.apellidos}</div>}
+                <Form.Text className="text-muted" style={{ fontFamily: "'Lato', sans-serif" }}>
+                  Mínimo 3 caracteres
+                </Form.Text>
+              </Form.Group>
+            </div>
+          </div>
+
+          <Form.Group className="mb-3">
+            <Form.Label className="fw-bold" style={{ color: '#000000' }}>
+              Email *
+            </Form.Label>
+            <Form.Control
+              type="email"
+              className={`form-control border-3 border-dark rounded-3 ${errors.correo ? 'is-invalid' : ''}`}
+              style={{
+                backgroundColor: '#FFFFFF',
+                color: '#000000',
+                fontFamily: "'Lato', sans-serif"
+              }}
+              name="correo"
+              value={formData.correo}
+              onChange={handleChange}
+              placeholder="Ej: usuario@gmail.com"
+              required
+            />
+            {errors.correo && <div className="invalid-feedback" style={{ fontFamily: "'Lato', sans-serif" }}>{errors.correo}</div>}
+            <Form.Text className="text-muted" style={{ fontFamily: "'Lato', sans-serif" }}>
+              Dominios permitidos: gmail.com, duoc.cl, profesor.duoc.cl
+            </Form.Text>
+          </Form.Group>
+
+          <Form.Group className="mb-3">
+            <Form.Label className="fw-bold" style={{ color: '#000000' }}>
+              Teléfono
+            </Form.Label>
+            <Form.Control
+              type="text"
+              className={`form-control border-3 border-dark rounded-3 ${errors.telefono ? 'is-invalid' : ''}`}
+              style={{
+                backgroundColor: '#FFFFFF',
+                color: '#000000',
+                fontFamily: "'Lato', sans-serif"
+              }}
+              name="telefono"
+              value={formData.telefono}
+              onChange={handleChange}
+              placeholder="Ej: 912345678"
+            />
+            {errors.telefono && <div className="invalid-feedback" style={{ fontFamily: "'Lato', sans-serif" }}>{errors.telefono}</div>}
+            <Form.Text className="text-muted" style={{ fontFamily: "'Lato', sans-serif" }}>
+              Opcional. Si se ingresa, debe empezar con 9 y tener exactamente 9 dígitos
+            </Form.Text>
+          </Form.Group>
+
+          <Form.Group className="mb-3">
+            <Form.Label className="fw-bold" style={{ color: '#000000' }}>
+              Fecha de Nacimiento *
+            </Form.Label>
+            <Form.Control
+              type="date"
+              className={`form-control border-3 border-dark rounded-3 ${errors.fecha_nacimiento ? 'is-invalid' : ''}`}
+              style={{
+                backgroundColor: '#FFFFFF',
+                color: '#000000',
+                fontFamily: "'Lato', sans-serif"
+              }}
+              name="fecha_nacimiento"
+              value={formData.fecha_nacimiento}
+              onChange={handleChange}
+              required
+            />
+            {errors.fecha_nacimiento && <div className="invalid-feedback" style={{ fontFamily: "'Lato', sans-serif" }}>{errors.fecha_nacimiento}</div>}
+            <Form.Text className="text-muted" style={{ fontFamily: "'Lato', sans-serif" }}>
+              El usuario debe ser mayor de 10 años
+            </Form.Text>
+          </Form.Group>
+
+          {/* DIRECCIÓN OBLIGATORIA */}
+          <Form.Group className="mb-3">
+            <Form.Label className="fw-bold" style={{ color: '#000000' }}>
+              Dirección *
+            </Form.Label>
+            <Form.Control
+              type="text"
+              className={`form-control border-3 border-dark rounded-3 ${errors.direccion ? 'is-invalid' : ''}`}
+              style={{
+                backgroundColor: '#FFFFFF',
+                color: '#000000',
+                fontFamily: "'Lato', sans-serif"
+              }}
+              name="direccion"
+              value={formData.direccion}
+              onChange={handleChange}
+              placeholder="Ej: Av. Principal 123"
+              minLength={5}
+              maxLength={100}
+              required
+            />
+            {errors.direccion && <div className="invalid-feedback" style={{ fontFamily: "'Lato', sans-serif" }}>{errors.direccion}</div>}
+            <Form.Text className="text-muted" style={{ fontFamily: "'Lato', sans-serif" }}>
+              Entre 5 y 100 caracteres
+            </Form.Text>
+          </Form.Group>
+
+          <div className="row">
+            {/* REGIÓN PRIMERO */}
+            <div className="col-md-6">
+              <Form.Group className="mb-3">
+                <Form.Label className="fw-bold" style={{ color: '#000000' }}>
+                  Región
+                </Form.Label>
+                <Form.Select
+                  className={`form-select border-3 border-dark rounded-3 ${errors.region ? 'is-invalid' : ''}`}
+                  style={{
+                    backgroundColor: '#FFFFFF',
+                    color: '#000000',
+                    fontFamily: "'Lato', sans-serif"
+                  }}
+                  name="region"
+                  value={formData.region}
+                  onChange={handleRegionChange}
+                >
+                  <option value="">Seleccionar región...</option>
+                  {regionesComunasData.regiones.map(region => (
+                    <option key={region.id} value={region.nombre}>
+                      {region.nombre}
+                    </option>
+                  ))}
+                </Form.Select>
+                {errors.region && <div className="invalid-feedback" style={{ fontFamily: "'Lato', sans-serif" }}>{errors.region}</div>}
+              </Form.Group>
+            </div>
+
+            {/* COMUNA DESPUÉS */}
+            <div className="col-md-6">
+              <Form.Group className="mb-3">
+                <Form.Label className="fw-bold" style={{ color: '#000000' }}>
+                  Comuna
+                </Form.Label>
+                <Form.Select
+                  className={`form-select border-3 border-dark rounded-3 ${errors.comuna ? 'is-invalid' : ''}`}
+                  style={{
+                    backgroundColor: '#FFFFFF',
+                    color: '#000000',
+                    fontFamily: "'Lato', sans-serif"
+                  }}
+                  name="comuna"
+                  value={formData.comuna}
+                  onChange={handleComunaChange}
+                  disabled={!formData.region}
+                >
+                  <option value="">Seleccionar comuna...</option>
+                  {comunasFiltradas.map(comuna => (
+                    <option key={comuna} value={comuna}>
+                      {comuna}
+                    </option>
+                  ))}
+                </Form.Select>
+                {errors.comuna && <div className="invalid-feedback" style={{ fontFamily: "'Lato', sans-serif" }}>{errors.comuna}</div>}
+                <Form.Text className="text-muted" style={{ fontFamily: "'Lato', sans-serif" }}>
+                  {!formData.region ? 'Primero selecciona una región' : `${comunasFiltradas.length} comunas disponibles`}
+                </Form.Text>
+              </Form.Group>
+            </div>
+          </div>
+
+          {/* CAMPOS DE CONTRASEÑA - Solo en creación o si el usuario quiere cambiarla */}
+          {!usuario && (
+            <>
+              <h6 
+                className="mb-3 fw-bold mt-4"
+                style={{
+                  color: '#000000',
+                  fontFamily: "'Indie Flower', cursive",
+                  fontSize: '1.3rem'
+                }}
+              >
+                Seguridad
+              </h6>
+              
               <div className="row">
-                {/* Columna 1 - Información básica */}
                 <div className="col-md-6">
-                  <div className="mb-3">
-                    <label className="form-label fw-bold">
-                      RUN <span className="text-danger">*</span>
-                    </label>
-                    <input 
-                      type="text" 
-                      className={getInputClass('run')}
-                      name="run"
-                      value={formData.run}
-                      onChange={handleChange}
-                      placeholder="123456789"
-                      disabled={cargando}
-                      maxLength="9" // ✅ 9 dígitos máximo
-                    />
-                    {errores.run && (
-                      <div className="invalid-feedback d-block">
-                        <i className="bi bi-x-circle me-1"></i>
-                        {errores.run}
-                      </div>
-                    )}
-                    <small className="text-muted">
-                      {/* ✅ ELIMINADO: "Se valida con algoritmo módulo 11" */}
-                      8 o 9 dígitos numéricos (sin puntos ni guión)
-                    </small>
-                  </div>
-
-                  <div className="mb-3">
-                    <label className="form-label fw-bold">
-                      Nombre <span className="text-danger">*</span>
-                    </label>
-                    <input 
-                      type="text" 
-                      className={getInputClass('nombre')}
-                      name="nombre"
-                      value={formData.nombre}
-                      onChange={handleChange}
-                      placeholder="Ingrese el nombre"
-                      disabled={cargando}
-                      minLength="3"
-                    />
-                    {errores.nombre && (
-                      <div className="invalid-feedback d-block">
-                        <i className="bi bi-x-circle me-1"></i>
-                        {errores.nombre}
-                      </div>
-                    )}
-                    <small className="text-muted">
-                      Mínimo 3 caracteres
-                    </small>
-                  </div>
-
-                  <div className="mb-3">
-                    <label className="form-label fw-bold">
-                      Apellidos <span className="text-danger">*</span>
-                    </label>
-                    <input 
-                      type="text" 
-                      className={getInputClass('apellidos')}
-                      name="apellidos"
-                      value={formData.apellidos}
-                      onChange={handleChange}
-                      placeholder="Ingrese los apellidos"
-                      disabled={cargando}
-                      minLength="3"
-                    />
-                    {errores.apellidos && (
-                      <div className="invalid-feedback d-block">
-                        <i className="bi bi-x-circle me-1"></i>
-                        {errores.apellidos}
-                      </div>
-                    )}
-                    <small className="text-muted">
-                      Mínimo 3 caracteres
-                    </small>
-                  </div>
-
-                  <div className="mb-3">
-                    <label className="form-label fw-bold">
-                      Correo Electrónico <span className="text-danger">*</span>
-                    </label>
-                    <input 
-                      type="email" 
-                      className={getInputClass('correo')}
-                      name="correo"
-                      value={formData.correo}
-                      onChange={handleChange}
-                      placeholder="usuario@duoc.cl"
-                      disabled={cargando}
-                    />
-                    {errores.correo && (
-                      <div className="invalid-feedback d-block">
-                        <i className="bi bi-x-circle me-1"></i>
-                        {errores.correo}
-                      </div>
-                    )}
-                    <small className="text-muted">
-                      Solo @duoc.cl, @profesor.duoc.cl o @gmail.com
-                    </small>
-                  </div>
-                </div>
-
-                {/* Columna 2 - Información de contacto y seguridad */}
-                <div className="col-md-6">
-                  <div className="mb-3">
-                    <label className="form-label fw-bold">
-                      Teléfono
-                    </label>
-                    <input 
-                      type="text" 
-                      className={getInputClass('telefono')}
-                      name="telefono"
-                      value={formData.telefono}
-                      onChange={handleChange}
-                      placeholder="912345678"
-                      disabled={cargando}
-                      maxLength="9"
-                    />
-                    {errores.telefono && (
-                      <div className="invalid-feedback d-block">
-                        <i className="bi bi-x-circle me-1"></i>
-                        {errores.telefono}
-                      </div>
-                    )}
-                    <small className="text-muted">
-                      Opcional. Si se ingresa, debe empezar con 9 y tener 9 dígitos
-                    </small>
-                  </div>
-
-                  <div className="mb-3">
-                    <label className="form-label fw-bold">
-                      Fecha de Nacimiento <span className="text-danger">*</span>
-                    </label>
-                    <input 
-                      type="date" 
-                      className={getInputClass('fecha_nacimiento')}
-                      name="fecha_nacimiento"
-                      value={formData.fecha_nacimiento}
-                      onChange={handleChange}
-                      disabled={cargando}
-                    />
-                    {errores.fecha_nacimiento && (
-                      <div className="invalid-feedback d-block">
-                        <i className="bi bi-x-circle me-1"></i>
-                        {errores.fecha_nacimiento}
-                      </div>
-                    )}
-                    <small className="text-muted">
-                      Mayor de 10 años
-                    </small>
-                  </div>
-
-                  {/* ✅ DIRECCIÓN OBLIGATORIA */}
-                  <div className="mb-3">
-                    <label className="form-label fw-bold">
-                      Dirección <span className="text-danger">*</span>
-                    </label>
-                    <input 
-                      type="text" 
-                      className={getInputClass('direccion')}
-                      name="direccion"
-                      value={formData.direccion}
-                      onChange={handleChange}
-                      placeholder="Calle Principal 123"
-                      disabled={cargando}
-                      minLength="5"
-                      maxLength="100"
-                      required
-                    />
-                    {errores.direccion && (
-                      <div className="invalid-feedback d-block">
-                        <i className="bi bi-x-circle me-1"></i>
-                        {errores.direccion}
-                      </div>
-                    )}
-                    <small className="text-muted">
-                      Entre 5 y 100 caracteres
-                    </small>
-                  </div>
-
-                  {/* ✅ REGIÓN Y COMUNA COMO COMBOBOX */}
-                  <div className="row">
-                    <div className="col-md-6">
-                      <div className="mb-3">
-                        <label className="form-label fw-bold">Región</label>
-                        <select
-                          className={`form-select ${errores.region ? 'is-invalid' : ''}`}
-                          name="region"
-                          value={formData.region}
-                          onChange={handleRegionChange}
-                          disabled={cargando}
-                        >
-                          <option value="">Seleccionar región...</option>
-                          {regionesComunasData.regiones.map(region => (
-                            <option key={region.id} value={region.nombre}>
-                              {region.nombre}
-                            </option>
-                          ))}
-                        </select>
-                        {errores.region && (
-                          <div className="invalid-feedback d-block">
-                            <i className="bi bi-x-circle me-1"></i>
-                            {errores.region}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="col-md-6">
-                      <div className="mb-3">
-                        <label className="form-label fw-bold">Comuna</label>
-                        <select
-                          className={`form-select ${errores.comuna ? 'is-invalid' : ''}`}
-                          name="comuna"
-                          value={formData.comuna}
-                          onChange={handleComunaChange}
-                          disabled={cargando || !formData.region}
-                        >
-                          <option value="">Seleccionar comuna...</option>
-                          {comunasFiltradas.map(comuna => (
-                            <option key={comuna} value={comuna}>
-                              {comuna}
-                            </option>
-                          ))}
-                        </select>
-                        {errores.comuna && (
-                          <div className="invalid-feedback d-block">
-                            <i className="bi bi-x-circle me-1"></i>
-                            {errores.comuna}
-                          </div>
-                        )}
-                        <small className="text-muted">
-                          {!formData.region ? 'Primero selecciona una región' : `${comunasFiltradas.length} comunas disponibles`}
-                        </small>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Línea divisoria */}
-              <hr className="my-4" />
-
-              {/* Sección de seguridad - En una sola fila */}
-              <div className="row">
-                <div className="col-md-4">
-                  <div className="mb-3">
-                    <label className="form-label fw-bold">Tipo de Usuario</label>
-                    <select 
-                      className="form-select"
-                      name="tipo"
-                      value={formData.tipo}
-                      onChange={handleChange}
-                      disabled={cargando}
-                    >
-                      <option value="Cliente">Cliente</option>
-                      <option value="Admin">Administrador</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="col-md-4">
-                  <div className="mb-3">
-                    <label className="form-label fw-bold">
-                      Contraseña <span className="text-danger">*</span>
-                    </label>
-                    <div className="input-group">
-                      <input 
-                        type={mostrarPassword ? "text" : "password"}
-                        className={getInputClass('password')}
+                  <Form.Group className="mb-3">
+                    <Form.Label className="fw-bold" style={{ color: '#000000' }}>
+                      Contraseña *
+                    </Form.Label>
+                    <InputGroup>
+                      <Form.Control
+                        type={showPassword ? "text" : "password"}
+                        className={`form-control border-3 border-dark rounded-3 ${errors.password ? 'is-invalid' : ''}`}
+                        style={{
+                          backgroundColor: '#FFFFFF',
+                          color: '#000000',
+                          fontFamily: "'Lato', sans-serif"
+                        }}
                         name="password"
                         value={formData.password}
                         onChange={handleChange}
-                        placeholder="Entre 4 y 10 caracteres"
-                        disabled={cargando}
-                        maxLength="10"
+                        placeholder="Entre 6 y 10 caracteres"
+                        minLength={6}
+                        maxLength={10}
+                        required
                       />
-                      <button 
-                        type="button"
-                        className="btn btn-outline-secondary"
-                        onClick={() => setMostrarPassword(!mostrarPassword)}
-                        disabled={cargando}
+                      <Button
+                        variant="outline-dark"
+                        className="border-3 border-dark rounded-3"
+                        style={{
+                          backgroundColor: '#dedd8ff5',
+                          color: '#000000'
+                        }}
+                        onClick={togglePasswordVisibility}
                       >
-                        <i className={`bi ${mostrarPassword ? 'bi-eye-slash' : 'bi-eye'}`}></i>
-                      </button>
-                    </div>
-                    {errores.password && (
-                      <div className="invalid-feedback d-block">
-                        <i className="bi bi-x-circle me-1"></i>
-                        {errores.password}
-                      </div>
-                    )}
-                    <small className="text-muted">
-                      4 a 10 caracteres
-                    </small>
-                  </div>
+                        {showPassword ? '👁️' : '👁️‍🗨️'}
+                      </Button>
+                    </InputGroup>
+                    {errors.password && <div className="invalid-feedback" style={{ fontFamily: "'Lato', sans-serif" }}>{errors.password}</div>}
+                    <Form.Text className="text-muted" style={{ fontFamily: "'Lato', sans-serif" }}>
+                      La contraseña debe tener entre 6 y 10 caracteres
+                    </Form.Text>
+                  </Form.Group>
                 </div>
 
-                <div className="col-md-4">
-                  <div className="mb-3">
-                    <label className="form-label fw-bold">
-                      Confirmar Contraseña <span className="text-danger">*</span>
-                    </label>
-                    <div className="input-group">
-                      <input 
-                        type={mostrarConfirmarPassword ? "text" : "password"}
-                        className={getInputClass('confirmarPassword')}
+                <div className="col-md-6">
+                  <Form.Group className="mb-3">
+                    <Form.Label className="fw-bold" style={{ color: '#000000' }}>
+                      Confirmar Contraseña *
+                    </Form.Label>
+                    <InputGroup>
+                      <Form.Control
+                        type={showConfirmPassword ? "text" : "password"}
+                        className={`form-control border-3 border-dark rounded-3 ${errors.confirmarPassword ? 'is-invalid' : ''}`}
+                        style={{
+                          backgroundColor: '#FFFFFF',
+                          color: '#000000',
+                          fontFamily: "'Lato', sans-serif"
+                        }}
                         name="confirmarPassword"
                         value={formData.confirmarPassword}
                         onChange={handleChange}
-                        placeholder="Repita la contraseña"
-                        disabled={cargando}
-                        maxLength="10"
+                        placeholder="Repite tu contraseña"
+                        required
                       />
-                      <button 
-                        type="button"
-                        className="btn btn-outline-secondary"
-                        onClick={() => setMostrarConfirmarPassword(!mostrarConfirmarPassword)}
-                        disabled={cargando}
+                      <Button
+                        variant="outline-dark"
+                        className="border-3 border-dark rounded-3"
+                        style={{
+                          backgroundColor: '#dedd8ff5',
+                          color: '#000000'
+                        }}
+                        onClick={toggleConfirmPasswordVisibility}
                       >
-                        <i className={`bi ${mostrarConfirmarPassword ? 'bi-eye-slash' : 'bi-eye'}`}></i>
-                      </button>
-                    </div>
-                    {errores.confirmarPassword && (
-                      <div className="invalid-feedback d-block">
-                        <i className="bi bi-x-circle me-1"></i>
-                        {errores.confirmarPassword}
-                      </div>
-                    )}
-                  </div>
+                        {showConfirmPassword ? '👁️' : '👁️‍🗨️'}
+                      </Button>
+                    </InputGroup>
+                    {errors.confirmarPassword && <div className="invalid-feedback" style={{ fontFamily: "'Lato', sans-serif" }}>{errors.confirmarPassword}</div>}
+                  </Form.Group>
                 </div>
               </div>
+            </>
+          )}
 
-              {/* Información de campos obligatorios */}
-              <div className="alert alert-info mt-3">
-                <div className="d-flex align-items-center">
-                  <i className="bi bi-info-circle me-2"></i>
-                  <small>
-                    Los campos marcados con <span className="text-danger">*</span> son obligatorios
-                  </small>
-                </div>
-              </div>
-            </div>
+          <div className="d-flex justify-content-end gap-2 mt-4">
+            <Button 
+              variant="secondary" 
+              onClick={onClose}
+              disabled={loading}
+              className="rounded-pill px-4 py-2 border-3 border-dark fw-bold"
+              style={{
+                backgroundColor: '#dedd8ff5',
+                color: '#000000',
+                transition: 'all 0.3s ease',
+                fontFamily: "'Lato', sans-serif"
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = 'translateY(-2px)';
+                e.target.style.boxShadow = '0 8px 20px rgba(222, 221, 143, 0.6)';
+                e.target.style.backgroundColor = '#FFD700';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = 'translateY(0)';
+                e.target.style.boxShadow = 'none';
+                e.target.style.backgroundColor = '#dedd8ff5';
+              }}
+            >
+              <i className="bi bi-x-circle me-2"></i>
+              Cancelar
+            </Button>
+            <Button 
+              type="submit" 
+              variant="primary"
+              disabled={loading}
+              className="rounded-pill px-4 py-2 border-3 border-dark fw-bold"
+              style={{
+                backgroundColor: '#dedd8ff5',
+                color: '#000000',
+                transition: 'all 0.3s ease',
+                fontFamily: "'Lato', sans-serif"
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = 'translateY(-2px)';
+                e.target.style.boxShadow = '0 8px 20px rgba(222, 221, 143, 0.6)';
+                e.target.style.backgroundColor = '#FFD700';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = 'translateY(0)';
+                e.target.style.boxShadow = 'none';
+                e.target.style.backgroundColor = '#dedd8ff5';
+              }}
+            >
+              {loading ? (
+                <>
+                  <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                  Guardando...
+                </>
+              ) : (
+                <>
+                  <i className="bi bi-check-circle me-2"></i>
+                  {usuario ? 'Actualizar Usuario' : 'Crear Usuario'}
+                </>
+              )}
+            </Button>
+          </div>
 
-            <div className="modal-footer">
-              <button 
-                type="button" 
-                className="btn btn-secondary" 
-                onClick={onClose}
-                disabled={cargando}
-              >
-                <i className="bi bi-x-circle me-2"></i>
-                Cancelar
-              </button>
-              <button 
-                type="submit" 
-                className="btn btn-success"
-                disabled={cargando}
-              >
-                {cargando ? (
-                  <>
-                    <div className="spinner-border spinner-border-sm me-2" role="status">
-                      <span className="visually-hidden">Creando...</span>
-                    </div>
-                    Creando Usuario...
-                  </>
-                ) : (
-                  <>
-                    <i className="bi bi-check-circle me-2"></i>
-                    Crear Usuario
-                  </>
-                )}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
+          {/* Mensaje de campos obligatorios */}
+          <div className="text-center mt-3">
+            <p 
+              style={{ 
+                color: '#000000',
+                fontFamily: "'Lato', sans-serif",
+                fontWeight: '500',
+                fontSize: '0.9rem'
+              }}
+            >
+              <span style={{ color: 'red' }}>*</span> Campos obligatorios
+            </p>
+          </div>
+        </Form>
+      </Modal.Body>
+    </Modal>
   );
 };
 

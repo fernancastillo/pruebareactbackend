@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useState, useRef, useEffect } from 'react';
-import { authService } from '../../utils/tienda/auth';
+import { authService } from '../../utils/tienda/authService';
 
 const AdminSidebar = () => {
   const location = useLocation();

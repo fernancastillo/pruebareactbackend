@@ -54,6 +54,7 @@ const UsuariosFiltros = ({ filtros, onFiltroChange, onLimpiarFiltros, resultados
               >
                 <option value="">Todos los tipos</option>
                 <option value="Cliente">Cliente</option>
+                <option value="Vendedor">Vendedor</option>
                 <option value="Admin">Administrador</option>
               </Form.Select>
             </Form.Group>

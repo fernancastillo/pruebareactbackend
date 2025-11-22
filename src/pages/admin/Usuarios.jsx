@@ -51,28 +51,6 @@ const ErrorAlert = ({ message, show, onClose }) => {
   );
 };
 
-// Componente para información de conexión
-const ConexionInfo = ({ conexionInfo }) => {
-  if (!conexionInfo) return null;
-
-  return (
-    <div className={`alert ${conexionInfo.conectado ? 'alert-success' : 'alert-warning'} mb-3`}>
-      <div className="d-flex align-items-center">
-        <i className={`bi ${conexionInfo.conectado ? 'bi-database-check' : 'bi-database-exclamation'} me-2`}></i>
-        <div>
-          <strong>{conexionInfo.conectado ? 'Conectado a Oracle Database' : 'Problema de conexión'}</strong>
-          <div className="small">{conexionInfo.mensaje}</div>
-          {conexionInfo.totalUsuarios !== undefined && (
-            <div className="small">
-              <strong>Usuarios en base de datos:</strong> {conexionInfo.totalUsuarios}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-};
-
 const Usuarios = () => {
   const {
     usuarios,
@@ -84,7 +62,6 @@ const Usuarios = () => {
     filtros,
     estadisticas,
     error,
-    conexionInfo,
     successMessage,
     showSuccessMessage,
     clearSuccessMessage,
@@ -103,7 +80,6 @@ const Usuarios = () => {
 
   const [showReporteModal, setShowReporteModal] = useState(false);
 
-  // Aplicar el fondo al body
   useEffect(() => {
     document.body.style.backgroundImage = 'url("../src/assets/tienda/fondostardew.png")';
     document.body.style.backgroundSize = 'cover';
@@ -114,7 +90,6 @@ const Usuarios = () => {
     document.body.style.padding = '0';
     document.body.style.minHeight = '100vh';
     
-    // Limpiar cuando el componente se desmonte
     return () => {
       document.body.style.backgroundImage = '';
       document.body.style.backgroundSize = '';
@@ -128,19 +103,16 @@ const Usuarios = () => {
   }, []);
 
   const handleGenerarReporte = (formato) => {
-    // Si el usuario elige CSV, abre el modal para escoger tipo (CSV o CSV Excel)
     if (formato === 'csv') {
       setShowReporteModal(true);
       return;
     }
 
-    // Si el usuario elige JSON, genera directamente el archivo
     if (formato === 'json') {
       generarReporteUsuarios('json', usuariosFiltrados, estadisticas);
       return;
     }
 
-    // Otros formatos adicionales (por compatibilidad futura)
     generarReporteUsuarios(formato, usuariosFiltrados, estadisticas);
   };
 
@@ -158,11 +130,8 @@ const Usuarios = () => {
               <span className="visually-hidden">Cargando...</span>
             </div>
             <div>
-              <h5 className="mb-2">Cargando usuarios desde Oracle Database</h5>
+              <h5 className="mb-2">Cargando usuarios</h5>
               <p className="text-light mb-0">Conectando con la base de datos...</p>
-              {conexionInfo && (
-                <small className="text-info">{conexionInfo.mensaje}</small>
-              )}
             </div>
           </div>
         </div>
@@ -187,18 +156,13 @@ const Usuarios = () => {
         onClose={clearError}
       />
 
-      {/* Información de conexión */}
-      <ConexionInfo conexionInfo={conexionInfo} />
-
-      {/* Header */}
+      {/* Header - SOLO el título */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
           <h1 className="h3 mb-0 text-white fw-bold" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.7)' }}>
             Gestión de Usuarios
           </h1>
-          <p className="text-light mb-0">
-            Base de datos Oracle Cloud • {usuarios.length} usuarios registrados
-          </p>
+          {/* Se eliminó el texto "Base de datos Oracle Cloud • X usuarios registrados" */}
         </div>
         <div className="d-flex flex-wrap gap-2">
           <button
@@ -208,14 +172,7 @@ const Usuarios = () => {
             <i className="bi bi-person-plus me-2"></i>
             Crear Usuario
           </button>
-          <button
-            className="btn btn-outline-light shadow"
-            onClick={refreshData}
-            title="Actualizar datos"
-          >
-            <i className="bi bi-arrow-clockwise me-2"></i>
-            Actualizar
-          </button>
+          {/* Se eliminó el botón Actualizar */}
           <button
             className="btn btn-primary shadow"
             onClick={() => handleGenerarReporte('csv')}
@@ -232,6 +189,8 @@ const Usuarios = () => {
           </button>
         </div>
       </div>
+
+      {/* Se eliminó el componente ConexionInfo */}
 
       {/* Estadísticas */}
       <UsuariosStats estadisticas={estadisticas} />

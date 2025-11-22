@@ -1,31 +1,25 @@
-// src/utils/admin/usuarioStats.js
 export const calcularEstadisticasUsuarios = (usuarios, ordenes = []) => {
   const totalUsuarios = usuarios.length;
   const totalClientes = usuarios.filter(u => u.tipo === 'Cliente').length;
+  const totalVendedores = usuarios.filter(u => u.tipo === 'Vendedor').length;
   const totalAdmins = usuarios.filter(u => u.tipo === 'Admin').length;
   const usuariosConCompras = usuarios.filter(u => u.totalCompras > 0).length;
   
-  // Calcular ingresos totales basados en las órdenes existentes, no en los usuarios
-  // Esto asegura que los ingresos no cambien al eliminar usuarios
   let totalIngresos = 0;
   try {
     const storedOrdenes = localStorage.getItem('app_ordenes');
     if (storedOrdenes) {
       const todasLasOrdenes = JSON.parse(storedOrdenes);
-      // Sumar solo las órdenes que están en estado "Entregado" o similar
       totalIngresos = todasLasOrdenes
         .filter(orden => orden.estadoEnvio === 'Entregado' || orden.estado === 'Entregado')
         .reduce((sum, orden) => sum + orden.total, 0);
     } else {
-      // Fallback: calcular desde usuarios si no hay órdenes en localStorage
       totalIngresos = usuarios.reduce((sum, usuario) => sum + usuario.totalGastado, 0);
     }
   } catch (error) {
-    console.warn('Error calculando ingresos desde órdenes, usando datos de usuarios:', error);
     totalIngresos = usuarios.reduce((sum, usuario) => sum + usuario.totalGastado, 0);
   }
   
-  // Usuario con más compras (excluyendo admins)
   const clientes = usuarios.filter(u => u.tipo === 'Cliente');
   const usuarioTop = clientes.reduce((max, usuario) => 
     usuario.totalGastado > max.totalGastado ? usuario : max, 
@@ -35,6 +29,7 @@ export const calcularEstadisticasUsuarios = (usuarios, ordenes = []) => {
   return {
     totalUsuarios,
     totalClientes,
+    totalVendedores,
     totalAdmins,
     usuariosConCompras,
     totalIngresos,
@@ -45,28 +40,39 @@ export const calcularEstadisticasUsuarios = (usuarios, ordenes = []) => {
 export const aplicarFiltrosUsuarios = (usuarios, filtros) => {
   let filtered = [...usuarios];
 
-  if (filtros.run) {
-    filtered = filtered.filter(usuario => 
-      usuario.run.includes(filtros.run)
-    );
+  if (!Array.isArray(usuarios)) {
+    return [];
   }
 
-  if (filtros.nombre) {
-    filtered = filtered.filter(usuario => 
-      usuario.nombre.toLowerCase().includes(filtros.nombre.toLowerCase()) ||
-      usuario.apellidos.toLowerCase().includes(filtros.nombre.toLowerCase())
-    );
+  if (filtros.run && filtros.run.trim() !== '') {
+    const runBuscado = filtros.run.trim();
+    filtered = filtered.filter(usuario => {
+      const runUsuario = usuario?.run?.toString() || '';
+      return runUsuario.includes(runBuscado);
+    });
   }
 
-  if (filtros.email) {
-    filtered = filtered.filter(usuario => 
-      usuario.correo.toLowerCase().includes(filtros.email.toLowerCase())
-    );
+  if (filtros.nombre && filtros.nombre.trim() !== '') {
+    const nombreBuscado = filtros.nombre.trim().toLowerCase();
+    filtered = filtered.filter(usuario => {
+      const nombreUsuario = usuario?.nombre?.toLowerCase() || '';
+      const apellidosUsuario = usuario?.apellidos?.toLowerCase() || '';
+      return nombreUsuario.includes(nombreBuscado) || 
+             apellidosUsuario.includes(nombreBuscado);
+    });
   }
 
-  if (filtros.tipo) {
+  if (filtros.email && filtros.email.trim() !== '') {
+    const emailBuscado = filtros.email.trim().toLowerCase();
+    filtered = filtered.filter(usuario => {
+      const emailUsuario = usuario?.correo?.toLowerCase() || '';
+      return emailUsuario.includes(emailBuscado);
+    });
+  }
+
+  if (filtros.tipo && filtros.tipo.trim() !== '') {
     filtered = filtered.filter(usuario => 
-      usuario.tipo === filtros.tipo
+      usuario?.tipo === filtros.tipo
     );
   }
 

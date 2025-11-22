@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { usePerfil } from '../../utils/admin/usePerfil';
 import PerfilForm from '../../components/admin/PerfilForm';
 import PerfilModal from '../../components/admin/PerfilModal';
-import { authService } from '../../utils/tienda/auth';
+import { authService } from '../../utils/tienda/authService';
 import { formatDate } from '../../utils/admin/dashboardUtils';
 
 const Perfil = () => {

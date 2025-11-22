@@ -17,6 +17,13 @@ const UsuariosStats = ({ estadisticas }) => {
       border: 'border-left-info'
     },
     {
+      title: 'Vendedores',
+      value: estadisticas.totalVendedores,
+      icon: 'bi-bag-check',
+      color: 'success',
+      border: 'border-left-success'
+    },
+    {
       title: 'Administradores',
       value: estadisticas.totalAdmins,
       icon: 'bi-shield-check',
@@ -29,13 +36,6 @@ const UsuariosStats = ({ estadisticas }) => {
       icon: 'bi-cart-check',
       color: 'secondary',
       border: 'border-left-secondary'
-    },
-    {
-      title: 'Sin Compras',
-      value: estadisticas.totalUsuarios - estadisticas.usuariosConCompras,
-      icon: 'bi-cart-x',
-      color: 'danger',
-      border: 'border-left-light'
     }
   ];
 
@@ -63,7 +63,6 @@ const UsuariosStats = ({ estadisticas }) => {
         </div>
       ))}
       
-      {/* Usuario Top */}
       {estadisticas.usuarioTop && estadisticas.usuarioTop.nombre && (
         <div className="col-xl-2 col-md-4 mb-4">
           <div className="card border-left-dark shadow h-100 py-2">

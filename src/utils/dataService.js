@@ -2,8 +2,6 @@ const API_BASE_URL = 'http://localhost:8094/v1';
 
 const apiCall = async (endpoint, options = {}) => {
   try {
-    console.log(`Llamando API: ${endpoint}`, options.body ? JSON.parse(options.body) : 'Sin body');
-    
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       headers: {
         'Content-Type': 'application/json',
@@ -30,26 +28,17 @@ const apiCall = async (endpoint, options = {}) => {
         errorDetails = errorText;
       }
       
-      console.error(`Error en ${endpoint}:`, {
-        status: response.status,
-        message: errorMessage,
-        details: errorDetails
-      });
-      
       throw new Error(`${errorMessage} ${errorDetails ? `- Detalles: ${errorDetails}` : ''}`);
     }
 
     try {
       const result = await response.json();
-      console.log(`Respuesta exitosa de ${endpoint}:`, result);
       return result;
     } catch (jsonError) {
-      console.log(`${endpoint}: Sin contenido JSON, operación exitosa`);
       return { success: true };
     }
     
   } catch (error) {
-    console.error(`Error crítico en ${endpoint}:`, error);
     throw new Error(`Error al llamar ${endpoint}: ${error.message}`);
   }
 };
@@ -178,11 +167,9 @@ export const dataService = {
   },
 
   updateOrden: async (orden) => {
-    // Enviar solo los campos necesarios para evitar problemas
     const ordenParaEnviar = {
       numeroOrden: orden.numeroOrden,
       estadoEnvio: orden.estadoEnvio
-      // No enviar otros campos que puedan causar problemas de serialización
     };
     
     return await apiCall('/updateOrden', {
@@ -191,7 +178,6 @@ export const dataService = {
     });
   },
 
-  // MÉTODO NUEVO: updateOrdenEstado - específico para cambiar solo el estado
   updateOrdenEstado: async (numeroOrden, nuevoEstado) => {
     const ordenParaEnviar = {
       numeroOrden: numeroOrden,

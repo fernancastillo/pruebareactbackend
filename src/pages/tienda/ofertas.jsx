@@ -104,7 +104,6 @@ const Ofertas = () => {
       // FILTRAR SOLO LOS PRODUCTOS QUE ESTÁN EN OFERTA
       const productosEnOferta = obtenerProductosEnOferta(productosConOfertas);
       
-      console.log('🔄 Productos en oferta cargados:', productosEnOferta.length);
       setOfertas(productosEnOferta);
       
     } catch (error) {
