@@ -17,14 +17,14 @@ const SuccessAlert = ({ message, show, onClose }) => {
   if (!show) return null;
 
   return (
-    <div className="alert alert-success alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3 shadow-lg" 
-         style={{ zIndex: 9999, minWidth: '300px' }} role="alert">
+    <div className="alert alert-success alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3 shadow-lg"
+      style={{ zIndex: 9999, minWidth: '300px' }} role="alert">
       <div className="d-flex align-items-center">
         <i className="bi bi-check-circle-fill me-2 fs-5"></i>
         <strong>{message}</strong>
-        <button 
-          type="button" 
-          className="btn-close ms-2" 
+        <button
+          type="button"
+          className="btn-close ms-2"
           onClick={onClose}
           aria-label="Cerrar"
         ></button>
@@ -70,7 +70,7 @@ const Productos = () => {
     document.body.style.margin = '0';
     document.body.style.padding = '0';
     document.body.style.minHeight = '100vh';
-    
+
     return () => {
       document.body.style.backgroundImage = '';
       document.body.style.backgroundSize = '';
@@ -87,13 +87,13 @@ const Productos = () => {
     try {
       setActionError('');
       let result;
-      
+
       if (editingProducto) {
         result = await handleUpdate(editingProducto.codigo, productoData);
       } else {
         result = await handleCreate(productoData);
       }
-      
+
       if (!result.success) {
         setActionError(result.error);
       } else {
@@ -194,7 +194,7 @@ ESTADÍSTICAS DEL REPORTE:
         <div className="alert alert-danger">
           <h4>Error al cargar productos</h4>
           <p>{error}</p>
-          <button 
+          <button
             className="btn btn-primary"
             onClick={() => window.location.reload()}
           >
@@ -209,8 +209,8 @@ ESTADÍSTICAS DEL REPORTE:
 
   return (
     <div className="container-fluid" style={{ padding: '20px', minHeight: '100vh' }}>
-      
-      <SuccessAlert 
+
+      <SuccessAlert
         message={successMessage}
         show={showSuccessMessage}
         onClose={clearSuccessMessage}
@@ -219,9 +219,9 @@ ESTADÍSTICAS DEL REPORTE:
       {actionError && (
         <div className="alert alert-danger alert-dismissible fade show" role="alert">
           <strong>Error:</strong> {actionError}
-          <button 
-            type="button" 
-            className="btn-close" 
+          <button
+            type="button"
+            className="btn-close"
             onClick={() => setActionError('')}
           ></button>
         </div>

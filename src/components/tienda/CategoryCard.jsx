@@ -4,9 +4,9 @@ import { Col, Card, Button, Badge } from 'react-bootstrap';
 const CategoryCard = ({ categoria, onCategoryClick }) => {
   return (
     <Col xl={3} lg={4} md={6} className="mb-4">
-      <Card 
+      <Card
         className="h-100 category-card shadow-sm border-0"
-        style={{ 
+        style={{
           cursor: 'pointer',
           transition: 'all 0.3s ease',
           backgroundColor: '#87CEEB',
@@ -24,31 +24,31 @@ const CategoryCard = ({ categoria, onCategoryClick }) => {
         }}
       >
         <Card.Body className="text-center p-4 d-flex flex-column justify-content-center">
-          <Card.Title 
+          <Card.Title
             className="fw-bold mb-2 text-black"
-            style={{ 
+            style={{
               fontFamily: "'Indie Flower', cursive",
               fontSize: '1.5rem'
             }}
           >
             {categoria.nombre}
           </Card.Title>
-          
+
           <div className="mb-3">
-            <Badge 
-              style={{ 
+            <Badge
+              style={{
                 backgroundColor: '#dedd8ff5',
                 color: '#000000',
                 border: 'none'
-              }} 
+              }}
               className="fs-6 me-1"
             >
               {categoria.cantidadProductos} producto{categoria.cantidadProductos !== 1 ? 's' : ''}
             </Badge>
-            
+
             {/* Mostrar badge de ofertas si hay productos en oferta */}
             {categoria.ofertasEnCategoria > 0 && (
-              <Badge 
+              <Badge
                 bg="danger"
                 className="fs-6"
               >
@@ -56,9 +56,9 @@ const CategoryCard = ({ categoria, onCategoryClick }) => {
               </Badge>
             )}
           </div>
-          
-          <Button 
-            style={{ 
+
+          <Button
+            style={{
               backgroundColor: '#dedd8ff5',
               color: '#000000',
               border: '2px solid #000000',

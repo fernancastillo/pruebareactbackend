@@ -12,7 +12,7 @@ import CallToAction from '../../components/tienda/CallToAction';
 
 const Nosotros = () => {
   return (
-    <div 
+    <div
       className="min-vh-100 w-100"
       style={{
         backgroundImage: 'url("src/assets/tienda/fondostardew.png")',

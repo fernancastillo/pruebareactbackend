@@ -46,13 +46,13 @@ const Carrito = () => {
     loadCart();
     const currentUser = authService.getCurrentUser();
     setUser(currentUser);
-    
+
     syncStock();
-    
+
     const handleCartUpdate = () => {
       loadCart();
     };
-    
+
     const handleAuthChange = () => {
       const currentUser = authService.getCurrentUser();
       setUser(currentUser);
@@ -66,7 +66,7 @@ const Carrito = () => {
     window.addEventListener('cartUpdated', handleCartUpdate);
     window.addEventListener('authStateChanged', handleAuthChange);
     window.addEventListener('stockUpdated', handleStockUpdate);
-    
+
     return () => {
       window.removeEventListener('cartUpdated', handleCartUpdate);
       window.removeEventListener('authStateChanged', handleAuthChange);
@@ -106,61 +106,61 @@ const Carrito = () => {
     setShowClearCartModal(false);
   };
 
- const handleCheckout = async (totalFinal, discountCode = '', paymentData = null) => {
-  if (!user) {
-    navigate('/login');
-    return;
-  }
-
-  try {
-    if (cartItems.length === 0) {
-      throw new Error('El carrito está vacío');
+  const handleCheckout = async (totalFinal, discountCode = '', paymentData = null) => {
+    if (!user) {
+      navigate('/login');
+      return;
     }
 
-    for (const item of cartItems) {
-      const stockDisponible = await cartService.checkAvailableStock(item.codigo, item.cantidad);
-      if (!stockDisponible) {
-        throw new Error(`Stock insuficiente para: ${item.nombre}. Por favor, actualiza las cantidades.`);
+    try {
+      if (cartItems.length === 0) {
+        throw new Error('El carrito está vacío');
       }
+
+      for (const item of cartItems) {
+        const stockDisponible = await cartService.checkAvailableStock(item.codigo, item.cantidad);
+        if (!stockDisponible) {
+          throw new Error(`Stock insuficiente para: ${item.nombre}. Por favor, actualiza las cantidades.`);
+        }
+      }
+
+      const resultadoCompra = await orderCreationService.processCompletePurchase(
+        user,
+        cartItems,
+        totalFinal,
+        discountCode,
+        paymentData
+      );
+
+      if (!resultadoCompra.success) {
+        throw new Error(resultadoCompra.error);
+      }
+
+      const ordenCreada = resultadoCompra.order;
+
+      cartService.clearCart();
+      setCartItems([]);
+
+      alert('¡Pago exitoso! Tu compra ha sido procesada correctamente.\n\n' +
+        `Número de orden: ${ordenCreada.numeroOrden}\n` +
+        `Total pagado: $${totalFinal.toLocaleString('es-CL')}\n\n` +
+        'Serás redirigido a la página principal...');
+
+      setTimeout(() => {
+        navigate('/index', { replace: true });
+        setTimeout(() => window.scrollTo(0, 0), 100);
+      }, 500);
+
+    } catch (error) {
+      alert('Error al procesar la compra: ' + error.message);
     }
-
-    const resultadoCompra = await orderCreationService.processCompletePurchase(
-      user, 
-      cartItems,
-      totalFinal, 
-      discountCode, 
-      paymentData
-    );
-
-    if (!resultadoCompra.success) {
-      throw new Error(resultadoCompra.error);
-    }
-
-    const ordenCreada = resultadoCompra.order;
-
-    cartService.clearCart();
-    setCartItems([]);
-
-    alert('¡Pago exitoso! Tu compra ha sido procesada correctamente.\n\n' +
-          `Número de orden: ${ordenCreada.numeroOrden}\n` +
-          `Total pagado: $${totalFinal.toLocaleString('es-CL')}\n\n` +
-          'Serás redirigido a la página principal...');
-    
-    setTimeout(() => {
-      navigate('/index', { replace: true });
-      setTimeout(() => window.scrollTo(0, 0), 100);
-    }, 500);
-
-  } catch (error) {
-    alert('Error al procesar la compra: ' + error.message);
-  }
-};
+  };
 
   const total = cartService.calculateTotal(cartItems);
 
   if (cartItems.length === 0) {
     return (
-      <div 
+      <div
         className="min-vh-100 w-100"
         style={{
           backgroundImage: 'url("src/assets/tienda/fondostardew.png")',
@@ -177,7 +177,7 @@ const Carrito = () => {
   }
 
   return (
-    <div 
+    <div
       className="min-vh-100 w-100"
       style={{
         backgroundImage: 'url("https://images3.alphacoders.com/126/1269904.png")',
@@ -188,11 +188,11 @@ const Carrito = () => {
       }}
     >
       <div style={{ height: '80px' }}></div>
-      
+
       <Container className="py-4">
         {showAlert && (
-          <Alert 
-            variant="success" 
+          <Alert
+            variant="success"
             className="text-center rounded-4 border-3 border-dark shadow"
             style={{
               backgroundColor: '#87CEEB',
@@ -204,7 +204,7 @@ const Carrito = () => {
             ¡Compra realizada con éxito! Redirigiendo a tus pedidos...
           </Alert>
         )}
-        
+
         <Row className="mb-4">
           <Col>
             <div className="text-center">
@@ -227,8 +227,8 @@ const Carrito = () => {
                   }}
                 />
               </div>
-              
-              <h1 
+
+              <h1
                 id="fallback-title"
                 className="text-center mb-3"
                 style={{
@@ -242,8 +242,8 @@ const Carrito = () => {
               >
                 Mi Carrito de Compras
               </h1>
-              
-              <p 
+
+              <p
                 className="text-center fs-5"
                 style={{
                   color: '#000000',
@@ -260,7 +260,7 @@ const Carrito = () => {
 
         <Row>
           <Col lg={8}>
-            <div 
+            <div
               className="rounded-4 p-4 shadow-lg border-3 border-dark"
               style={{
                 backgroundColor: '#87CEEB',
@@ -275,9 +275,9 @@ const Carrito = () => {
                   <p className="mt-2">Actualizando carrito...</p>
                 </div>
               )}
-              
+
               {cartItems.map(item => (
-                <CartItem 
+                <CartItem
                   key={item.codigo}
                   item={item}
                   onUpdateQuantity={handleUpdateQuantity}
@@ -285,14 +285,14 @@ const Carrito = () => {
                   disabled={loading}
                 />
               ))}
-              
+
               <Row className="mt-4">
                 <Col>
                   <div className="d-flex justify-content-between">
-                    <Button 
-                      as={Link} 
-                      to="/productos" 
-                      variant="outline-dark" 
+                    <Button
+                      as={Link}
+                      to="/productos"
+                      variant="outline-dark"
                       className="rounded-pill px-4 py-2 fw-bold border-3"
                       style={{
                         backgroundColor: '#dedd8ff5',
@@ -313,9 +313,9 @@ const Carrito = () => {
                     >
                       ← Seguir Comprando
                     </Button>
-                    
-                    <Button 
-                      variant="outline-danger" 
+
+                    <Button
+                      variant="outline-danger"
                       className="rounded-pill px-4 py-2 fw-bold border-3"
                       style={{
                         backgroundColor: '#dedd8ff5',
@@ -348,9 +348,9 @@ const Carrito = () => {
               </Row>
             </div>
           </Col>
-          
+
           <Col lg={4}>
-            <CartSummary 
+            <CartSummary
               cartItems={cartItems}
               total={total}
               onCheckout={handleCheckout}
@@ -367,7 +367,7 @@ const Carrito = () => {
         centered
         style={{ fontFamily: "'Lato', sans-serif" }}
       >
-        <Modal.Header 
+        <Modal.Header
           closeButton
           className="border-3 border-dark"
           style={{
@@ -387,31 +387,31 @@ const Carrito = () => {
         >
           <div className="text-center">
             <div className="mb-3">
-              <div 
+              <div
                 className="display-1"
                 style={{ color: '#000000' }}
               >
                 🛒
               </div>
             </div>
-            <h5 
+            <h5
               className="fw-bold mb-3"
-              style={{ 
+              style={{
                 color: '#000000',
               }}
             >
               ¿Estás seguro de que quieres vaciar el carrito?
             </h5>
-            <p 
+            <p
               className="mb-3 fw-semibold"
-              style={{ 
+              style={{
                 color: '#000000',
                 fontSize: '1.1rem'
               }}
             >
               Se eliminarán {cartItems.reduce((sum, item) => sum + item.cantidad, 0)} productos
             </p>
-            <p 
+            <p
               className="fw-semibold text-danger"
               style={{ color: '#000000' }}
             >
@@ -425,8 +425,8 @@ const Carrito = () => {
             backgroundColor: '#87CEEB',
           }}
         >
-          <Button 
-            variant="secondary" 
+          <Button
+            variant="secondary"
             onClick={() => setShowClearCartModal(false)}
             className="rounded-pill px-4 py-2 border-3 border-dark fw-bold"
             style={{
@@ -436,8 +436,8 @@ const Carrito = () => {
           >
             Cancelar
           </Button>
-          <Button 
-            variant="danger" 
+          <Button
+            variant="danger"
             onClick={confirmClearCart}
             className="rounded-pill px-4 py-2 border-3 border-dark fw-bold"
             style={{

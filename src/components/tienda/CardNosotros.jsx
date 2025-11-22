@@ -3,7 +3,7 @@ import { Card } from 'react-bootstrap';
 
 const CardNosotros = ({ children, className = '' }) => {
   return (
-    <Card 
+    <Card
       className={`shadow ${className}`}
       style={{
         background: '#87CEEB',

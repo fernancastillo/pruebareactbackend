@@ -3,20 +3,20 @@ import { Card } from 'react-bootstrap';
 
 const ProductoImageCard = ({ product }) => {
   return (
-    <Card 
+    <Card
       className="border-3 border-primary rounded-4 shadow-lg overflow-hidden transition-all"
-      style={{ 
+      style={{
         borderColor: '#87CEEB !important',
         backgroundColor: '#87CEEB'
       }}
     >
       <div className="d-flex align-items-center justify-content-center p-5">
-        <img 
-          src={product.imagen} 
+        <img
+          src={product.imagen}
           alt={product.nombre}
           className="img-fluid w-100"
-          style={{ 
-            maxHeight: '500px', 
+          style={{
+            maxHeight: '500px',
             objectFit: 'contain',
             maxWidth: '100%'
           }}

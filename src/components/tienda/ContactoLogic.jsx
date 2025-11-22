@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { 
-  validarFormularioContacto, 
+import {
+  validarFormularioContacto,
   sanitizarDatosContacto,
   formatearTelefonoChileno,
   enviarFormularioContacto,
@@ -16,7 +16,7 @@ export const useContactoLogic = () => {
     asunto: '',
     mensaje: ''
   });
-  
+
   const [errores, setErrores] = useState({});
   const [enviando, setEnviando] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
@@ -24,21 +24,21 @@ export const useContactoLogic = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    
+
     // Validación especial para teléfono
     if (name === 'telefono') {
       const soloNumeros = value.replace(/\D/g, '').slice(0, 9);
-      setFormData(prev => ({ 
-        ...prev, 
-        [name]: soloNumeros 
+      setFormData(prev => ({
+        ...prev,
+        [name]: soloNumeros
       }));
     } else {
-      setFormData(prev => ({ 
-        ...prev, 
-        [name]: value 
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
       }));
     }
-    
+
     // Limpiar error del campo cuando el usuario empiece a escribir
     if (errores[name]) {
       setErrores(prev => ({
@@ -50,7 +50,7 @@ export const useContactoLogic = () => {
 
   const handleBlur = (e) => {
     const { name, value } = e.target;
-    
+
     // Validación especial para teléfono
     if (name === 'telefono' && value) {
       if (value.length !== 9) {
@@ -68,7 +68,7 @@ export const useContactoLogic = () => {
         return;
       }
     }
-    
+
     // Validación en tiempo real al salir del campo
     if (value.trim()) {
       const erroresCampo = validarFormularioContacto({ [name]: value });
@@ -130,7 +130,7 @@ export const useContactoLogic = () => {
     try {
       // Sanitizar datos
       const datosSanitizados = sanitizarDatosContacto(formData);
-      
+
       // Formatear teléfono si existe
       if (datosSanitizados.telefono) {
         datosSanitizados.telefono = formatearTelefonoChileno(datosSanitizados.telefono);
@@ -138,13 +138,13 @@ export const useContactoLogic = () => {
 
       // Enviar formulario (simulación)
       await enviarFormularioContacto(datosSanitizados);
-      
+
       // Guardar localmente para demo
       guardarContactoLocal(datosSanitizados);
 
       // Mostrar éxito
       mostrarExito('✅ ¡Mensaje enviado correctamente! Te contactaremos pronto.');
-      
+
       // Resetear formulario
       setFormData({
         nombre: '',

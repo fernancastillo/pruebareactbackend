@@ -2,17 +2,17 @@ import React from 'react';
 import { Card, Form, Button, Alert, InputGroup } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
-const LoginForm = ({ 
-  formData, 
-  loading, 
-  error, 
-  showPassword, 
-  onInputChange, 
-  onSubmit, 
-  onTogglePassword 
+const LoginForm = ({
+  formData,
+  loading,
+  error,
+  showPassword,
+  onInputChange,
+  onSubmit,
+  onTogglePassword
 }) => {
   return (
-    <Card 
+    <Card
       className="shadow-lg border-3 border-dark rounded-4"
       style={{
         backgroundColor: '#87CEEB',
@@ -21,7 +21,7 @@ const LoginForm = ({
     >
       <Card.Body className="p-4 p-md-5">
         {error && (
-          <Alert 
+          <Alert
             variant="danger"
             className="text-center border-3 border-dark rounded-3"
             style={{
@@ -36,8 +36,8 @@ const LoginForm = ({
 
         <Form onSubmit={onSubmit}>
           <Form.Group className="mb-4">
-            <Form.Label 
-              className="fw-semibold" 
+            <Form.Label
+              className="fw-semibold"
               style={{ color: '#000000', fontSize: '1.1rem' }}
             >
               Correo Electrónico
@@ -61,8 +61,8 @@ const LoginForm = ({
           </Form.Group>
 
           <Form.Group className="mb-4">
-            <Form.Label 
-              className="fw-semibold" 
+            <Form.Label
+              className="fw-semibold"
               style={{ color: '#000000', fontSize: '1.1rem' }}
             >
               Contraseña
@@ -100,8 +100,8 @@ const LoginForm = ({
             </InputGroup>
           </Form.Group>
 
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             className="w-100 rounded-pill py-3 border-3 border-dark fw-bold mb-4"
             disabled={loading}
             style={{
@@ -126,9 +126,9 @@ const LoginForm = ({
           >
             {loading ? (
               <>
-                <span 
-                  className="spinner-border spinner-border-sm me-2" 
-                  role="status" 
+                <span
+                  className="spinner-border spinner-border-sm me-2"
+                  role="status"
                   aria-hidden="true"
                   style={{ color: '#000000' }}
                 ></span>
@@ -140,19 +140,19 @@ const LoginForm = ({
           </Button>
         </Form>
 
-        <hr 
-          className="my-4" 
-          style={{ 
-            borderColor: '#000000', 
-            opacity: '0.6', 
-            borderWidth: '2px' 
-          }} 
+        <hr
+          className="my-4"
+          style={{
+            borderColor: '#000000',
+            opacity: '0.6',
+            borderWidth: '2px'
+          }}
         />
 
         <div className="text-center">
-          <p 
+          <p
             className="mb-3"
-            style={{ 
+            style={{
               color: '#000000',
               fontFamily: "'Lato', sans-serif",
               fontWeight: '500',
@@ -161,7 +161,7 @@ const LoginForm = ({
           >
             ¿No tienes una cuenta?
           </p>
-          <Button 
+          <Button
             as={Link}
             to="/registro"
             variant="outline-dark"

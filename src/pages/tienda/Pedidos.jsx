@@ -16,11 +16,11 @@ const Pedidos = () => {
   useEffect(() => {
     const loadUserOrders = async () => {
       console.log('=== INICIANDO CARGA DE PEDIDOS ===');
-      
+
       const currentUser = authService.getCurrentUser();
       console.log('Usuario actual desde authService:', currentUser);
       setUser(currentUser);
-      
+
       if (!currentUser) {
         console.log('No hay usuario autenticado');
         setLoading(false);
@@ -65,13 +65,13 @@ const Pedidos = () => {
 
           setOrders(sortedOrders);
         }
-        
+
       } catch (error) {
         console.error('Error crítico al cargar órdenes:', error);
         setDebugInfo(`Error al cargar órdenes: ${error.message}`);
         setOrders([]);
       }
-      
+
       setLoading(false);
     };
 
@@ -80,7 +80,7 @@ const Pedidos = () => {
 
   if (loading) {
     return (
-      <div 
+      <div
         className="min-vh-100 w-100"
         style={{
           backgroundImage: 'url("src/assets/tienda/fondostardew.png")',
@@ -101,7 +101,7 @@ const Pedidos = () => {
 
   if (!user) {
     return (
-      <div 
+      <div
         className="min-vh-100 w-100"
         style={{
           backgroundImage: 'url("src/assets/tienda/fondostardew.png")',
@@ -113,7 +113,7 @@ const Pedidos = () => {
       >
         <div className="navbar-spacer"></div>
         <Container className="text-center py-5">
-          <div 
+          <div
             className="rounded-4 p-5 mx-auto"
             style={{
               backgroundColor: 'rgba(222, 221, 143, 0.95)',
@@ -132,7 +132,7 @@ const Pedidos = () => {
   }
 
   return (
-    <div 
+    <div
       className="min-vh-100 w-100"
       style={{
         backgroundImage: 'url("src/assets/tienda/fondostardew.png")',
@@ -143,10 +143,10 @@ const Pedidos = () => {
       }}
     >
       <div className="navbar-spacer"></div>
-      
+
       <Container className="py-4">
         <PedidosHeader />
-        
+
         {/* Información de diagnóstico */}
         {debugInfo && (
           <Alert variant="info" className="mb-4">
@@ -154,16 +154,16 @@ const Pedidos = () => {
             {debugInfo}
           </Alert>
         )}
-        
+
         {orders.length === 0 ? (
           <EmptyOrders user={user} />
         ) : (
           <Row>
             <Col>
               {orders.map(order => (
-                <OrderCard 
-                  key={order.numeroOrden} 
-                  order={order} 
+                <OrderCard
+                  key={order.numeroOrden}
+                  order={order}
                 />
               ))}
             </Col>

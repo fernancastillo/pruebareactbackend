@@ -21,7 +21,7 @@ const Blogs = () => {
   const handleLeerArticulo = (blogId) => {
     const blog = blogsData.find(b => b.id === blogId);
     if (!blog) return;
-    
+
     setModalBlog(blog);
     setModalShow(true);
   };
@@ -32,7 +32,7 @@ const Blogs = () => {
   };
 
   return (
-    <div 
+    <div
       className="min-vh-100 w-100"
       style={{
         backgroundImage: 'url("src/assets/tienda/fondostardew.png")',
@@ -45,9 +45,9 @@ const Blogs = () => {
       <div style={{ height: '80px' }}></div>
 
       {showAlert && (
-        <Alert 
-          variant={alertMessage.includes('✅') ? 'success' : 'danger'} 
-          className="position-fixed top-0 start-50 translate-middle-x mt-5" 
+        <Alert
+          variant={alertMessage.includes('✅') ? 'success' : 'danger'}
+          className="position-fixed top-0 start-50 translate-middle-x mt-5"
           style={{ zIndex: 1050, minWidth: '300px' }}
         >
           {alertMessage}
@@ -70,7 +70,7 @@ const Blogs = () => {
         {/* NEWSLETTER */}
         <Row className="mt-5">
           <Col lg={8} className="mx-auto">
-            <NewsletterCard 
+            <NewsletterCard
               email={email}
               setEmail={setEmail}
               onSubmit={handleSuscribirClick}
@@ -80,7 +80,7 @@ const Blogs = () => {
       </Container>
 
       {/* MODAL DE BLOG */}
-      <BlogModal 
+      <BlogModal
         show={modalShow}
         onHide={() => setModalShow(false)}
         blog={modalBlog}

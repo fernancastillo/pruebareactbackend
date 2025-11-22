@@ -32,7 +32,7 @@ const PerfilModal = ({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+
     if (validarFormulario()) {
       onSubmit(e);
     }
@@ -40,7 +40,7 @@ const PerfilModal = ({
 
   const handleRegionChange = (e) => {
     const regionSeleccionada = e.target.value;
-    
+
     onChange({ target: { name: 'region', value: regionSeleccionada } });
     onChange({ target: { name: 'comuna', value: '' } });
 
@@ -79,7 +79,7 @@ const PerfilModal = ({
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    
+
     if (errores[name]) {
       setErrores(prev => ({
         ...prev,
@@ -97,44 +97,44 @@ const PerfilModal = ({
 
   const validarEmail = (email) => {
     if (!email?.trim()) return 'El correo electrónico es obligatorio';
-    
+
     const dominiosPermitidos = ['gmail.com', 'duoc.cl', 'profesor.duoc.cl'];
     const regex = new RegExp(`^[a-zA-Z0-9._%+-]+@(${dominiosPermitidos.join('|')})$`);
-    
+
     if (!regex.test(email)) {
       return `Solo se permiten correos @duoc.cl, @profesor.duoc.cl o @gmail.com`;
     }
-    
+
     return '';
   };
 
   const validarTelefono = (telefono) => {
     if (!telefono || telefono.trim() === '') return '';
-    
+
     const soloNumeros = telefono.replace(/\D/g, '');
-    
+
     if (soloNumeros.length !== 9) {
       return 'El teléfono debe tener 9 dígitos';
     }
-    
+
     if (!soloNumeros.startsWith('9')) {
       return 'El teléfono debe empezar con 9';
     }
-    
+
     return '';
   };
 
   const validarDireccion = (direccion) => {
     if (!direccion?.trim()) return 'La dirección es obligatoria';
-    
+
     if (direccion.trim().length < 5) {
       return 'La dirección debe tener al menos 5 caracteres';
     }
-    
+
     if (direccion.trim().length > 100) {
       return 'La dirección no puede tener más de 100 caracteres';
     }
-    
+
     return '';
   };
 
@@ -174,14 +174,14 @@ const PerfilModal = ({
   const calcularEdad = (fechaNacimiento) => {
     const hoy = new Date();
     const fechaNac = new Date(fechaNacimiento);
-    
+
     let edad = hoy.getFullYear() - fechaNac.getFullYear();
     const mes = hoy.getMonth() - fechaNac.getMonth();
-    
+
     if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNac.getDate())) {
       edad--;
     }
-    
+
     return edad;
   };
 
@@ -216,7 +216,7 @@ const PerfilModal = ({
       const fechaNacimiento = new Date(formData.fecha_nacimiento);
       const hoy = new Date();
       const edad = calcularEdad(formData.fecha_nacimiento);
-      
+
       if (fechaNacimiento > hoy) {
         nuevosErrores.fecha_nacimiento = 'La fecha de nacimiento no puede ser futura';
       } else if (edad < 10) {
@@ -249,14 +249,14 @@ const PerfilModal = ({
               <i className="bi bi-pencil-square me-2"></i>
               Editar Perfil
             </h5>
-            <button 
-              type="button" 
-              className="btn-close btn-close-white" 
+            <button
+              type="button"
+              className="btn-close btn-close-white"
               onClick={onClose}
               disabled={guardando}
             ></button>
           </div>
-          
+
           <form onSubmit={handleSubmit}>
             <div className="modal-body">
               <div className="row">
@@ -265,8 +265,8 @@ const PerfilModal = ({
                     <label className="form-label fw-bold">
                       Nombre <span className="text-danger">*</span>
                     </label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       className={getInputClass('nombre')}
                       name="nombre"
                       value={formData.nombre || ''}
@@ -291,8 +291,8 @@ const PerfilModal = ({
                     <label className="form-label fw-bold">
                       Apellidos <span className="text-danger">*</span>
                     </label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       className={getInputClass('apellidos')}
                       name="apellidos"
                       value={formData.apellidos || ''}
@@ -318,8 +318,8 @@ const PerfilModal = ({
                 <label className="form-label fw-bold">
                   Correo Electrónico <span className="text-danger">*</span>
                 </label>
-                <input 
-                  type="email" 
+                <input
+                  type="email"
                   className={getInputClass('correo')}
                   name="correo"
                   value={formData.correo || ''}
@@ -340,8 +340,8 @@ const PerfilModal = ({
 
               <div className="mb-3">
                 <label className="form-label fw-bold">Teléfono</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   className={getInputClass('telefono')}
                   name="telefono"
                   value={formData.telefono || ''}
@@ -364,8 +364,8 @@ const PerfilModal = ({
                 <label className="form-label fw-bold">
                   Dirección <span className="text-danger">*</span>
                 </label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   className={getInputClass('direccion')}
                   name="direccion"
                   value={formData.direccion || ''}
@@ -444,8 +444,8 @@ const PerfilModal = ({
 
               <div className="mb-3">
                 <label className="form-label fw-bold">Fecha de Nacimiento</label>
-                <input 
-                  type="date" 
+                <input
+                  type="date"
                   className={getInputClass('fecha_nacimiento')}
                   name="fecha_nacimiento"
                   value={formData.fecha_nacimiento || ''}
@@ -469,7 +469,7 @@ const PerfilModal = ({
               <div className="mb-3">
                 <label className="form-label fw-bold">Nueva Contraseña</label>
                 <div className="input-group">
-                  <input 
+                  <input
                     type={mostrarPassword ? "text" : "password"}
                     className={getInputClass('password')}
                     name="password"
@@ -478,7 +478,7 @@ const PerfilModal = ({
                     placeholder="Dejar vacío para mantener la actual"
                     maxLength="10"
                   />
-                  <button 
+                  <button
                     type="button"
                     className="btn btn-outline-secondary"
                     onClick={() => setMostrarPassword(!mostrarPassword)}
@@ -498,7 +498,7 @@ const PerfilModal = ({
               <div className="mb-3">
                 <label className="form-label fw-bold">Confirmar Contraseña</label>
                 <div className="input-group">
-                  <input 
+                  <input
                     type={mostrarConfirmarPassword ? "text" : "password"}
                     className={getInputClass('confirmarPassword')}
                     name="confirmarPassword"
@@ -507,7 +507,7 @@ const PerfilModal = ({
                     placeholder="Repetir contraseña"
                     maxLength="10"
                   />
-                  <button 
+                  <button
                     type="button"
                     className="btn btn-outline-secondary"
                     onClick={() => setMostrarConfirmarPassword(!mostrarConfirmarPassword)}
@@ -531,17 +531,17 @@ const PerfilModal = ({
             </div>
 
             <div className="modal-footer">
-              <button 
-                type="button" 
-                className="btn btn-secondary" 
+              <button
+                type="button"
+                className="btn btn-secondary"
                 onClick={onClose}
                 disabled={guardando}
               >
                 <i className="bi bi-x-circle me-2"></i>
                 Cancelar
               </button>
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 className="btn btn-primary"
                 disabled={guardando}
               >

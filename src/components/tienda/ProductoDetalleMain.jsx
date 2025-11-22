@@ -3,12 +3,12 @@ import { Row, Col } from 'react-bootstrap';
 import ProductoImageCard from './ProductoImageCard';
 import ProductoInfoCard from './ProductoInfoCard';
 
-const ProductoDetalleMain = ({ 
-  product, 
-  cantidad, 
-  setCantidad, 
-  handleAddToCart, 
-  formatearPrecio, 
+const ProductoDetalleMain = ({
+  product,
+  cantidad,
+  setCantidad,
+  handleAddToCart,
+  formatearPrecio,
   categoryIcons,
   user // ✅ AGREGAR ESTA PROP
 }) => {
@@ -17,9 +17,9 @@ const ProductoDetalleMain = ({
       <Col lg={6} className="mb-4">
         <ProductoImageCard product={product} />
       </Col>
-      
+
       <Col lg={6}>
-        <ProductoInfoCard 
+        <ProductoInfoCard
           product={product}
           cantidad={cantidad}
           setCantidad={setCantidad}

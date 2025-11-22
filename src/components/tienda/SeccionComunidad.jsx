@@ -10,7 +10,7 @@ const SeccionComunidad = () => {
       <Col lg={10} className="mx-auto">
         <CardNosotros>
           <div className="p-4">
-            <h2 
+            <h2
               style={{
                 fontFamily: "'Indie Flower', cursive",
                 fontSize: '2.2rem',
@@ -22,14 +22,14 @@ const SeccionComunidad = () => {
             >
               Únete a Nuestra Comunidad
             </h2>
-            
+
             <div className="text-center mb-4">
-              <ImagenNosotros 
+              <ImagenNosotros
                 src={uneteImage}
                 alt="Únete a nuestra comunidad de Stardew Valley"
               />
             </div>
-            
+
             <p style={{
               fontFamily: "'Lato', sans-serif",
               fontSize: '1.1rem',
@@ -38,8 +38,8 @@ const SeccionComunidad = () => {
               marginBottom: '0',
               textAlign: 'center'
             }}>
-              En Junimos Store no solo vendemos productos, creamos experiencias. 
-              Formamos parte de una comunidad vibrante de jugadores que comparten 
+              En Junimos Store no solo vendemos productos, creamos experiencias.
+              Formamos parte de una comunidad vibrante de jugadores que comparten
               consejos, historias y su amor por Stardew Valley.
             </p>
           </div>

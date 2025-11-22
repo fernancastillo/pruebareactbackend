@@ -68,25 +68,25 @@ export const sanitizarDatosContacto = (formData) => {
 // Validar y formatear teléfono chileno
 export const formatearTelefonoChileno = (telefono) => {
   if (!telefono) return '';
-  
+
   // Remover todos los espacios y caracteres especiales
   const numeroLimpio = telefono.replace(/\D/g, '');
-  
+
   // Si empieza con 9, asumir que es celular
   if (numeroLimpio.startsWith('9') && numeroLimpio.length === 9) {
     return `+56 ${numeroLimpio}`;
   }
-  
+
   // Si empieza con 569, ya está en formato internacional
   if (numeroLimpio.startsWith('569') && numeroLimpio.length === 11) {
     return `+${numeroLimpio}`;
   }
-  
+
   // Si tiene 8 dígitos, asumir que es número fijo
   if (numeroLimpio.length === 8) {
     return `+56 ${numeroLimpio}`;
   }
-  
+
   return telefono;
 };
 
@@ -95,7 +95,7 @@ export const enviarFormularioContacto = async (datosFormulario) => {
   try {
     // Simular delay de red
     await new Promise(resolve => setTimeout(resolve, 1000));
-    
+
     // Aquí iría la llamada real a tu API
     // const response = await fetch('/api/contacto', {
     //   method: 'POST',
@@ -104,16 +104,16 @@ export const enviarFormularioContacto = async (datosFormulario) => {
     //   },
     //   body: JSON.stringify(datosFormulario),
     // });
-    
+
     // Simular respuesta exitosa
     const respuestaSimulada = {
       success: true,
       message: 'Mensaje enviado correctamente',
       id: Math.random().toString(36).substr(2, 9)
     };
-    
+
     return respuestaSimulada;
-    
+
   } catch (error) {
     throw new Error('Error al enviar el formulario: ' + error.message);
   }
@@ -128,10 +128,10 @@ export const guardarContactoLocal = (datosContacto) => {
       id: Date.now().toString(),
       leido: false
     };
-    
+
     contactosGuardados.unshift(nuevoContacto);
     localStorage.setItem('junimoContactos', JSON.stringify(contactosGuardados));
-    
+
     return true;
   } catch (error) {
     console.error('Error al guardar contacto:', error);
@@ -157,7 +157,7 @@ export const mostrarNotificacion = (tipo, mensaje) => {
     error: () => console.log(`❌ ${mensaje}`),   // Reemplazar con toast.error
     info: () => console.log(`ℹ️ ${mensaje}`)     // Reemplazar con toast.info
   };
-  
+
   return notificaciones[tipo] ? notificaciones[tipo]() : null;
 };
 
@@ -174,12 +174,12 @@ export const validarContenidoMensaje = (mensaje) => {
     'spam', 'phishing', 'malware', 'virus', 'estafa',
     'fraude', 'hack', 'criptomoneda', 'inversión', 'bitcoin'
   ];
-  
+
   const mensajeLower = mensaje.toLowerCase();
-  const palabrasEncontradas = palabrasNoPermitidas.filter(palabra => 
+  const palabrasEncontradas = palabrasNoPermitidas.filter(palabra =>
     mensajeLower.includes(palabra)
   );
-  
+
   return {
     valido: palabrasEncontradas.length === 0,
     palabrasProhibidas: palabrasEncontradas

@@ -6,10 +6,10 @@ export const registroService = {
     try {
       console.log('🔍 Iniciando registro de usuario en BD Oracle...');
       console.log('📦 Datos recibidos:', usuarioData);
-      
+
       // Verificar si el email ya existe en la BD
       const emailExiste = await registroService.verificarEmailExistente(usuarioData.email);
-      
+
       if (emailExiste) {
         console.log('❌ Email ya existe en BD:', usuarioData.email);
         return {
@@ -20,7 +20,7 @@ export const registroService = {
 
       // Verificar si el RUN ya existe en la BD
       const runExiste = await registroService.verificarRUNExistente(usuarioData.run);
-      
+
       if (runExiste) {
         console.log('❌ RUN ya existe en BD:', usuarioData.run);
         return {
@@ -31,11 +31,11 @@ export const registroService = {
 
       // Obtener nombre de la región
       const regionSeleccionada = usuarioData.regionNombre || 'Región no especificada';
-      
+
       // Hashear la contraseña antes de guardarla (igual que en el login)
       const passwordHash = await registroService.hashPasswordSHA256(usuarioData.password);
       console.log('🔐 Contraseña hasheada:', passwordHash);
-      
+
       // Preparar datos para la base de datos
       const nuevoUsuario = {
         run: usuarioData.run,
@@ -66,7 +66,7 @@ export const registroService = {
         try {
           const usuarioVerificado = await dataService.getUsuarioByCorreo(usuarioData.email);
           console.log('🔍 Usuario verificado en BD:', usuarioVerificado);
-          
+
           if (usuarioVerificado) {
             return {
               success: true,
@@ -114,14 +114,14 @@ export const registroService = {
       // Convertir el string a un ArrayBuffer
       const encoder = new TextEncoder();
       const data = encoder.encode(password);
-      
+
       // Hashear con SHA-256
       const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-      
+
       // Convertir el ArrayBuffer a string hexadecimal
       const hashArray = Array.from(new Uint8Array(hashBuffer));
       const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-      
+
       console.log('🔐 Hash generado para registro:', password, '->', hashHex.toUpperCase());
       return hashHex.toUpperCase();
     } catch (error) {
@@ -147,14 +147,14 @@ export const registroService = {
   verificarEmailExistente: async (email) => {
     try {
       console.log('🔍 Verificando email en BD:', email);
-      
+
       try {
         const usuarioBD = await dataService.getUsuarioByCorreo(email);
         return !!usuarioBD;
       } catch (endpointError) {
         console.warn('⚠️ Endpoint específico falló, usando lista completa...');
         const todosUsuarios = await dataService.getUsuarios();
-        return todosUsuarios.some(user => 
+        return todosUsuarios.some(user =>
           user.correo && user.correo.toLowerCase() === email.toLowerCase()
         );
       }
@@ -168,7 +168,7 @@ export const registroService = {
   verificarRUNExistente: async (run) => {
     try {
       console.log('🔍 Verificando RUN en BD:', run);
-      
+
       try {
         const usuarioBD = await dataService.getUsuarioById(run);
         return !!usuarioBD;
@@ -201,7 +201,7 @@ export const registroService = {
       } catch (endpointError) {
         console.warn('⚠️ Endpoint específico falló, usando lista completa...');
         const todosUsuarios = await dataService.getUsuarios();
-        return todosUsuarios.find(user => 
+        return todosUsuarios.find(user =>
           user.correo && user.correo.toLowerCase() === email.toLowerCase()
         );
       }
@@ -215,15 +215,15 @@ export const registroService = {
   testPasswordHashing: async () => {
     const testPassword = '123456';
     const expectedHash = '8D969EEF6ECAD3C29A3A629280E686CF0C3F5D5A86AFF3CA12020C923ADC6C92';
-    
+
     const generatedHash = await registroService.hashPasswordSHA256(testPassword);
-    
+
     console.log('🧪 TEST DE HASHING EN REGISTRO:');
     console.log('🔐 Contraseña:', testPassword);
     console.log('🔐 Hash esperado:', expectedHash);
     console.log('🔐 Hash generado:', generatedHash);
     console.log('✅ Coinciden:', generatedHash === expectedHash);
-    
+
     return generatedHash === expectedHash;
   }
 };

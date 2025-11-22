@@ -11,7 +11,7 @@ const PaymentConfirmationModal = ({ show, onHide, onContinue, totalFinal }) => {
       size="lg"
       style={{ fontFamily: "'Lato', sans-serif" }}
     >
-      <Modal.Header 
+      <Modal.Header
         className="border-3 border-dark"
         style={{
           backgroundColor: '#87CEEB',
@@ -23,7 +23,7 @@ const PaymentConfirmationModal = ({ show, onHide, onContinue, totalFinal }) => {
           </span>
         </Modal.Title>
       </Modal.Header>
-      
+
       <Modal.Body
         style={{
           backgroundColor: '#87CEEB',
@@ -31,15 +31,15 @@ const PaymentConfirmationModal = ({ show, onHide, onContinue, totalFinal }) => {
       >
         <div className="text-center">
           <div className="mb-4">
-            <div 
+            <div
               className="display-1 mb-3"
               style={{ color: '#000000' }}
             >
               💳
             </div>
-            <h4 
+            <h4
               className="fw-bold mb-3"
-              style={{ 
+              style={{
                 color: '#000000',
                 fontFamily: "'Lato', sans-serif"
               }}
@@ -48,8 +48,8 @@ const PaymentConfirmationModal = ({ show, onHide, onContinue, totalFinal }) => {
             </h4>
           </div>
 
-          <Alert 
-            variant="info" 
+          <Alert
+            variant="info"
             className="border-3 border-dark rounded-3 mb-4"
             style={{
               backgroundColor: '#dedd8ff5',
@@ -67,7 +67,7 @@ const PaymentConfirmationModal = ({ show, onHide, onContinue, totalFinal }) => {
             </div>
           </Alert>
 
-          <div 
+          <div
             className="p-3 rounded-3 border-3 border-dark mb-4"
             style={{
               backgroundColor: '#90EE90',
@@ -84,7 +84,7 @@ const PaymentConfirmationModal = ({ show, onHide, onContinue, totalFinal }) => {
                 </div>
               </Col>
               <Col xs="auto">
-                <div 
+                <div
                   className="display-4"
                   style={{ color: '#000000' }}
                 >
@@ -94,7 +94,7 @@ const PaymentConfirmationModal = ({ show, onHide, onContinue, totalFinal }) => {
             </Row>
           </div>
 
-          <div 
+          <div
             className="small p-2 rounded-3 border-2 border-dark"
             style={{
               backgroundColor: '#dedd8ff5',
@@ -105,15 +105,15 @@ const PaymentConfirmationModal = ({ show, onHide, onContinue, totalFinal }) => {
           </div>
         </div>
       </Modal.Body>
-      
+
       <Modal.Footer
         className="border-3 border-dark"
         style={{
           backgroundColor: '#87CEEB',
         }}
       >
-        <Button 
-          variant="outline-secondary" 
+        <Button
+          variant="outline-secondary"
           onClick={onHide}
           className="rounded-pill px-4 py-2 border-3 border-dark fw-bold"
           style={{
@@ -124,8 +124,8 @@ const PaymentConfirmationModal = ({ show, onHide, onContinue, totalFinal }) => {
         >
           ← Volver
         </Button>
-        <Button 
-          variant="success" 
+        <Button
+          variant="success"
           onClick={onContinue}
           className="rounded-pill px-4 py-2 border-3 border-dark fw-bold"
           style={{

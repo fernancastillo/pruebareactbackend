@@ -62,7 +62,7 @@ const UsuariosStats = ({ estadisticas }) => {
           </div>
         </div>
       ))}
-      
+
       {estadisticas.usuarioTop && estadisticas.usuarioTop.nombre && (
         <div className="col-xl-2 col-md-4 mb-4">
           <div className="card border-left-dark shadow h-100 py-2">

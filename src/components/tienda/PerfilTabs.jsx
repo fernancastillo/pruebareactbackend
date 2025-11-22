@@ -5,11 +5,11 @@ import Seguridad from './Seguridad';
 import Preferencias from './Preferencias';
 import regionesComunasData from '../../data/regiones_comunas.json';
 
-const PerfilTabs = ({ 
-  formData, 
-  onInputChange, 
+const PerfilTabs = ({
+  formData,
+  onInputChange,
   onBlur,
-  onSubmit, 
+  onSubmit,
   errores = {}
 }) => {
   const [comunasFiltradas, setComunasFiltradas] = useState([]);
@@ -32,7 +32,7 @@ const PerfilTabs = ({
   const handleRegionChange = (e) => {
     const { name, value } = e.target;
     const regionSeleccionada = regiones.find(r => r.id === parseInt(value));
-    
+
     onInputChange({
       target: {
         name: 'region',
@@ -52,21 +52,21 @@ const PerfilTabs = ({
 
   return (
     <div>
-      <Tabs 
-        defaultActiveKey="perfil" 
+      <Tabs
+        defaultActiveKey="perfil"
         className="mb-0"
-        style={{ 
+        style={{
           fontFamily: "'Lato', sans-serif",
           border: 'none'
         }}
       >
-        <Tab 
-          eventKey="perfil" 
+        <Tab
+          eventKey="perfil"
           title={
-            <span 
+            <span
               className="rounded-top-4 px-3 py-2"
-              style={{ 
-                fontFamily: "'Lato', sans-serif", 
+              style={{
+                fontFamily: "'Lato', sans-serif",
                 fontWeight: '600',
                 backgroundColor: '#87CEEB',
                 border: '3px solid #000000',
@@ -82,9 +82,9 @@ const PerfilTabs = ({
             </span>
           }
         >
-          <Card 
+          <Card
             className="shadow-lg border-3 border-dark rounded-4"
-            style={{ 
+            style={{
               backgroundColor: '#87CEEB',
               borderTopLeftRadius: '0 !important',
               borderTopRightRadius: '0 !important',
@@ -92,7 +92,7 @@ const PerfilTabs = ({
             }}
           >
             <Card.Body className="p-4">
-              <InformacionPersonal 
+              <InformacionPersonal
                 formData={formData}
                 onInputChange={onInputChange}
                 onRegionChange={handleRegionChange}
@@ -106,13 +106,13 @@ const PerfilTabs = ({
           </Card>
         </Tab>
 
-        <Tab 
-          eventKey="seguridad" 
+        <Tab
+          eventKey="seguridad"
           title={
-            <span 
+            <span
               className="rounded-top-4 px-3 py-2"
-              style={{ 
-                fontFamily: "'Lato', sans-serif", 
+              style={{
+                fontFamily: "'Lato', sans-serif",
                 fontWeight: '600',
                 backgroundColor: '#87CEEB',
                 border: '3px solid #000000',
@@ -128,9 +128,9 @@ const PerfilTabs = ({
             </span>
           }
         >
-          <Card 
+          <Card
             className="shadow-lg border-3 border-dark rounded-4"
-            style={{ 
+            style={{
               backgroundColor: '#87CEEB',
               borderTopLeftRadius: '0 !important',
               borderTopRightRadius: '0 !important',
@@ -143,13 +143,13 @@ const PerfilTabs = ({
           </Card>
         </Tab>
 
-        <Tab 
-          eventKey="preferencias" 
+        <Tab
+          eventKey="preferencias"
           title={
-            <span 
+            <span
               className="rounded-top-4 px-3 py-2"
-              style={{ 
-                fontFamily: "'Lato', sans-serif", 
+              style={{
+                fontFamily: "'Lato', sans-serif",
                 fontWeight: '600',
                 backgroundColor: '#87CEEB',
                 border: '3px solid #000000',
@@ -164,9 +164,9 @@ const PerfilTabs = ({
             </span>
           }
         >
-          <Card 
+          <Card
             className="shadow-lg border-3 border-dark rounded-4"
-            style={{ 
+            style={{
               backgroundColor: '#87CEEB',
               borderTopLeftRadius: '0 !important',
               borderTopRightRadius: '0 !important',

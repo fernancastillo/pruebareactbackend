@@ -2,8 +2,8 @@ import React from 'react';
 
 const ImagenNosotros = ({ src, alt, maxWidth = '220px', height = '160px', className = '' }) => {
   return (
-    <img 
-      src={src} 
+    <img
+      src={src}
       alt={alt}
       className={className}
       style={{

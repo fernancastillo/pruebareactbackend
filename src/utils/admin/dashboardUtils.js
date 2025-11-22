@@ -8,11 +8,11 @@ export const formatCurrency = (amount) => {
 
 export const formatDate = (dateString) => {
   if (!dateString) return 'Fecha no disponible';
-  
+
   try {
     // Manejar diferentes formatos de fecha desde Oracle
     const date = new Date(dateString);
-    
+
     if (isNaN(date.getTime())) {
       // Intentar con formato de Oracle SQL Date
       const oracleDate = new Date(dateString.split(' ')[0]);
@@ -21,7 +21,7 @@ export const formatDate = (dateString) => {
       }
       return 'Fecha inválida';
     }
-    
+
     return date.toLocaleDateString('es-CL');
   } catch (error) {
     console.error('Error formateando fecha:', dateString, error);
@@ -31,7 +31,7 @@ export const formatDate = (dateString) => {
 
 export const getEstadoBadge = (estado) => {
   if (!estado) return 'bg-secondary';
-  
+
   const estadoLower = estado.toLowerCase();
   const badgeClasses = {
     'entregado': 'bg-success',

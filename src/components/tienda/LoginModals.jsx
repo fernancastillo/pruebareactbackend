@@ -10,7 +10,7 @@ export const SuccessModal = ({ show, onHide, user, userType }) => {
       size="lg"
       style={{ fontFamily: "'Lato', sans-serif" }}
     >
-      <Modal.Header 
+      <Modal.Header
         className="border-3 border-dark"
         style={{
           backgroundColor: '#87CEEB',
@@ -29,42 +29,42 @@ export const SuccessModal = ({ show, onHide, user, userType }) => {
         }}
       >
         <div className="mb-4">
-          <div 
+          <div
             className="display-1 mb-3"
             style={{ color: '#000000' }}
           >
             🎉
           </div>
-          <h4 
+          <h4
             className="fw-bold mb-3"
-            style={{ 
+            style={{
               color: '#000000',
               fontFamily: "'Indie Flower', cursive"
             }}
           >
             ¡Bienvenido de vuelta, {user?.nombre}!
           </h4>
-          <p 
+          <p
             className="fs-5"
-            style={{ 
+            style={{
               color: '#000000',
               fontWeight: '500'
             }}
           >
             Has iniciado sesión correctamente.
           </p>
-          <p 
+          <p
             className="fs-6"
-            style={{ 
+            style={{
               color: '#000000',
               fontWeight: '400'
             }}
           >
-            {userType === 'Administrador' 
-              ? 'Serás redirigido al panel de administración.' 
+            {userType === 'Administrador'
+              ? 'Serás redirigido al panel de administración.'
               : userType === 'Vendedor'
-              ? 'Serás redirigido al panel de vendedor.'
-              : 'Serás redirigido a la página principal.'}
+                ? 'Serás redirigido al panel de vendedor.'
+                : 'Serás redirigido a la página principal.'}
           </p>
         </div>
       </Modal.Body>
@@ -74,7 +74,7 @@ export const SuccessModal = ({ show, onHide, user, userType }) => {
           backgroundColor: '#87CEEB',
         }}
       >
-        <Button 
+        <Button
           onClick={onHide}
           className="rounded-pill px-5 py-2 border-3 border-dark fw-bold"
           style={{
@@ -111,7 +111,7 @@ export const ErrorModal = ({ show, onHide, error }) => {
       size="lg"
       style={{ fontFamily: "'Lato', sans-serif" }}
     >
-      <Modal.Header 
+      <Modal.Header
         className="border-3 border-dark"
         style={{
           backgroundColor: '#87CEEB',
@@ -130,33 +130,33 @@ export const ErrorModal = ({ show, onHide, error }) => {
         }}
       >
         <div className="mb-4">
-          <div 
+          <div
             className="display-1 mb-3"
             style={{ color: '#000000' }}
           >
             😔
           </div>
-          <h4 
+          <h4
             className="fw-bold mb-3"
-            style={{ 
+            style={{
               color: '#000000',
               fontFamily: "'Indie Flower', cursive"
             }}
           >
             No se pudo iniciar sesión
           </h4>
-          <p 
+          <p
             className="fs-5"
-            style={{ 
+            style={{
               color: '#000000',
               fontWeight: '500'
             }}
           >
             {error}
           </p>
-          <p 
+          <p
             className="fs-6"
-            style={{ 
+            style={{
               color: '#000000',
               fontWeight: '400'
             }}
@@ -171,7 +171,7 @@ export const ErrorModal = ({ show, onHide, error }) => {
           backgroundColor: '#87CEEB',
         }}
       >
-        <Button 
+        <Button
           onClick={onHide}
           className="rounded-pill px-5 py-2 border-3 border-dark fw-bold"
           style={{

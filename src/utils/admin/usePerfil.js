@@ -19,10 +19,10 @@ export const usePerfil = () => {
     try {
       setLoading(true);
       const usuarioActual = authService.getCurrentUser();
-      
+
       if (usuarioActual) {
         const usuarioCompleto = await usuarioService.getUsuarioByRun(usuarioActual.id);
-        
+
         if (usuarioCompleto) {
           setUsuario(usuarioCompleto);
           setFormData({
@@ -58,7 +58,7 @@ export const usePerfil = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     setGuardando(true);
     try {
       const usuarioActual = authService.getCurrentUser();
@@ -84,16 +84,16 @@ export const usePerfil = () => {
         region: formData.region || '',
         fecha_nacimiento: formData.fecha_nacimiento || '',
         tipo: usuario.tipo,
-        contrasenha: formData.password && formData.password.trim() 
+        contrasenha: formData.password && formData.password.trim()
           ? await usuarioService.hashPasswordSHA256(formData.password)
           : usuario.contrasenha
       };
 
       await usuarioService.updateUsuario(usuario.run, datosActualizados);
-      
+
       const usuarioActualizado = await usuarioService.getUsuarioByRun(usuario.run);
       setUsuario(usuarioActualizado);
-      
+
       const userData = {
         id: usuarioActualizado.run,
         nombre: usuarioActualizado.nombre,
@@ -101,20 +101,20 @@ export const usePerfil = () => {
         type: usuarioActualizado.tipo,
         loginTime: new Date().toISOString()
       };
-      
+
       localStorage.setItem('auth_user', JSON.stringify(userData));
-      
+
       setFormData(prev => ({
         ...prev,
         password: '',
         confirmarPassword: ''
       }));
-      
+
       setShowModal(false);
       setMensaje({ tipo: 'success', texto: 'Perfil actualizado correctamente' });
-      
+
       setTimeout(() => setMensaje({ tipo: '', texto: '' }), 3000);
-      
+
     } catch (error) {
       setMensaje({ tipo: 'error', texto: error.message || 'Error al actualizar el perfil' });
     } finally {
@@ -127,14 +127,14 @@ export const usePerfil = () => {
 
     try {
       const usuarios = await usuarioService.getUsuarios();
-      const otrosAdmins = usuarios.filter(u => 
+      const otrosAdmins = usuarios.filter(u =>
         u.tipo === 'Admin' && u.run !== usuario.run
       );
 
       if (otrosAdmins.length === 0) {
-        setMensaje({ 
-          tipo: 'error', 
-          texto: 'No se puede eliminar el perfil. Debe haber al menos otro usuario administrador en el sistema.' 
+        setMensaje({
+          tipo: 'error',
+          texto: 'No se puede eliminar el perfil. Debe haber al menos otro usuario administrador en el sistema.'
         });
         return;
       }
@@ -150,16 +150,16 @@ export const usePerfil = () => {
       if (!confirmacion) return;
 
       await usuarioService.deleteUsuario(usuario.run);
-      
-      setMensaje({ 
-        tipo: 'success', 
-        texto: 'Perfil eliminado correctamente. Serás redirigido al login.' 
+
+      setMensaje({
+        tipo: 'success',
+        texto: 'Perfil eliminado correctamente. Serás redirigido al login.'
       });
-      
+
       setTimeout(() => {
         authService.logout();
       }, 2000);
-      
+
     } catch (error) {
       setMensaje({ tipo: 'error', texto: error.message || 'Error al eliminar el perfil' });
     }

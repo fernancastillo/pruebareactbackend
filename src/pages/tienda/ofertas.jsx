@@ -53,13 +53,13 @@ const Ofertas = () => {
   const aplicarOfertasConfiguradas = (productos) => {
     return productos.map(producto => {
       // Buscar oferta por código exacto
-      const ofertaConfig = ofertasConfig.find(oferta => 
+      const ofertaConfig = ofertasConfig.find(oferta =>
         oferta.codigo === producto.codigo
       );
-      
+
       if (ofertaConfig) {
         const precioOferta = Math.round(producto.precio * (1 - ofertaConfig.descuento / 100));
-        
+
         return {
           ...producto,
           precioOriginal: producto.precio,
@@ -70,7 +70,7 @@ const Ofertas = () => {
           enOferta: true
         };
       }
-      
+
       return producto;
     });
   };
@@ -85,27 +85,27 @@ const Ofertas = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       // Obtener productos desde la base de datos
       const productosDesdeBD = await dataService.getProductos();
-      
+
       if (!productosDesdeBD || productosDesdeBD.length === 0) {
         setError('No se encontraron productos en la base de datos.');
         setOfertas([]);
         return;
       }
-      
+
       // Adaptar productos al formato que espera la aplicación
       const productosAdaptados = adaptarProductosDesdeBD(productosDesdeBD);
-      
+
       // APLICAR OFERTAS a todos los productos
       const productosConOfertas = aplicarOfertasConfiguradas(productosAdaptados);
-      
+
       // FILTRAR SOLO LOS PRODUCTOS QUE ESTÁN EN OFERTA
       const productosEnOferta = obtenerProductosEnOferta(productosConOfertas);
-      
+
       setOfertas(productosEnOferta);
-      
+
     } catch (error) {
       console.error('Error cargando ofertas:', error);
       setError('Error al cargar las ofertas desde la base de datos.');
@@ -138,7 +138,7 @@ const Ofertas = () => {
   }, []);
 
   return (
-    <div 
+    <div
       className="min-vh-100"
       style={{
         backgroundImage: 'url("src/assets/tienda/fondostardew.png")',
@@ -152,14 +152,14 @@ const Ofertas = () => {
 
       <Container className="py-5">
         <OfertasHeader user={user} />
-        <OfertasInfoCard 
-          user={user} 
-          ofertasCount={ofertas.length} 
+        <OfertasInfoCard
+          user={user}
+          ofertasCount={ofertas.length}
           navigate={navigate}
           loading={loading}
           error={error}
         />
-        <OfertasGrid 
+        <OfertasGrid
           ofertas={ofertas}
           user={user}
           loading={loading}

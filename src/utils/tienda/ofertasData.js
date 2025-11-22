@@ -31,10 +31,10 @@ export const ofertasConfig = [
 export const aplicarOfertasAProductos = (productos) => {
   return productos.map(producto => {
     const ofertaConfig = ofertasConfig.find(oferta => oferta.codigo === producto.codigo);
-    
+
     if (ofertaConfig) {
       const precioOferta = producto.precio * (1 - ofertaConfig.descuento / 100);
-      
+
       return {
         ...producto,
         precioOriginal: producto.precio, // Guardar precio original
@@ -45,7 +45,7 @@ export const aplicarOfertasAProductos = (productos) => {
         enOferta: true // Flag para identificar que está en oferta
       };
     }
-    
+
     return producto;
   }).filter(producto => producto.enOferta); // Solo mostrar productos en oferta
 };

@@ -16,7 +16,7 @@ const MockComponent = () => <div>Protected Content</div>;
 describe('AdminProtectedRoute', () => {
   it('should render children when no redirect route', () => {
     getRedirectRoute.mockReturnValue(null);
-    
+
     const { getByText } = render(
       <MemoryRouter initialEntries={['/admin']}>
         <AdminProtectedRoute>
@@ -24,29 +24,29 @@ describe('AdminProtectedRoute', () => {
         </AdminProtectedRoute>
       </MemoryRouter>
     );
-    
+
     expect(getByText('Protected Content')).toBeInTheDocument();
   });
 
   it('should redirect when redirect route exists', () => {
     getRedirectRoute.mockReturnValue('/login');
-    
+
     const { container } = render(
       <MemoryRouter initialEntries={['/admin']}>
         <Routes>
-          <Route 
-            path="/admin" 
+          <Route
+            path="/admin"
             element={
               <AdminProtectedRoute>
                 <MockComponent />
               </AdminProtectedRoute>
-            } 
+            }
           />
           <Route path="/login" element={<div>Login Page</div>} />
         </Routes>
       </MemoryRouter>
     );
-    
+
     // Verificar que se redirige (Navigate component)
     expect(container.querySelector('div')).not.toHaveTextContent('Protected Content');
   });

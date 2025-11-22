@@ -37,7 +37,7 @@ const Ordenes = () => {
     document.body.style.margin = '0';
     document.body.style.padding = '0';
     document.body.style.minHeight = '100vh';
-    
+
     return () => {
       document.body.style.backgroundImage = '';
       document.body.style.backgroundSize = '';
@@ -90,7 +90,7 @@ const Ordenes = () => {
         <div className="alert alert-danger">
           <h4>Error al cargar órdenes</h4>
           <p>{error}</p>
-          <button 
+          <button
             className="btn btn-primary"
             onClick={() => window.location.reload()}
           >
@@ -103,13 +103,13 @@ const Ordenes = () => {
 
   return (
     <div className="container-fluid" style={{ padding: '20px', minHeight: '100vh' }}>
-      
+
       {actionError && (
         <div className="alert alert-danger alert-dismissible fade show" role="alert">
           <strong>Error:</strong> {actionError}
-          <button 
-            type="button" 
-            className="btn-close" 
+          <button
+            type="button"
+            className="btn-close"
             onClick={() => setActionError('')}
           ></button>
         </div>

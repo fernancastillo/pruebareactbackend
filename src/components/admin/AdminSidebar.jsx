@@ -21,19 +21,19 @@ const AdminSidebar = () => {
   };
 
   return (
-    <div 
-      className="position-fixed start-0 top-0 h-100" 
-      style={{ 
+    <div
+      className="position-fixed start-0 top-0 h-100"
+      style={{
         backgroundColor: '#dedd8ff5',
         width: 'inherit', // Mantener el ancho original
         zIndex: 1000,
         overflowY: 'auto' // Permitir scroll si el contenido es muy largo
       }}
     >
-      <div className="sidebar-sticky h-100 d-flex flex-column">          
+      <div className="sidebar-sticky h-100 d-flex flex-column">
         {/* Header compacto */}
-        <div 
-          className="p-2 text-center flex-shrink-0" 
+        <div
+          className="p-2 text-center flex-shrink-0"
           style={{ backgroundColor: '#c9c87ae5' }}
         >
           <h6 className="mb-0 small text-dark">Admin</h6>
@@ -41,18 +41,17 @@ const AdminSidebar = () => {
             {authService.getCurrentUser()?.nombre || 'Administrador'}
           </small>
         </div>
-        
+
         {/* Menú - ocupa el espacio restante */}
         <div className="flex-grow-1 overflow-auto">
           <ul className="nav nav-pills flex-column p-2 m-0">
             {menuItems.map((item) => (
               <li key={item.path} className="nav-item mb-1">
-                <Link 
-                  to={item.path} 
-                  className={`admin-sidebar-link nav-link text-dark d-flex flex-column align-items-center p-2 ${
-                    location.pathname === item.path ? 'active fw-bold' : ''
-                  }`}
-                  style={{ 
+                <Link
+                  to={item.path}
+                  className={`admin-sidebar-link nav-link text-dark d-flex flex-column align-items-center p-2 ${location.pathname === item.path ? 'active fw-bold' : ''
+                    }`}
+                  style={{
                     backgroundColor: location.pathname === item.path ? '#c9c87ae5' : 'transparent',
                   }}
                   title={item.label}
@@ -62,13 +61,13 @@ const AdminSidebar = () => {
                 </Link>
               </li>
             ))}
-            
+
             {/* ✅ BOTÓN DE CERRAR SESIÓN */}
             <li className="nav-item mt-auto pt-3 border-top border-dark">
-              <button 
+              <button
                 onClick={handleLogout}
                 className="admin-sidebar-link nav-link text-dark d-flex flex-column align-items-center p-2 fw-bold w-100 border-0"
-                style={{ 
+                style={{
                   backgroundColor: 'transparent',
                   cursor: 'pointer'
                 }}
@@ -126,9 +125,9 @@ export const AdminMobileNavbar = () => {
   return (
     <div ref={navbarRef}>
       {/* ✅ Navbar móvil */}
-      <nav 
-        className="navbar navbar-dark d-md-none fixed-top" 
-        style={{ 
+      <nav
+        className="navbar navbar-dark d-md-none fixed-top"
+        style={{
           backgroundColor: '#dedd8ff5',
           minHeight: '56px',
           zIndex: 1030 // Mayor z-index para mobile
@@ -136,7 +135,7 @@ export const AdminMobileNavbar = () => {
       >
         <div className="container-fluid">
           <span className="navbar-brand text-dark fw-bold">Panel Admin</span>
-          <button 
+          <button
             className="navbar-toggler border-dark btn-hover-effect"
             type="button"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -150,12 +149,12 @@ export const AdminMobileNavbar = () => {
 
       {/* ✅ Menú móvil desplegable */}
       {isMobileMenuOpen && (
-        <div 
-          className="d-md-none position-fixed" 
-          style={{ 
+        <div
+          className="d-md-none position-fixed"
+          style={{
             top: '56px',
-            left: 0, 
-            right: 0, 
+            left: 0,
+            right: 0,
             bottom: 0,
             zIndex: 1020,
             backgroundColor: '#dedd8ff5',
@@ -166,12 +165,11 @@ export const AdminMobileNavbar = () => {
           <ul className="nav nav-pills flex-column p-3 m-0 h-100">
             {menuItems.map((item) => (
               <li key={item.path} className="nav-item mb-2">
-                <Link 
-                  to={item.path} 
-                  className={`admin-sidebar-link nav-link text-dark d-flex align-items-center py-3 ${
-                    location.pathname === item.path ? 'active fw-bold' : ''
-                  }`}
-                  style={{ 
+                <Link
+                  to={item.path}
+                  className={`admin-sidebar-link nav-link text-dark d-flex align-items-center py-3 ${location.pathname === item.path ? 'active fw-bold' : ''
+                    }`}
+                  style={{
                     backgroundColor: location.pathname === item.path ? '#c9c87ae5' : 'transparent',
                     borderRadius: '8px'
                   }}
@@ -182,16 +180,16 @@ export const AdminMobileNavbar = () => {
                 </Link>
               </li>
             ))}
-            
+
             {/* ✅ BOTÓN DE CERRAR SESIÓN EN MÓVIL */}
             <li className="nav-item mt-auto pt-3 border-top border-dark">
-              <button 
+              <button
                 onClick={() => {
                   handleLogout();
                   setIsMobileMenuOpen(false);
                 }}
                 className="admin-sidebar-link nav-link text-dark d-flex align-items-center py-3 fw-bold w-100 border-0"
-                style={{ 
+                style={{
                   borderRadius: '8px',
                   backgroundColor: 'transparent',
                   cursor: 'pointer'

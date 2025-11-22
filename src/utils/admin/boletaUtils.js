@@ -25,14 +25,14 @@ export const generarBoletaCSV = (orden) => {
     const headers = [
       'JUNIMO STORE - BOLETA ELECTRÓNICA',
       `Número: ${orden.numeroOrden}`,
-      `Fecha: ${formatDate(orden.fecha)}`, 
+      `Fecha: ${formatDate(orden.fecha)}`,
       `RUN Cliente: ${orden.run}`,
       `Estado: ${orden.estadoEnvio}`,
       ''
     ];
-    
+
     const productosHeaders = ['Código', 'Producto', 'Cantidad', 'Precio Unitario', 'Subtotal'];
-    
+
     const productosRows = orden.productos.map(producto => [
       producto.codigo,
       `"${producto.nombre}"`,
@@ -40,7 +40,7 @@ export const generarBoletaCSV = (orden) => {
       formatCurrency(producto.precio),
       formatCurrency(producto.precio * producto.cantidad)
     ]);
-    
+
     const totalRow = ['', '', '', 'TOTAL:', formatCurrency(orden.total)];
     const footer = [
       '',
@@ -48,7 +48,7 @@ export const generarBoletaCSV = (orden) => {
       'Tienda Oficial de Stardew Valley',
       `Boleta generada el ${new Date().toLocaleDateString('es-CL')}`
     ];
-    
+
     const contenido = [
       ...headers,
       'DETALLES DE PRODUCTOS:',
@@ -83,10 +83,10 @@ RUN Cliente: ${orden.run}
 Estado: ${orden.estadoEnvio}
 
 DETALLES DE PRODUCTOS:
-${orden.productos.map(producto => 
-  `• ${producto.codigo} - ${producto.nombre}
+${orden.productos.map(producto =>
+      `• ${producto.codigo} - ${producto.nombre}
    Cantidad: ${producto.cantidad} x ${formatCurrency(producto.precio)} = ${formatCurrency(producto.precio * producto.cantidad)}`
-).join('\n\n')}
+    ).join('\n\n')}
 
 =================================
 TOTAL: ${formatCurrency(orden.total)}

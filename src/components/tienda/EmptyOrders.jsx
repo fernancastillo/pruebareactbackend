@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 
 const EmptyOrders = ({ user }) => {
   return (
-    <Card 
+    <Card
       className="text-center py-5 shadow-lg border-3 border-dark rounded-4"
       style={{
         backgroundColor: '#87CEEB',
@@ -17,10 +17,10 @@ const EmptyOrders = ({ user }) => {
         <p className="text-muted mb-4">
           {user.run ? `RUN: ${user.run}` : 'Usuario sin RUN registrado'}
         </p>
-        <Button 
-          as={Link} 
-          to="/index" 
-          variant="warning" 
+        <Button
+          as={Link}
+          to="/index"
+          variant="warning"
           size="lg"
           className="rounded-pill px-4 py-2 border-3 border-dark fw-bold"
           style={{

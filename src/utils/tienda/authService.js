@@ -17,7 +17,7 @@ export const authService = {
         } catch (endpointError) {
           // Opción 2: Obtener todos los usuarios y filtrar
           const todosUsuarios = await dataService.getUsuarios();
-          
+
           usuarioDesdeBD = todosUsuarios.find(user => {
             const emailMatch = user.correo && user.correo.toLowerCase() === email.toLowerCase();
             return emailMatch;
@@ -27,11 +27,11 @@ export const authService = {
         if (usuarioDesdeBD) {
           // Verificar contraseña (comparar hash SHA256)
           const passwordHash = await authService.hashPasswordSHA256(password);
-          
+
           if (usuarioDesdeBD.contrasenha === passwordHash) {
             // Normalizar el tipo de usuario
             const tipoUsuario = authService.normalizeUserType(usuarioDesdeBD.tipo);
-            
+
             // Determinar la redirección según el tipo de usuario
             let redirectTo = '/index';
             if (tipoUsuario === 'Administrador') {
@@ -39,7 +39,7 @@ export const authService = {
             } else if (tipoUsuario === 'Vendedor') {
               redirectTo = '/vendedor';
             }
-            
+
             const userData = {
               id: usuarioDesdeBD.run || usuarioDesdeBD.id,
               nombre: usuarioDesdeBD.nombre || '',
@@ -55,10 +55,10 @@ export const authService = {
               fechaNac: usuarioDesdeBD.fechaNac,
               source: 'oracle_cloud'
             };
-            
+
             // Guardar en sesión
             authService.saveUserSession(userData, tipoUsuario);
-            
+
             return {
               success: true,
               user: userData,
@@ -76,7 +76,7 @@ export const authService = {
             error: 'Usuario no encontrado en el sistema'
           };
         }
-        
+
       } catch (bdError) {
         return {
           success: false,
@@ -98,14 +98,14 @@ export const authService = {
       // Convertir el string a un ArrayBuffer
       const encoder = new TextEncoder();
       const data = encoder.encode(password);
-      
+
       // Hashear con SHA-256
       const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-      
+
       // Convertir el ArrayBuffer a string hexadecimal
       const hashArray = Array.from(new Uint8Array(hashBuffer));
       const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-      
+
       return hashHex.toUpperCase();
     } catch (error) {
       // Fallback: si crypto.subtle no está disponible
@@ -128,13 +128,13 @@ export const authService = {
   // Normalizar tipos de usuario
   normalizeUserType: (tipo) => {
     if (!tipo) return 'Cliente';
-    
+
     const tipoLower = tipo.toLowerCase().trim();
-    
+
     if (tipoLower === 'admin' || tipoLower === 'administrador') return 'Administrador';
     if (tipoLower === 'cliente' || tipoLower === 'client') return 'Cliente';
     if (tipoLower === 'vendedor') return 'Vendedor';
-    
+
     return tipo;
   },
 
@@ -142,7 +142,7 @@ export const authService = {
   saveUserSession: (userData, userType) => {
     saveLocalstorage(AUTH_KEY, userData);
     saveLocalstorage(USER_TYPE_KEY, userType);
-    
+
     // Disparar evento para notificar cambios de autenticación
     window.dispatchEvent(new Event('authStateChanged'));
   },
@@ -150,9 +150,9 @@ export const authService = {
   logout: () => {
     deleteFromLocalstorage(AUTH_KEY);
     deleteFromLocalstorage(USER_TYPE_KEY);
-    
+
     window.dispatchEvent(new Event('authStateChanged'));
-    
+
     // Redirigir al inicio
     window.location.href = '/index';
   },
@@ -187,7 +187,7 @@ export const authService = {
 
   // Obtener ruta de redirección según tipo de usuario
   getRedirectPath: (userType) => {
-    switch(userType) {
+    switch (userType) {
       case 'Administrador':
         return '/admin/dashboard';
       case 'Vendedor':
@@ -205,7 +205,7 @@ export const authService = {
         return !!usuarioBD;
       } catch (endpointError) {
         const todosUsuarios = await dataService.getUsuarios();
-        return todosUsuarios.some(user => 
+        return todosUsuarios.some(user =>
           user.correo && user.correo.toLowerCase() === email.toLowerCase()
         );
       }

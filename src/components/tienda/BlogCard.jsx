@@ -65,7 +65,7 @@ const BlogCard = ({ blog, onLeerArticulo }) => {
 
       <Card.Body className="d-flex flex-column">
         <div className="mb-2">
-          <small style={{ 
+          <small style={{
             color: '#000000', // Negro
             fontFamily: "'Lato', sans-serif"
           }}>

@@ -5,7 +5,7 @@ export const calcularPorcentajeDescuento = (precioOriginal, precioOferta) => {
   if (!precioOriginal || !precioOferta || precioOriginal <= precioOferta) {
     return 0;
   }
-  
+
   const descuento = ((precioOriginal - precioOferta) / precioOriginal) * 100;
   return Math.round(descuento);
 };
@@ -48,7 +48,7 @@ export const loadCategoriesAndProducts = async () => {
   try {
     // Obtener productos desde la base de datos
     const productosDesdeBD = await dataService.getProductos();
-    
+
     if (!productosDesdeBD || productosDesdeBD.length === 0) {
       return [];
     }
@@ -58,7 +58,7 @@ export const loadCategoriesAndProducts = async () => {
 
     // Obtener categorías únicas de los productos
     const categoriasUnicas = [...new Set(productosAdaptados.map(product => product.categoria))];
-    
+
     // Crear array de categorías con información adicional
     const categoriasConInfo = categoriasUnicas.map(categoria => {
       const productosCategoria = productosAdaptados.filter(product => product.categoria === categoria);
@@ -70,7 +70,7 @@ export const loadCategoriesAndProducts = async () => {
     });
 
     return categoriasConInfo;
-    
+
   } catch (error) {
     console.error('Error cargando categorías:', error);
     return [];
@@ -87,7 +87,7 @@ export const getProductosPorCategoria = (categoriaNombre, categorias) => {
 export const getCategoriasDesdeBD = async () => {
   try {
     const categoriasBD = await dataService.getCategorias();
-    
+
     // Extraer solo los nombres de las categorías
     const nombresCategorias = categoriasBD.map(cat => {
       if (typeof cat === 'object' && cat !== null) {
@@ -95,7 +95,7 @@ export const getCategoriasDesdeBD = async () => {
       }
       return String(cat);
     });
-    
+
     return [...new Set(nombresCategorias)];
   } catch (error) {
     console.error('Error obteniendo categorías desde BD:', error);

@@ -3,7 +3,7 @@ import { Container, Button } from 'react-bootstrap';
 
 const UnauthorizedState = ({ navigate }) => {
   return (
-    <div 
+    <div
       className="min-vh-100 w-100"
       style={{
         backgroundImage: 'url("https://images3.alphacoders.com/126/1269904.png")',
@@ -18,8 +18,8 @@ const UnauthorizedState = ({ navigate }) => {
         <div className="display-1 mb-3">🔒</div>
         <h4 className="text-white">No has iniciado sesión</h4>
         <p className="text-white">Por favor inicia sesión para acceder a tu perfil</p>
-        <Button 
-          variant="warning" 
+        <Button
+          variant="warning"
           onClick={() => navigate('/login')}
           className="mt-3 rounded-pill px-4 py-2 border-3 border-dark fw-bold"
           style={{

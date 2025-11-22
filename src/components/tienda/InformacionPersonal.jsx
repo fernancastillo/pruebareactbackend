@@ -8,12 +8,12 @@ const FormLabelWithAsterisk = ({ children, required = false }) => (
   </Form.Label>
 );
 
-const InformacionPersonal = ({ 
-  formData, 
-  onInputChange, 
+const InformacionPersonal = ({
+  formData,
+  onInputChange,
   onBlur,
-  onSubmit, 
-  regiones, 
+  onSubmit,
+  regiones,
   comunasFiltradas,
   errores = {}
 }) => {
@@ -216,8 +216,8 @@ const InformacionPersonal = ({
       </Row>
 
       <div className="text-center">
-        <Button 
-          type="submit" 
+        <Button
+          type="submit"
           className="rounded-pill px-5 py-3 border-3 border-dark fw-bold"
           style={{
             backgroundColor: '#dedd8ff5',

@@ -15,13 +15,13 @@ const ProductCard = ({ product, handleAddToCart, handleDetailsClick, isAddingToC
     if (handleDetailsClick) {
       handleDetailsClick(productCode);
     }
-    
+
     navigate(`/producto/${productCode}`);
-    
+
     setTimeout(() => {
-      window.scrollTo({ 
-        top: 0, 
-        behavior: 'smooth' 
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
       });
     }, 50);
   };
@@ -39,7 +39,7 @@ const ProductCard = ({ product, handleAddToCart, handleDetailsClick, isAddingToC
     // Escuchar eventos de actualización
     window.addEventListener('stockUpdated', actualizarStock);
     window.addEventListener('cartUpdated', actualizarStock);
-    
+
     return () => {
       window.removeEventListener('stockUpdated', actualizarStock);
       window.removeEventListener('cartUpdated', actualizarStock);
@@ -48,11 +48,11 @@ const ProductCard = ({ product, handleAddToCart, handleDetailsClick, isAddingToC
 
   useEffect(() => {
     setIsLoggedIn(!!authService.getCurrentUser());
-    
+
     const checkAuth = () => {
       setIsLoggedIn(!!authService.getCurrentUser());
     };
-    
+
     window.addEventListener('authStateChanged', checkAuth);
     return () => window.removeEventListener('authStateChanged', checkAuth);
   }, []);
@@ -137,10 +137,10 @@ const ProductCard = ({ product, handleAddToCart, handleDetailsClick, isAddingToC
       }}
     >
       {estaEnOferta && (
-        <Badge 
-          bg="danger" 
+        <Badge
+          bg="danger"
           className="position-absolute top-0 start-0 m-2 px-3 py-2 border-2 border-white fw-bold"
-          style={{ 
+          style={{
             zIndex: 2,
             fontSize: '0.9rem',
             textShadow: '1px 1px 2px rgba(0,0,0,0.5)'
@@ -245,7 +245,7 @@ const ProductCard = ({ product, handleAddToCart, handleDetailsClick, isAddingToC
           <div className="d-flex justify-content-between align-items-center mb-2">
             {estaEnOferta ? (
               <div>
-                <div 
+                <div
                   className="text-muted text-decoration-line-through small"
                   style={{ lineHeight: '1' }}
                 >
@@ -282,7 +282,7 @@ const ProductCard = ({ product, handleAddToCart, handleDetailsClick, isAddingToC
             >
               Ver Detalles
             </Button>
-            
+
             <OverlayTrigger
               placement="top"
               overlay={

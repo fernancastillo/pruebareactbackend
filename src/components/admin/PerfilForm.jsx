@@ -8,7 +8,7 @@ const PerfilForm = ({ usuario, onEdit }) => {
           <i className="bi bi-person-vcard me-2"></i>
           Información Personal
         </h6>
-        <button 
+        <button
           className="btn btn-primary btn-sm"
           onClick={onEdit}
         >

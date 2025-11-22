@@ -4,7 +4,7 @@ export const calcularEstadisticasUsuarios = (usuarios, ordenes = []) => {
   const totalVendedores = usuarios.filter(u => u.tipo === 'Vendedor').length;
   const totalAdmins = usuarios.filter(u => u.tipo === 'Admin').length;
   const usuariosConCompras = usuarios.filter(u => u.totalCompras > 0).length;
-  
+
   let totalIngresos = 0;
   try {
     const storedOrdenes = localStorage.getItem('app_ordenes');
@@ -19,10 +19,10 @@ export const calcularEstadisticasUsuarios = (usuarios, ordenes = []) => {
   } catch (error) {
     totalIngresos = usuarios.reduce((sum, usuario) => sum + usuario.totalGastado, 0);
   }
-  
+
   const clientes = usuarios.filter(u => u.tipo === 'Cliente');
-  const usuarioTop = clientes.reduce((max, usuario) => 
-    usuario.totalGastado > max.totalGastado ? usuario : max, 
+  const usuarioTop = clientes.reduce((max, usuario) =>
+    usuario.totalGastado > max.totalGastado ? usuario : max,
     { totalGastado: -1, nombre: 'Ninguno' }
   );
 
@@ -57,8 +57,8 @@ export const aplicarFiltrosUsuarios = (usuarios, filtros) => {
     filtered = filtered.filter(usuario => {
       const nombreUsuario = usuario?.nombre?.toLowerCase() || '';
       const apellidosUsuario = usuario?.apellidos?.toLowerCase() || '';
-      return nombreUsuario.includes(nombreBuscado) || 
-             apellidosUsuario.includes(nombreBuscado);
+      return nombreUsuario.includes(nombreBuscado) ||
+        apellidosUsuario.includes(nombreBuscado);
     });
   }
 
@@ -71,7 +71,7 @@ export const aplicarFiltrosUsuarios = (usuarios, filtros) => {
   }
 
   if (filtros.tipo && filtros.tipo.trim() !== '') {
-    filtered = filtered.filter(usuario => 
+    filtered = filtered.filter(usuario =>
       usuario?.tipo === filtros.tipo
     );
   }

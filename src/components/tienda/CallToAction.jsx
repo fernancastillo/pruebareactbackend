@@ -9,7 +9,7 @@ const CallToAction = () => {
       <Col>
         <CardNosotros>
           <div className="p-4 text-center">
-            <h2 
+            <h2
               style={{
                 fontFamily: "'Indie Flower', cursive",
                 fontSize: '2.2rem',
@@ -27,11 +27,11 @@ const CallToAction = () => {
               color: '#000000',
               marginBottom: '2rem'
             }}>
-              Descubre nuestra colección de productos inspirados en Stardew Valley y 
+              Descubre nuestra colección de productos inspirados en Stardew Valley y
               lleva un pedacito del valle a tu hogar.
             </p>
-            <Link 
-              to="/productos" 
+            <Link
+              to="/productos"
               className="btn btn-lg fw-bold"
               style={{
                 background: '#dedd8ff5',

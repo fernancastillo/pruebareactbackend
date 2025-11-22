@@ -6,13 +6,13 @@ export const orderCreationService = {
   getLastOrderNumber: async () => {
     try {
       const orders = await dataService.getOrdenes();
-      
+
       if (!orders || orders.length === 0) {
         return 'SO1000';
       }
 
       let maxNumber = 0;
-      
+
       orders.forEach(order => {
         if (order.numeroOrden && order.numeroOrden.startsWith('SO')) {
           const numberPart = order.numeroOrden.substring(2);
@@ -39,18 +39,18 @@ export const orderCreationService = {
   generateSequentialOrderNumber: async () => {
     try {
       const lastOrderNumber = await orderCreationService.getLastOrderNumber();
-      
+
       const numberMatch = lastOrderNumber.match(/\d+/);
-      
+
       if (!numberMatch) {
         return 'SO1000';
       }
-      
+
       const currentNumber = parseInt(numberMatch[0]);
       const nextNumber = currentNumber + 1;
-      
+
       return `SO${nextNumber}`;
-      
+
     } catch (error) {
       const timestamp = Date.now();
       const random = Math.floor(Math.random() * 100);
@@ -64,7 +64,7 @@ export const orderCreationService = {
       if (!user || !user.run) {
         throw new Error('Usuario no válido para crear orden');
       }
-      
+
       if (!cartItems || cartItems.length === 0) {
         throw new Error('El carrito está vacío');
       }
@@ -75,7 +75,7 @@ export const orderCreationService = {
 
       const numeroOrden = await orderCreationService.generateSequentialOrderNumber();
       const fecha = new Date().toISOString().split('T')[0];
-      
+
       const ordenCompleta = {
         numeroOrden: numeroOrden,
         fecha: fecha,
@@ -93,7 +93,7 @@ export const orderCreationService = {
       };
 
       return ordenCompleta;
-      
+
     } catch (error) {
       throw error;
     }
@@ -111,9 +111,9 @@ export const orderCreationService = {
       }
 
       const result = await dataService.addOrden(orderData);
-      
+
       return result;
-      
+
     } catch (error) {
       throw new Error(`No se pudo guardar la orden en la base de datos: ${error.message}`);
     }
@@ -127,21 +127,21 @@ export const orderCreationService = {
       }
 
       const ordenCompleta = await orderCreationService.createOrderWithDetails(
-        user, 
-        cartItems, 
-        totalFinal, 
-        discountCode, 
+        user,
+        cartItems,
+        totalFinal,
+        discountCode,
         paymentData
       );
 
       const ordenGuardada = await orderCreationService.saveOrder(ordenCompleta);
-      
+
       return {
         success: true,
         order: ordenGuardada,
         message: 'Compra procesada exitosamente'
       };
-      
+
     } catch (error) {
       throw new Error(`No se pudo procesar la compra: ${error.message}`);
     }

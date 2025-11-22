@@ -35,7 +35,7 @@ const LoginComponent = () => {
 
     try {
       const result = await authService.login(formData.email, formData.password);
-      
+
       if (result.success) {
         setLoginResult({
           success: true,
@@ -78,7 +78,7 @@ const LoginComponent = () => {
   };
 
   return (
-    <div 
+    <div
       className="min-vh-100 w-100 py-5"
       style={{
         backgroundImage: 'url("https://images3.alphacoders.com/126/1269904.png")',
@@ -118,9 +118,9 @@ const LoginComponent = () => {
                   }}
                 />
               </div>
-              
+
               {/* Texto alternativo que se muestra si la imagen no carga */}
-              <h2 
+              <h2
                 id="fallback-title"
                 className="fw-bold mb-3"
                 style={{
@@ -133,8 +133,8 @@ const LoginComponent = () => {
               >
                 Iniciar Sesión
               </h2>
-              
-              <p 
+
+              <p
                 className="fs-5"
                 style={{
                   color: '#000000',
@@ -150,7 +150,7 @@ const LoginComponent = () => {
 
         <Row className="justify-content-center">
           <Col md={8} lg={6}>
-            <Card 
+            <Card
               className="shadow-lg border-3 border-dark rounded-4"
               style={{
                 backgroundColor: '#87CEEB',
@@ -159,7 +159,7 @@ const LoginComponent = () => {
             >
               <Card.Body className="p-4 p-md-5">
                 {error && (
-                  <Alert 
+                  <Alert
                     variant="danger"
                     className="text-center border-3 border-dark rounded-3"
                     style={{
@@ -174,8 +174,8 @@ const LoginComponent = () => {
 
                 <Form onSubmit={handleSubmit}>
                   <Form.Group className="mb-4">
-                    <Form.Label 
-                      className="fw-semibold" 
+                    <Form.Label
+                      className="fw-semibold"
                       style={{ color: '#000000', fontSize: '1.1rem' }}
                     >
                       Correo Electrónico
@@ -199,8 +199,8 @@ const LoginComponent = () => {
                   </Form.Group>
 
                   <Form.Group className="mb-4">
-                    <Form.Label 
-                      className="fw-semibold" 
+                    <Form.Label
+                      className="fw-semibold"
                       style={{ color: '#000000', fontSize: '1.1rem' }}
                     >
                       Contraseña
@@ -238,9 +238,9 @@ const LoginComponent = () => {
                     </InputGroup>
                   </Form.Group>
 
-                  <Button 
-                    variant="primary" 
-                    type="submit" 
+                  <Button
+                    variant="primary"
+                    type="submit"
                     className="w-100 rounded-pill py-3 border-3 border-dark fw-bold mb-4"
                     disabled={loading}
                     style={{
@@ -265,9 +265,9 @@ const LoginComponent = () => {
                   >
                     {loading ? (
                       <>
-                        <span 
-                          className="spinner-border spinner-border-sm me-2" 
-                          role="status" 
+                        <span
+                          className="spinner-border spinner-border-sm me-2"
+                          role="status"
                           aria-hidden="true"
                           style={{ color: '#000000' }}
                         ></span>
@@ -279,19 +279,19 @@ const LoginComponent = () => {
                   </Button>
                 </Form>
 
-                <hr 
-                  className="my-4" 
-                  style={{ 
-                    borderColor: '#000000', 
-                    opacity: '0.6', 
-                    borderWidth: '2px' 
-                  }} 
+                <hr
+                  className="my-4"
+                  style={{
+                    borderColor: '#000000',
+                    opacity: '0.6',
+                    borderWidth: '2px'
+                  }}
                 />
 
                 <div className="text-center">
-                  <p 
+                  <p
                     className="mb-3"
-                    style={{ 
+                    style={{
                       color: '#000000',
                       fontFamily: "'Lato', sans-serif",
                       fontWeight: '500',
@@ -300,7 +300,7 @@ const LoginComponent = () => {
                   >
                     ¿No tienes una cuenta?
                   </p>
-                  <Button 
+                  <Button
                     as={Link}
                     to="/registro"
                     variant="outline-dark"
@@ -339,7 +339,7 @@ const LoginComponent = () => {
         size="lg"
         style={{ fontFamily: "'Lato', sans-serif" }}
       >
-        <Modal.Header 
+        <Modal.Header
           className="border-3 border-dark"
           style={{
             backgroundColor: '#87CEEB',
@@ -358,39 +358,39 @@ const LoginComponent = () => {
           }}
         >
           <div className="mb-4">
-            <div 
+            <div
               className="display-1 mb-3"
               style={{ color: '#000000' }}
             >
               🎉
             </div>
-            <h4 
+            <h4
               className="fw-bold mb-3"
-              style={{ 
+              style={{
                 color: '#000000',
                 fontFamily: "'Indie Flower', cursive"
               }}
             >
               ¡Bienvenido de vuelta, {loginResult.user?.nombre}!
             </h4>
-            <p 
+            <p
               className="fs-5"
-              style={{ 
+              style={{
                 color: '#000000',
                 fontWeight: '500'
               }}
             >
               Has iniciado sesión correctamente.
             </p>
-            <p 
+            <p
               className="fs-6"
-              style={{ 
+              style={{
                 color: '#000000',
                 fontWeight: '400'
               }}
             >
-              {loginResult.user?.type === 'Administrador' 
-                ? 'Serás redirigido al panel de administración.' 
+              {loginResult.user?.type === 'Administrador'
+                ? 'Serás redirigido al panel de administración.'
                 : 'Serás redirigido a la página principal.'}
             </p>
           </div>
@@ -401,8 +401,8 @@ const LoginComponent = () => {
             backgroundColor: '#87CEEB',
           }}
         >
-          <Button 
-            variant="primary" 
+          <Button
+            variant="primary"
             onClick={handleSuccessContinue}
             className="rounded-pill px-5 py-2 border-3 border-dark fw-bold"
             style={{
@@ -436,7 +436,7 @@ const LoginComponent = () => {
         size="lg"
         style={{ fontFamily: "'Lato', sans-serif" }}
       >
-        <Modal.Header 
+        <Modal.Header
           className="border-3 border-dark"
           style={{
             backgroundColor: '#87CEEB',
@@ -455,33 +455,33 @@ const LoginComponent = () => {
           }}
         >
           <div className="mb-4">
-            <div 
+            <div
               className="display-1 mb-3"
               style={{ color: '#000000' }}
             >
               😔
             </div>
-            <h4 
+            <h4
               className="fw-bold mb-3"
-              style={{ 
+              style={{
                 color: '#000000',
                 fontFamily: "'Indie Flower', cursive"
               }}
             >
               No se pudo iniciar sesión
             </h4>
-            <p 
+            <p
               className="fs-5"
-              style={{ 
+              style={{
                 color: '#000000',
                 fontWeight: '500'
               }}
             >
               {loginResult.error}
             </p>
-            <p 
+            <p
               className="fs-6"
-              style={{ 
+              style={{
                 color: '#000000',
                 fontWeight: '400'
               }}
@@ -496,8 +496,8 @@ const LoginComponent = () => {
             backgroundColor: '#87CEEB',
           }}
         >
-          <Button 
-            variant="primary" 
+          <Button
+            variant="primary"
             onClick={handleErrorContinue}
             className="rounded-pill px-5 py-2 border-3 border-dark fw-bold"
             style={{

@@ -31,9 +31,9 @@ const PedidosHeader = () => {
               }}
             />
           </div>
-          
+
           {/* Texto alternativo que se muestra si la imagen no carga */}
-          <h1 
+          <h1
             id="fallback-title"
             className="text-center mb-3"
             style={{
@@ -47,8 +47,8 @@ const PedidosHeader = () => {
           >
             📦 Mis Pedidos
           </h1>
-          
-          <p 
+
+          <p
             className="text-center fs-5"
             style={{
               color: '#FFFFFF',

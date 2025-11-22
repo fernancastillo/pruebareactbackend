@@ -17,7 +17,7 @@ const OfertaCard = ({ oferta, user }) => {
   };
 
   return (
-    <Card 
+    <Card
       className="h-100 shadow-lg border-0 rounded-4 position-relative overflow-hidden"
       style={{
         background: '#87CEEB',
@@ -36,7 +36,7 @@ const OfertaCard = ({ oferta, user }) => {
       {/* Badges Superiores */}
       <div className="position-absolute top-0 start-0 end-0 p-3 d-flex justify-content-between align-items-start" style={{ zIndex: 2 }}>
         <div className="d-flex flex-column gap-2">
-          <Badge 
+          <Badge
             className="fs-6 px-3 py-2 fw-bold border-2 border-white"
             style={{
               background: 'linear-gradient(135deg, #FF6B6B, #FF8E8E)',
@@ -46,7 +46,7 @@ const OfertaCard = ({ oferta, user }) => {
             -{oferta.descuento}%
           </Badge>
         </div>
-        <Badge 
+        <Badge
           className="fs-6 px-3 py-2 fw-bold border-2 border-white"
           style={{
             background: 'rgba(0, 0, 0, 0.7)',
@@ -59,17 +59,17 @@ const OfertaCard = ({ oferta, user }) => {
       </div>
 
       {/* Imagen con fondo del mismo color que la card */}
-      <div 
+      <div
         className="d-flex align-items-center justify-content-center mx-3 mt-3 rounded-4"
-        style={{ 
+        style={{
           height: '220px',
           background: '#87CEEB',
           border: '2px solid #000000'
         }}
       >
-        <Card.Img 
-          variant="top" 
-          src={oferta.imagen} 
+        <Card.Img
+          variant="top"
+          src={oferta.imagen}
           style={{
             height: '85%',
             width: 'auto',
@@ -83,9 +83,9 @@ const OfertaCard = ({ oferta, user }) => {
             e.target.nextSibling.style.display = 'flex';
           }}
         />
-        <div 
+        <div
           className="d-none align-items-center justify-content-center w-100 h-100 rounded-4"
-          style={{ 
+          style={{
             backgroundColor: '#87CEEB',
             color: '#000000',
             fontSize: '0.9rem',
@@ -96,7 +96,7 @@ const OfertaCard = ({ oferta, user }) => {
           🖼️ Imagen no disponible
         </div>
       </div>
-      
+
       <Card.Body className="d-flex flex-column p-4">
         {/* Categoría */}
         <div className="mb-3">
@@ -110,9 +110,9 @@ const OfertaCard = ({ oferta, user }) => {
             {oferta.categoria}
           </Badge>
         </div>
-        
+
         {/* Nombre del Producto */}
-        <Card.Title 
+        <Card.Title
           className="fw-bold mb-3"
           style={{
             fontFamily: "'Indie Flower', cursive",
@@ -123,9 +123,9 @@ const OfertaCard = ({ oferta, user }) => {
         >
           {oferta.nombre}
         </Card.Title>
-        
+
         {/* Descripción */}
-        <Card.Text 
+        <Card.Text
           className="mb-4 flex-grow-1"
           style={{
             fontFamily: "'Lato', sans-serif",
@@ -137,14 +137,14 @@ const OfertaCard = ({ oferta, user }) => {
         >
           {oferta.descripcion}
         </Card.Text>
-        
+
         <div className="mt-auto">
           {/* Precios */}
-          <div 
+          <div
             className="border-top border-3 border-warning pt-3 mb-4"
             style={{ borderStyle: 'dashed !important' }}
           >
-            <div 
+            <div
               className="fs-6 mb-1"
               style={{
                 fontFamily: "'Lato', sans-serif",
@@ -155,9 +155,9 @@ const OfertaCard = ({ oferta, user }) => {
             >
               Precio original: {formatearPrecio(oferta.precioOriginal)}
             </div>
-            <div 
+            <div
               className="fw-bold mb-2"
-              style={{ 
+              style={{
                 fontSize: '2rem',
                 fontFamily: "'Lato', sans-serif",
                 color: '#FF6B6B',
@@ -165,7 +165,7 @@ const OfertaCard = ({ oferta, user }) => {
             >
               {formatearPrecio(oferta.precioOferta)}
             </div>
-            <div 
+            <div
               className="fw-semibold fs-6"
               style={{
                 fontFamily: "'Lato', sans-serif",
@@ -178,8 +178,8 @@ const OfertaCard = ({ oferta, user }) => {
 
           {/* Botón con scroll al top */}
           <div className="d-grid">
-            <Button 
-              variant="light" 
+            <Button
+              variant="light"
               size="lg"
               className="fw-bold py-3 rounded-3 border-3 border-dark"
               as={Link}

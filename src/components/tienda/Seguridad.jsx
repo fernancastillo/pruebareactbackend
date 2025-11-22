@@ -62,7 +62,7 @@ const Seguridad = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validarFormulario()) {
       return;
     }
@@ -113,8 +113,8 @@ const Seguridad = () => {
       </h4>
 
       {mensaje.show && (
-        <Alert 
-          variant={mensaje.tipo} 
+        <Alert
+          variant={mensaje.tipo}
           className="mb-4 border-3 border-dark rounded-4"
           style={{
             backgroundColor: mensaje.tipo === 'success' ? '#87CEEB' : '#f8d7da',
@@ -126,9 +126,9 @@ const Seguridad = () => {
         </Alert>
       )}
 
-      <Card 
+      <Card
         className="border-3 border-dark rounded-4"
-        style={{ 
+        style={{
           backgroundColor: '#87CEEB'
         }}
       >
@@ -147,7 +147,7 @@ const Seguridad = () => {
                     onChange={handleInputChange}
                     isInvalid={!!errores.contrasenhaActual}
                     className="border-3 border-dark rounded-4"
-                    style={{ 
+                    style={{
                       backgroundColor: '#FFFFFF',
                       fontFamily: "'Lato', sans-serif"
                     }}
@@ -172,7 +172,7 @@ const Seguridad = () => {
                     onChange={handleInputChange}
                     isInvalid={!!errores.nuevaContrasenha}
                     className="border-3 border-dark rounded-4"
-                    style={{ 
+                    style={{
                       backgroundColor: '#FFFFFF',
                       fontFamily: "'Lato', sans-serif"
                     }}
@@ -198,7 +198,7 @@ const Seguridad = () => {
                     onChange={handleInputChange}
                     isInvalid={!!errores.confirmarContrasenha}
                     className="border-3 border-dark rounded-4"
-                    style={{ 
+                    style={{
                       backgroundColor: '#FFFFFF',
                       fontFamily: "'Lato', sans-serif"
                     }}

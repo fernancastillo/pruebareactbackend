@@ -17,26 +17,26 @@ export const orderService = {
   getUserOrders: async (userRun) => {
     try {
       console.log('🔍 Buscando órdenes en BD Oracle para RUN:', userRun);
-      
+
       if (!userRun) {
         console.error('RUN del usuario no proporcionado');
         return [];
       }
 
       const orders = await orderService.getAllOrders();
-      
+
       console.log('🎯 BUSQUEDA EN BD ORACLE:');
-      
+
       // Buscar órdenes que coincidan con el RUN del usuario
       const userOrders = orders.filter(order => {
         // Verificar si el objeto usuario tiene el RUN que buscamos
         const usuario = order.usuario;
         if (usuario && typeof usuario === 'object') {
-          const runMatch = 
+          const runMatch =
             usuario.run == userRun || // == para comparación flexible
             usuario.id == userRun ||
             usuario.runUsuario == userRun;
-          
+
           if (runMatch) {
             console.log(`✅ ORDEN ENCONTRADA EN BD:`, {
               numeroOrden: order.numeroOrden,
@@ -46,12 +46,12 @@ export const orderService = {
             return true;
           }
         }
-        
+
         return false;
       });
-      
+
       console.log(`📊 RESULTADO BD: ${userOrders.length} órdenes encontradas de ${orders.length} totales`);
-      
+
       return userOrders;
     } catch (error) {
       console.error('Error al obtener órdenes del usuario desde BD:', error);
@@ -64,7 +64,7 @@ export const orderService = {
     try {
       const orders = await orderService.getAllOrders();
       const order = orders.find(o => o.numeroOrden === orderNumber);
-      
+
       if (!order) {
         return null;
       }

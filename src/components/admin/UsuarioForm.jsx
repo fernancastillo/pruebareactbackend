@@ -64,29 +64,29 @@ const UsuarioForm = ({ usuario, onSubmit, onCancel }) => {
   // Función para validar RUN con algoritmo módulo 11
   const validarRUN = (run) => {
     if (!run.trim()) return 'El RUN es requerido';
-    
+
     // Solo números, sin puntos ni dígito verificador
     if (!/^\d+$/.test(run)) {
       return 'El RUN debe contener solo números (sin puntos ni guión)';
     }
-    
+
     // ✅ Entre 8 y 9 caracteres (sin dígito verificador)
     if (run.length < 8 || run.length > 9) {
       return 'El RUN debe tener entre 8 y 9 dígitos';
     }
-    
+
     // Validar con algoritmo módulo 11
     const runStr = run.padStart(9, '0'); // Asegurar 9 dígitos para cálculo
     const factores = [3, 2, 7, 6, 5, 4, 3, 2];
     let suma = 0;
-    
+
     for (let i = 0; i < 8; i++) {
       suma += parseInt(runStr[i]) * factores[i];
     }
-    
+
     const resto = suma % 11;
     const digitoVerificador = 11 - resto;
-    
+
     // Validar dígito verificador
     let digitoEsperado;
     if (digitoVerificador === 11) {
@@ -96,7 +96,7 @@ const UsuarioForm = ({ usuario, onSubmit, onCancel }) => {
     } else {
       digitoEsperado = digitoVerificador;
     }
-    
+
     // El RUN sin dígito verificador debe ser válido
     if (digitoEsperado === 'K') {
       // RUN válido pero con K
@@ -111,33 +111,33 @@ const UsuarioForm = ({ usuario, onSubmit, onCancel }) => {
   // Función para validar email con dominios específicos
   const validarEmail = (email) => {
     if (!email.trim()) return 'El email es requerido';
-    
+
     const dominiosPermitidos = ['gmail.com', 'duoc.cl', 'profesor.duoc.cl'];
     const regex = new RegExp(`^[a-zA-Z0-9._%+-]+@(${dominiosPermitidos.join('|')})$`);
-    
+
     if (!regex.test(email)) {
       return `El email debe ser de uno de estos dominios: ${dominiosPermitidos.join(', ')}`;
     }
-    
+
     return '';
   };
 
   // Función para validar teléfono (opcional)
   const validarTelefono = (telefono) => {
     if (!telefono || telefono.trim() === '') return ''; // Teléfono es opcional
-    
+
     // Remover todos los caracteres que no sean números
     const soloNumeros = telefono.replace(/\D/g, '');
-    
+
     // Validar que tenga exactamente 9 dígitos y empiece con 9
     if (soloNumeros.length !== 9) {
       return 'El teléfono debe tener 9 dígitos';
     }
-    
+
     if (!soloNumeros.startsWith('9')) {
       return 'El teléfono debe empezar con 9';
     }
-    
+
     return '';
   };
 
@@ -157,15 +157,15 @@ const UsuarioForm = ({ usuario, onSubmit, onCancel }) => {
   // Función para validar dirección (OBLIGATORIA)
   const validarDireccion = (direccion) => {
     if (!direccion.trim()) return 'La dirección es obligatoria';
-    
+
     if (direccion.trim().length < 5) {
       return 'La dirección debe tener al menos 5 caracteres';
     }
-    
+
     if (direccion.trim().length > 100) {
       return 'La dirección no puede tener más de 100 caracteres';
     }
-    
+
     return '';
   };
 
@@ -188,7 +188,7 @@ const UsuarioForm = ({ usuario, onSubmit, onCancel }) => {
   // Función para manejar cambio de región
   const handleRegionChange = (e) => {
     const regionSeleccionada = e.target.value;
-    
+
     setFormData(prev => ({
       ...prev,
       region: regionSeleccionada,
@@ -221,7 +221,7 @@ const UsuarioForm = ({ usuario, onSubmit, onCancel }) => {
   // Función para manejar cambio de comuna
   const handleComunaChange = (e) => {
     const comunaSeleccionada = e.target.value;
-    
+
     setFormData(prev => ({
       ...prev,
       comuna: comunaSeleccionada
@@ -238,7 +238,7 @@ const UsuarioForm = ({ usuario, onSubmit, onCancel }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    
+
     setFormData(prev => ({
       ...prev,
       [name]: value
@@ -257,15 +257,15 @@ const UsuarioForm = ({ usuario, onSubmit, onCancel }) => {
   const calcularEdad = (fechaNacimiento) => {
     const hoy = new Date();
     const fechaNac = new Date(fechaNacimiento);
-    
+
     let edad = hoy.getFullYear() - fechaNac.getFullYear();
     const mes = hoy.getMonth() - fechaNac.getMonth();
-    
+
     // Ajustar si aún no ha pasado el mes de cumpleaños este año
     if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNac.getDate())) {
       edad--;
     }
-    
+
     return edad;
   };
 
@@ -311,11 +311,11 @@ const UsuarioForm = ({ usuario, onSubmit, onCancel }) => {
       newErrors.fecha_nacimiento = 'La fecha de nacimiento es requerida';
     } else {
       const edad = calcularEdad(formData.fecha_nacimiento);
-      
+
       if (edad < 10) {
         newErrors.fecha_nacimiento = 'El usuario debe ser mayor de 10 años';
       }
-      
+
       // Validar que no sea una fecha futura
       const fechaNac = new Date(formData.fecha_nacimiento);
       const hoy = new Date();
@@ -330,7 +330,7 @@ const UsuarioForm = ({ usuario, onSubmit, onCancel }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
 
     // Preparar datos para enviar
@@ -340,7 +340,7 @@ const UsuarioForm = ({ usuario, onSubmit, onCancel }) => {
       apellidos: formData.apellidos.trim(),
       correo: formData.correo,
       telefono: formData.telefono || '',
-      direccion: formData.direccion.trim(), 
+      direccion: formData.direccion.trim(),
       comuna: formData.comuna || '',
       region: formData.region || '',
       tipo: formData.tipo,

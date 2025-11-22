@@ -31,13 +31,13 @@ const Index = () => {
     const itemEnCarrito = carritoActual.find(item => item.codigo === producto.codigo);
     const cantidadEnCarrito = itemEnCarrito ? itemEnCarrito.cantidad : 0;
     const stockBase = producto.stock || producto.stockActual || 0;
-    
+
     return Math.max(0, stockBase - cantidadEnCarrito);
   };
 
   const adaptarProductosDesdeBD = (productosBD) => {
     const carritoActual = cartService.getCart();
-    
+
     return productosBD.map(producto => {
       let categoriaNombre = producto.categoria;
       if (typeof producto.categoria === 'object' && producto.categoria !== null) {
@@ -69,13 +69,13 @@ const Index = () => {
 
   const aplicarOfertasConfiguradas = (productos) => {
     return productos.map(producto => {
-      const ofertaConfig = ofertasConfig.find(oferta => 
+      const ofertaConfig = ofertasConfig.find(oferta =>
         oferta.codigo === producto.codigo
       );
-      
+
       if (ofertaConfig) {
         const precioOferta = Math.round(producto.precio * (1 - ofertaConfig.descuento / 100));
-        
+
         return {
           ...producto,
           precioOriginal: producto.precio,
@@ -86,7 +86,7 @@ const Index = () => {
           enOferta: true
         };
       }
-      
+
       return producto;
     });
   };
@@ -95,9 +95,9 @@ const Index = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const productosDesdeBD = await dataService.getProductos();
-      
+
       if (!productosDesdeBD || productosDesdeBD.length === 0) {
         const errorMsg = 'No se encontraron productos en la base de datos.';
         setError(errorMsg);
@@ -105,26 +105,26 @@ const Index = () => {
         setFilteredProducts([]);
         return;
       }
-      
+
       const productosAdaptados = adaptarProductosDesdeBD(productosDesdeBD);
       const productosParaMostrar = aplicarOfertasConfiguradas(productosAdaptados);
-      
+
       const productosOferta = contarProductosEnOferta(productosParaMostrar);
       setOfertasCount(productosOferta);
-      
+
       setProducts(productosParaMostrar);
       setFilteredProducts(productosParaMostrar);
-      
+
       try {
         const categoriasBD = await dataService.getCategorias();
-        
+
         const nombresCategorias = categoriasBD.map(cat => {
           if (typeof cat === 'object' && cat !== null) {
             return cat.nombre || cat.name || String(cat);
           }
           return String(cat);
         });
-        
+
         const uniqueCategories = ['all', ...new Set(nombresCategorias)];
         setCategories(uniqueCategories);
       } catch (catError) {
@@ -132,7 +132,7 @@ const Index = () => {
         const uniqueCategories = ['all', ...new Set(categoriasProductos)];
         setCategories(uniqueCategories);
       }
-      
+
     } catch (err) {
       setError(`Error al cargar los productos: ${err.message}`);
       setProducts([]);
@@ -145,7 +145,7 @@ const Index = () => {
   const actualizarStockProducto = (productoCodigo) => {
     setProducts(prevProducts => {
       const carritoActual = cartService.getCart();
-      
+
       return prevProducts.map(producto => {
         if (producto.codigo === productoCodigo) {
           const stockDisponible = calcularStockDisponible(producto, carritoActual);
@@ -162,7 +162,7 @@ const Index = () => {
   const actualizarStockDesdeCarrito = () => {
     setProducts(prevProducts => {
       const carritoActual = cartService.getCart();
-      
+
       return prevProducts.map(producto => {
         const stockDisponible = calcularStockDisponible(producto, carritoActual);
         return {
@@ -188,7 +188,7 @@ const Index = () => {
 
     window.addEventListener('cartUpdated', handleCartUpdate);
     window.addEventListener('stockUpdated', handleStockUpdate);
-    
+
     return () => {
       window.removeEventListener('cartUpdated', handleCartUpdate);
       window.removeEventListener('stockUpdated', handleStockUpdate);
@@ -244,7 +244,7 @@ const Index = () => {
       }
 
       const stockDisponible = await cartService.checkAvailableStock(product.codigo, 1);
-      
+
       if (!stockDisponible) {
         const stockActual = await cartService.getCurrentStock(product.codigo);
         alert(`No hay stock disponible de ${product.nombre}. Stock actual: ${stockActual}`);
@@ -303,7 +303,7 @@ const Index = () => {
       <div style={{ height: '80px' }}></div>
 
       {showSuccessNotification && (
-        <div 
+        <div
           className="position-fixed top-0 end-0 m-3 p-3 rounded-3 border-3 border-success shadow-lg"
           style={{
             backgroundColor: '#d4edda',
@@ -322,10 +322,10 @@ const Index = () => {
 
       {loading && (
         <Container className="py-5 text-center">
-          <div 
+          <div
             className="d-flex justify-content-center align-items-center py-5 rounded-4 mx-auto"
-            style={{ 
-              maxWidth: '500px', 
+            style={{
+              maxWidth: '500px',
               backgroundColor: 'rgba(255, 255, 255, 0.9)',
               backdropFilter: 'blur(10px)'
             }}
@@ -385,16 +385,16 @@ const Index = () => {
               <Container>
                 <Row className="justify-content-center">
                   <Col lg={10}>
-                    <div 
+                    <div
                       className="rounded-4 p-4 text-center shadow-lg border-3 border-warning"
                       style={{
                         background: 'linear-gradient(135deg, rgba(255, 107, 107, 0.9), rgba(255, 193, 7, 0.9))',
                         backdropFilter: 'blur(10px)'
                       }}
                     >
-                      <h3 
+                      <h3
                         className="fw-bold mb-3 text-white"
-                        style={{ 
+                        style={{
                           fontFamily: "'Indie Flower', cursive",
                           fontSize: '2.5rem',
                           textShadow: '2px 2px 4px rgba(0,0,0,0.5)'
@@ -405,8 +405,8 @@ const Index = () => {
                       <p className="fs-5 text-white mb-3 fw-semibold">
                         Tenemos <Badge bg="danger" className="fs-4">{ofertasCount}</Badge> productos en oferta con descuentos increíbles
                       </p>
-                      <Button 
-                        variant="light" 
+                      <Button
+                        variant="light"
                         size="lg"
                         className="fw-bold border-3 border-dark rounded-3 px-4"
                         onClick={handleGoToOfertas}
@@ -439,8 +439,8 @@ const Index = () => {
                   <p className="fs-5" style={{ color: 'rgba(255,255,255,0.9)', textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }} >
                     Descubre la magia de Stardew Valley en nuestra colección exclusiva
                   </p>
-                  <Badge 
-                    bg="success" 
+                  <Badge
+                    bg="success"
                     className="fs-6 px-3 py-2 mt-2"
                   >
                     {filteredProducts.length} productos encontrados
@@ -500,8 +500,8 @@ const Index = () => {
                           No se encontraron productos
                         </h4>
                         <p className="text-muted mb-4">
-                          {searchTerm || selectedCategory !== 'all' 
-                            ? 'Prueba con otros términos de búsqueda o categorías' 
+                          {searchTerm || selectedCategory !== 'all'
+                            ? 'Prueba con otros términos de búsqueda o categorías'
                             : 'No hay productos disponibles en este momento'}
                         </p>
                         <Button

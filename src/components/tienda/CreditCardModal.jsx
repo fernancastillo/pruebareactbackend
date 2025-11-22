@@ -3,12 +3,12 @@ import React, { useState } from 'react';
 import { Modal, Button, Form, Row, Col, Alert, Spinner } from 'react-bootstrap';
 import { paymentService } from '../../utils/tienda/paymentService';
 
-const CreditCardModal = ({ 
-  show, 
-  onHide, 
-  onPaymentSuccess, 
+const CreditCardModal = ({
+  show,
+  onHide,
+  onPaymentSuccess,
   totalFinal,
-  discountCode = '' 
+  discountCode = ''
 }) => {
   const [creditCardData, setCreditCardData] = useState({
     cardNumber: '',
@@ -23,7 +23,7 @@ const CreditCardModal = ({
 
   const handleInputChange = (field, value) => {
     let formattedValue = value;
-    
+
     // Aplicar formato según el campo
     if (field === 'cardNumber') {
       formattedValue = paymentService.formatCardNumber(value);
@@ -36,7 +36,7 @@ const CreditCardModal = ({
       // Solo letras y espacios
       formattedValue = value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
     }
-    
+
     setCreditCardData(prev => ({
       ...prev,
       [field]: formattedValue
@@ -49,7 +49,7 @@ const CreditCardModal = ({
         [field]: ''
       }));
     }
-    
+
     if (paymentError) {
       setPaymentError('');
     }
@@ -57,9 +57,9 @@ const CreditCardModal = ({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     const validation = paymentService.validateCreditCard(creditCardData);
-    
+
     if (!validation.isValid) {
       setErrors(validation.errors);
       return;
@@ -71,7 +71,7 @@ const CreditCardModal = ({
     try {
       // Procesar pago (siempre exitoso)
       const paymentResult = await paymentService.processPayment(creditCardData, totalFinal);
-      
+
       if (paymentResult.success) {
         // Éxito - llamar al callback con los datos del pago
         onPaymentSuccess({
@@ -113,7 +113,7 @@ const CreditCardModal = ({
       size="lg"
       style={{ fontFamily: "'Lato', sans-serif" }}
     >
-      <Modal.Header 
+      <Modal.Header
         className="border-3 border-dark"
         style={{
           backgroundColor: '#87CEEB',
@@ -125,15 +125,15 @@ const CreditCardModal = ({
           </span>
         </Modal.Title>
       </Modal.Header>
-      
+
       <Modal.Body
         style={{
           backgroundColor: '#87CEEB',
         }}
       >
         {paymentError && (
-          <Alert 
-            variant="danger" 
+          <Alert
+            variant="danger"
             className="border-3 border-dark rounded-3"
             style={{
               backgroundColor: '#f8d7da',
@@ -145,7 +145,7 @@ const CreditCardModal = ({
           </Alert>
         )}
 
-        <div 
+        <div
           className="p-3 rounded-3 border-3 border-dark mb-4 text-center"
           style={{
             backgroundColor: '#90EE90',
@@ -174,7 +174,7 @@ const CreditCardModal = ({
                   value={creditCardData.cardNumber}
                   onChange={(e) => handleInputChange('cardNumber', e.target.value)}
                   className={`border-3 border-dark fw-bold ${errors.cardNumber ? 'border-danger' : ''}`}
-                  style={{ 
+                  style={{
                     color: '#000000',
                     backgroundColor: '#FFFFFF'
                   }}
@@ -200,7 +200,7 @@ const CreditCardModal = ({
                   value={creditCardData.cardName}
                   onChange={(e) => handleInputChange('cardName', e.target.value.toUpperCase())}
                   className={`border-3 border-dark fw-bold ${errors.cardName ? 'border-danger' : ''}`}
-                  style={{ 
+                  style={{
                     color: '#000000',
                     backgroundColor: '#FFFFFF'
                   }}
@@ -225,7 +225,7 @@ const CreditCardModal = ({
                   value={creditCardData.expiryDate}
                   onChange={(e) => handleInputChange('expiryDate', e.target.value)}
                   className={`border-3 border-dark fw-bold ${errors.expiryDate ? 'border-danger' : ''}`}
-                  style={{ 
+                  style={{
                     color: '#000000',
                     backgroundColor: '#FFFFFF'
                   }}
@@ -237,7 +237,7 @@ const CreditCardModal = ({
                 )}
               </Form.Group>
             </Col>
-            
+
             <Col md={6}>
               <Form.Group className="mb-3">
                 <Form.Label className="fw-bold" style={{ color: '#000000' }}>
@@ -249,7 +249,7 @@ const CreditCardModal = ({
                   value={creditCardData.cvv}
                   onChange={(e) => handleInputChange('cvv', e.target.value)}
                   className={`border-3 border-dark fw-bold ${errors.cvv ? 'border-danger' : ''}`}
-                  style={{ 
+                  style={{
                     color: '#000000',
                     backgroundColor: '#FFFFFF'
                   }}
@@ -273,7 +273,7 @@ const CreditCardModal = ({
                   value={creditCardData.installments}
                   onChange={(e) => handleInputChange('installments', e.target.value)}
                   className="border-3 border-dark fw-bold"
-                  style={{ 
+                  style={{
                     color: '#000000',
                     backgroundColor: '#FFFFFF'
                   }}
@@ -288,7 +288,7 @@ const CreditCardModal = ({
             </Col>
           </Row>
 
-          <div 
+          <div
             className="p-2 rounded-3 border-2 border-dark small text-center"
             style={{
               backgroundColor: '#dedd8ff5',
@@ -299,15 +299,15 @@ const CreditCardModal = ({
           </div>
         </Form>
       </Modal.Body>
-      
+
       <Modal.Footer
         className="border-3 border-dark"
         style={{
           backgroundColor: '#87CEEB',
         }}
       >
-        <Button 
-          variant="outline-secondary" 
+        <Button
+          variant="outline-secondary"
           onClick={onHide}
           className="rounded-pill px-4 py-2 border-3 border-dark fw-bold"
           style={{
@@ -319,8 +319,8 @@ const CreditCardModal = ({
         >
           Cancelar
         </Button>
-        <Button 
-          variant="success" 
+        <Button
+          variant="success"
           onClick={handleSubmit}
           className="rounded-pill px-4 py-2 border-3 border-dark fw-bold"
           style={{

@@ -17,7 +17,7 @@ const PaymentSuccessModal = ({ show, onHide, orderNumber, total, transactionId }
       size="lg"
       style={{ fontFamily: "'Lato', sans-serif" }}
     >
-      <Modal.Header 
+      <Modal.Header
         className="border-3 border-success"
         style={{
           backgroundColor: '#90EE90',
@@ -29,7 +29,7 @@ const PaymentSuccessModal = ({ show, onHide, orderNumber, total, transactionId }
           </span>
         </Modal.Title>
       </Modal.Header>
-      
+
       <Modal.Body
         style={{
           backgroundColor: '#90EE90',
@@ -37,15 +37,15 @@ const PaymentSuccessModal = ({ show, onHide, orderNumber, total, transactionId }
       >
         <div className="text-center">
           <div className="mb-4">
-            <div 
+            <div
               className="display-1 mb-3"
               style={{ color: '#000000' }}
             >
               ✅
             </div>
-            <h4 
+            <h4
               className="fw-bold mb-3"
-              style={{ 
+              style={{
                 color: '#000000',
                 fontFamily: "'Lato', sans-serif"
               }}
@@ -54,8 +54,8 @@ const PaymentSuccessModal = ({ show, onHide, orderNumber, total, transactionId }
             </h4>
           </div>
 
-          <Alert 
-            variant="success" 
+          <Alert
+            variant="success"
             className="border-3 border-dark rounded-3 mb-4"
             style={{
               backgroundColor: '#87CEEB',
@@ -83,7 +83,7 @@ const PaymentSuccessModal = ({ show, onHide, orderNumber, total, transactionId }
             )}
           </Alert>
 
-          <div 
+          <div
             className="p-3 rounded-3 border-3 border-dark mb-4"
             style={{
               backgroundColor: '#dedd8ff5',
@@ -99,7 +99,7 @@ const PaymentSuccessModal = ({ show, onHide, orderNumber, total, transactionId }
             </ul>
           </div>
 
-          <div 
+          <div
             className="small p-2 rounded-3 border-2 border-dark"
             style={{
               backgroundColor: '#87CEEB',
@@ -110,17 +110,17 @@ const PaymentSuccessModal = ({ show, onHide, orderNumber, total, transactionId }
           </div>
         </div>
       </Modal.Body>
-      
+
       <Modal.Footer
         className="border-3 border-success"
         style={{
           backgroundColor: '#90EE90',
         }}
       >
-        <Button 
+        <Button
           as={Link}
           to="/pedidos"
-          variant="primary" 
+          variant="primary"
           className="rounded-pill px-4 py-2 border-3 border-dark fw-bold"
           style={{
             backgroundColor: '#87CEEB',
@@ -130,10 +130,10 @@ const PaymentSuccessModal = ({ show, onHide, orderNumber, total, transactionId }
         >
           👀 Ver Mis Pedidos
         </Button>
-        <Button 
+        <Button
           as={Link}
           to="/index"
-          variant="success" 
+          variant="success"
           className="rounded-pill px-4 py-2 border-3 border-dark fw-bold"
           style={{
             background: 'linear-gradient(135deg, #28a745, #20c997)',

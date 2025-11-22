@@ -26,8 +26,8 @@ const LoginHeader = () => {
               }}
             />
           </div>
-          
-          <h2 
+
+          <h2
             id="fallback-title"
             className="fw-bold mb-3"
             style={{
@@ -40,8 +40,8 @@ const LoginHeader = () => {
           >
             Iniciar Sesión
           </h2>
-          
-          <p 
+
+          <p
             className="fs-5"
             style={{
               color: '#000000',

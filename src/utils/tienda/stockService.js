@@ -3,7 +3,7 @@ import { dataService } from '../dataService';
 export const getProductosConStockActual = async (productosBase = null) => {
   try {
     const carrito = JSON.parse(localStorage.getItem('junimoCart')) || [];
-    
+
     let productos = productosBase;
     if (!productos || productos.length === 0) {
       try {
@@ -26,7 +26,7 @@ export const getProductosConStockActual = async (productosBase = null) => {
 
       return {
         ...producto,
-        stock_disponible 
+        stock_disponible
       };
     });
 
@@ -41,9 +41,9 @@ export const verificarStockDisponible = async (productoCodigo, cantidadDeseada =
   try {
     const productos = await getProductosConStockActual();
     const producto = productos.find(p => p.codigo === productoCodigo);
-    
+
     const disponible = producto ? producto.stock_disponible >= cantidadDeseada : false;
-    
+
     return disponible;
   } catch (error) {
     console.error('Error verificando stock:', error);
@@ -75,12 +75,12 @@ export const obtenerStockDisponible = async (productoCodigo) => {
 export const reiniciarStockDesdeBase = async () => {
   try {
     const productosBase = await dataService.getProductos();
-    
+
     localStorage.setItem('app_productos', JSON.stringify(productosBase));
-    
+
     window.dispatchEvent(new Event('stockUpdated'));
     window.dispatchEvent(new Event('cartUpdated'));
-    
+
     return productosBase;
   } catch (error) {
     console.error('Error reiniciando stock:', error);
@@ -93,7 +93,7 @@ export const debugStock = async () => {
     const carrito = JSON.parse(localStorage.getItem('junimoCart')) || [];
     const productosBD = await dataService.getProductos();
     const productosConStock = await getProductosConStockActual(productosBD);
-    
+
     return productosConStock;
   } catch (error) {
     console.error('Error en debug:', error);

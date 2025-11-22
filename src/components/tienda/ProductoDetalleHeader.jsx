@@ -10,7 +10,7 @@ const ProductoDetalleHeader = () => {
             src="../src/assets/tienda/productos.png"
             alt="Nuestros Productos"
             className="img-fluid rounded-4"
-            style={{ 
+            style={{
               maxHeight: '200px',
               width: 'auto'
             }}

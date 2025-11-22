@@ -14,16 +14,16 @@ export const usuarioService = {
   async enriquecerUsuariosConEstadisticas(usuarios) {
     try {
       const ordenes = await dataService.getOrdenes();
-      
+
       const usuariosEnriquecidos = usuarios.map(usuario => {
         const ordenesUsuario = ordenes.filter(orden => {
           const runOrden = orden.run || (orden.usuario ? orden.usuario.run : null);
           return runOrden && runOrden.toString() === usuario.run.toString();
         });
-        
+
         const totalCompras = ordenesUsuario.length;
         const totalGastado = ordenesUsuario.reduce((sum, orden) => sum + (orden.total || 0), 0);
-        
+
         return {
           ...usuario,
           id: usuario.run,
@@ -41,7 +41,7 @@ export const usuarioService = {
           fecha_nacimiento: usuario.fecha_nacimiento || usuario.fechaNac
         };
       });
-      
+
       return usuariosEnriquecidos;
     } catch (error) {
       return usuarios.map(usuario => ({
@@ -58,30 +58,25 @@ export const usuarioService = {
   },
 
   formatearDireccion(usuario) {
-    const partes = [];
-    if (usuario.direccion) partes.push(usuario.direccion);
-    if (usuario.comuna) partes.push(usuario.comuna);
-    if (usuario.region) partes.push(usuario.region);
-    
-    return partes.length > 0 ? partes.join(', ') : 'Dirección no especificada';
+    return usuario.direccion || 'Dirección no especificada';
   },
 
   async createUsuario(usuarioData) {
     try {
       const runExiste = await this.verificarRUNExistente(usuarioData.run);
-      
+
       if (runExiste) {
         throw new Error('Ya existe un usuario con este RUN');
       }
 
       const emailExiste = await this.verificarEmailExistente(usuarioData.correo);
-      
+
       if (emailExiste) {
         throw new Error('Ya existe un usuario con este email');
       }
 
       const passwordHash = await this.hashPasswordSHA256(usuarioData.contrasenha);
-      
+
       const nuevoUsuario = {
         run: usuarioData.run,
         nombre: usuarioData.nombre,
@@ -143,16 +138,16 @@ export const usuarioService = {
     try {
       try {
         const usuarioBD = await dataService.getUsuarioByCorreo(email);
-        
+
         if (usuarioBD && usuarioBD.correo) {
           return true;
         } else {
           return false;
         }
-        
+
       } catch (endpointError) {
         const todosUsuarios = await dataService.getUsuarios();
-        const existe = todosUsuarios.some(user => 
+        const existe = todosUsuarios.some(user =>
           user.correo && user.correo.toLowerCase() === email.toLowerCase()
         );
         return existe;
@@ -166,13 +161,13 @@ export const usuarioService = {
     try {
       try {
         const usuarioBD = await dataService.getUsuarioById(run);
-        
+
         if (usuarioBD && usuarioBD.run) {
           return true;
         } else {
           return false;
         }
-        
+
       } catch (endpointError) {
         const todosUsuarios = await dataService.getUsuarios();
         const existe = todosUsuarios.some(user => user.run && user.run.toString() === run.toString());
@@ -200,7 +195,7 @@ export const usuarioService = {
       };
 
       const resultado = await dataService.updateUsuario(datosParaActualizar);
-      
+
       return resultado;
     } catch (error) {
       throw new Error(`Error al actualizar usuario: ${error.message}`);
@@ -216,11 +211,11 @@ export const usuarioService = {
     try {
       const usuarios = await this.getUsuarios();
       const usuario = usuarios.find(u => u.run.toString() === run.toString());
-      
+
       if (!usuario) {
         return null;
       }
-      
+
       return usuario;
     } catch (error) {
       throw error;
@@ -239,7 +234,7 @@ export const usuarioService = {
       }
 
       await dataService.deleteUsuario(run);
-      
+
       return true;
     } catch (error) {
       throw new Error(`Error al eliminar usuario: ${error.message}`);
@@ -253,7 +248,7 @@ export const usuarioService = {
         const runOrden = orden.run || (orden.usuario ? orden.usuario.run : null);
         return runOrden && runOrden.toString() === run.toString();
       });
-      
+
       return ordenesUsuario;
     } catch (error) {
       return [];

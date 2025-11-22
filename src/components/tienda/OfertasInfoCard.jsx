@@ -5,7 +5,7 @@ const OfertasInfoCard = ({ user, ofertasCount, navigate }) => {
   return (
     <Row className="mb-5">
       <Col>
-        <Card 
+        <Card
           className="rounded-4 border-0 shadow-lg overflow-hidden"
           style={{
             background: '#87CEEB',
@@ -13,7 +13,7 @@ const OfertasInfoCard = ({ user, ofertasCount, navigate }) => {
           }}
         >
           <Card.Body className="text-center p-5">
-            <h4 
+            <h4
               className="fw-bold mb-4"
               style={{
                 fontFamily: "'Indie Flower', cursive",
@@ -26,17 +26,17 @@ const OfertasInfoCard = ({ user, ofertasCount, navigate }) => {
             <Row>
               <Col md={4}>
                 <div className="text-center">
-                  <h3 
+                  <h3
                     className="fw-bold mb-2"
-                    style={{ 
-                      color: '#FF6B6B', 
+                    style={{
+                      color: '#FF6B6B',
                       fontSize: '2.5rem',
                       fontFamily: "'Lato', sans-serif",
                     }}
                   >
                     {ofertasCount}
                   </h3>
-                  <p 
+                  <p
                     className="mb-0 fw-semibold"
                     style={{
                       fontFamily: "'Lato', sans-serif",
@@ -50,17 +50,17 @@ const OfertasInfoCard = ({ user, ofertasCount, navigate }) => {
               </Col>
               <Col md={4}>
                 <div className="text-center">
-                  <h3 
+                  <h3
                     className="fw-bold mb-2"
-                    style={{ 
-                      color: '#FF6B6B', 
+                    style={{
+                      color: '#FF6B6B',
                       fontSize: '2.5rem',
                       fontFamily: "'Lato', sans-serif",
                     }}
                   >
                     Hasta 35%
                   </h3>
-                  <p 
+                  <p
                     className="mb-0 fw-semibold"
                     style={{
                       fontFamily: "'Lato', sans-serif",
@@ -74,17 +74,17 @@ const OfertasInfoCard = ({ user, ofertasCount, navigate }) => {
               </Col>
               <Col md={4}>
                 <div className="text-center">
-                  <h3 
+                  <h3
                     className="fw-bold mb-2"
-                    style={{ 
-                      color: '#FF6B6B', 
+                    style={{
+                      color: '#FF6B6B',
                       fontSize: '2.5rem',
                       fontFamily: "'Lato', sans-serif",
                     }}
                   >
                     <span style={{ color: '#FFD700' }}>🕒</span>
                   </h3>
-                  <p 
+                  <p
                     className="mb-0 fw-semibold"
                     style={{
                       fontFamily: "'Lato', sans-serif",
@@ -112,8 +112,8 @@ const OfertasInfoCard = ({ user, ofertasCount, navigate }) => {
                   </span>
                 </div>
                 <div className="text-center mt-3">
-                  <Button 
-                    variant="primary" 
+                  <Button
+                    variant="primary"
                     size="lg"
                     className="fw-bold px-4 py-2 border-3 border-dark"
                     onClick={() => navigate('/login')}

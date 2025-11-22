@@ -12,12 +12,12 @@ const SeccionMisionVision = () => {
         <CardNosotros className="h-100">
           <div className="p-4 d-flex flex-column h-100">
             <div className="text-center mb-3">
-              <ImagenNosotros 
+              <ImagenNosotros
                 src={misionImage}
                 alt="Junimo - Nuestra misión"
               />
             </div>
-            
+
             <h3 style={{
               fontFamily: "'Indie Flower', cursive",
               fontSize: '2.2rem',
@@ -37,23 +37,23 @@ const SeccionMisionVision = () => {
               textAlign: 'center',
               flexGrow: '1'
             }}>
-              Ofrecer productos y experiencias de alta calidad para los fans de Stardew Valley, 
+              Ofrecer productos y experiencias de alta calidad para los fans de Stardew Valley,
               con un enfoque en la autenticidad, la creatividad y la construcción de comunidad.
             </p>
           </div>
         </CardNosotros>
       </Col>
-      
+
       <Col md={6} className="mb-4">
         <CardNosotros className="h-100">
           <div className="p-4 d-flex flex-column h-100">
             <div className="text-center mb-3">
-              <ImagenNosotros 
+              <ImagenNosotros
                 src={visionImage}
                 alt="Gallina de Stardew Valley - Nuestra visión"
               />
             </div>
-            
+
             <h3 style={{
               fontFamily: "'Indie Flower', cursive",
               fontSize: '2.2rem',
@@ -73,8 +73,8 @@ const SeccionMisionVision = () => {
               textAlign: 'center',
               flexGrow: '1'
             }}>
-              Ser la tienda online líder en Chile para la comunidad de Stardew Valley, 
-              reconocida por su cercanía, originalidad, y programas de fidelización que 
+              Ser la tienda online líder en Chile para la comunidad de Stardew Valley,
+              reconocida por su cercanía, originalidad, y programas de fidelización que
               premien a los jugadores más comprometidos.
             </p>
           </div>

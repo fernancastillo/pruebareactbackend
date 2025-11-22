@@ -32,7 +32,7 @@ const Perfil = () => {
     document.body.style.margin = '0';
     document.body.style.padding = '0';
     document.body.style.minHeight = '100vh';
-    
+
     // Limpiar cuando el componente se desmonte
     return () => {
       document.body.style.backgroundImage = '';
@@ -85,9 +85,9 @@ const Perfil = () => {
       {mensaje.texto && (
         <div className={`alert alert-${mensaje.tipo === 'success' ? 'success' : 'danger'} alert-dismissible fade show`} style={{ opacity: 0.95 }}>
           {mensaje.texto}
-          <button 
-            type="button" 
-            className="btn-close" 
+          <button
+            type="button"
+            className="btn-close"
             onClick={() => setMensaje({ tipo: '', texto: '' })}
           ></button>
         </div>
@@ -111,13 +111,13 @@ const Perfil = () => {
             </div>
             <div className="card-body">
               <div className="text-center">
-                <div className="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
-                     style={{ width: '80px', height: '80px' }}>
+                <div className="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                  style={{ width: '80px', height: '80px' }}>
                   <i className="bi bi-person-fill text-white" style={{ fontSize: '2rem' }}></i>
                 </div>
                 <h5 className="font-weight-bold">{usuario.nombre} {usuario.apellidos}</h5>
                 <p className="text-muted mb-3">{usuario.correo}</p>
-                
+
                 <div className="d-flex justify-content-between border-top pt-3">
                   <div className="text-center">
                     <div className="text-primary fw-bold">{usuario.run}</div>
@@ -148,7 +148,7 @@ const Perfil = () => {
                 <div className="d-flex justify-content-between">
                   <span className="text-muted">Sesión activa desde:</span>
                   <span className="fw-bold">
-                    {authService.getCurrentUser()?.loginTime 
+                    {authService.getCurrentUser()?.loginTime
                       ? formatDate(authService.getCurrentUser().loginTime)
                       : formatDate(new Date().toISOString())
                     }
@@ -165,21 +165,21 @@ const Perfil = () => {
             </div>
             <div className="card-body">
               <div className="d-grid gap-2">
-                <button 
+                <button
                   className="btn btn-primary btn-sm shadow"
                   onClick={() => setShowModal(true)}
                 >
                   <i className="bi bi-pencil me-2"></i>
                   Editar Perfil
                 </button>
-                <button 
+                <button
                   className="btn btn-outline-info btn-sm shadow"
                   onClick={cargarPerfil}
                 >
                   <i className="bi bi-arrow-clockwise me-2"></i>
                   Actualizar Datos
                 </button>
-                <button 
+                <button
                   className="btn btn-outline-danger btn-sm shadow"
                   onClick={handleDelete}
                 >

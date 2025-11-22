@@ -5,7 +5,7 @@ import { formatCurrency, formatDate } from './dashboardUtils';
  * Genera el HTML completo para la boleta
  */
 export const generarHTMLBoleta = (orden) => {
-  return `
+    return `
     <!DOCTYPE html>
     <html lang="es">
     <head>
@@ -27,7 +27,7 @@ export const generarHTMLBoleta = (orden) => {
  * Genera los estilos CSS para la boleta
  */
 const generarEstilosBoleta = () => {
-  return `
+    return `
     body {
         font-family: 'Arial', sans-serif;
         margin: 0;
@@ -130,7 +130,7 @@ const generarEstilosBoleta = () => {
  * Genera el contenido HTML de la boleta
  */
 const generarContenidoBoleta = (orden) => {
-  return `
+    return `
     <div class="boleta-container">
         <!-- Header -->
         <div class="header">
@@ -199,7 +199,7 @@ const generarContenidoBoleta = (orden) => {
  * Genera las filas de la tabla de productos
  */
 const generarFilasProductos = (productos) => {
-  return productos.map(producto => `
+    return productos.map(producto => `
     <tr>
         <td>${producto.codigo}</td>
         <td>${producto.nombre}</td>

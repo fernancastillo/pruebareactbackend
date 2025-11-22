@@ -23,25 +23,25 @@ export const aplicarFiltrosOrdenes = (ordenes, filtros) => {
   let filtered = [...ordenes];
 
   if (filtros.numeroOrden) {
-    filtered = filtered.filter(orden => 
+    filtered = filtered.filter(orden =>
       orden.numeroOrden.toLowerCase().includes(filtros.numeroOrden.toLowerCase())
     );
   }
 
   if (filtros.run) {
-    filtered = filtered.filter(orden => 
+    filtered = filtered.filter(orden =>
       orden.run.includes(filtros.run)
     );
   }
 
   if (filtros.estado) {
-    filtered = filtered.filter(orden => 
+    filtered = filtered.filter(orden =>
       orden.estadoEnvio === filtros.estado
     );
   }
 
   if (filtros.fecha) {
-    filtered = filtered.filter(orden => 
+    filtered = filtered.filter(orden =>
       orden.fecha === filtros.fecha
     );
   }

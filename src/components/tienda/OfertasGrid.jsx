@@ -8,7 +8,7 @@ const OfertasGrid = ({ ofertas, user }) => {
       <Row className="g-4">
         {ofertas.map(oferta => (
           <Col key={oferta.codigo} xl={3} lg={4} md={6}>
-            <OfertaCard 
+            <OfertaCard
               oferta={oferta}
               user={user}
             />

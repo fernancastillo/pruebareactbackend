@@ -50,7 +50,7 @@ export const perfilService = {
     try {
       // Obtener el usuario actual para mantener la contraseña existente
       const usuarioActual = await dataService.getUsuarioById(run);
-      
+
       if (!usuarioActual) {
         throw new Error('Usuario no encontrado');
       }
@@ -93,14 +93,14 @@ export const perfilService = {
     try {
       // Obtener el usuario actual
       const usuarioActual = await dataService.getUsuarioById(run);
-      
+
       if (!usuarioActual) {
         throw new Error('Usuario no encontrado');
       }
 
       // Verificar que la contraseña actual sea correcta
       const contrasenhaCorrecta = await this.verificarContrasenhaActual(
-        contrasenhaActual, 
+        contrasenhaActual,
         usuarioActual.contrasenha
       );
 
@@ -122,16 +122,16 @@ export const perfilService = {
 
       // Hashear la nueva contraseña
       const nuevaContrasenhaHash = await this.hashPasswordSHA256(nuevaContrasenha);
-      
+
       // Actualizar solo la contraseña manteniendo los demás datos
       const usuarioActualizado = {
         ...usuarioActual,
         contrasenha: nuevaContrasenhaHash
       };
-      
+
       // Guardar en la base de datos
       const resultado = await dataService.updateUsuario(usuarioActualizado);
-      
+
       return {
         success: true,
         message: 'Contraseña actualizada correctamente'
@@ -149,15 +149,15 @@ export const perfilService = {
    */
   validarFortalezaContrasenha(password) {
     const errores = [];
-    
+
     if (!password || password.length < 6) {
       errores.push('La contraseña debe tener al menos 6 caracteres');
     }
-    
+
     if (password.length > 100) {
       errores.push('La contraseña es demasiado larga');
     }
-    
+
     return errores;
   },
 
@@ -167,7 +167,7 @@ export const perfilService = {
   async obtenerPerfilCompleto(run) {
     try {
       const usuario = await dataService.getUsuarioById(run);
-      
+
       if (!usuario) {
         throw new Error('Usuario no encontrado en la base de datos');
       }

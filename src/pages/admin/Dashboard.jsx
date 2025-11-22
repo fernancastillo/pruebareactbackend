@@ -20,7 +20,7 @@ const Dashboard = () => {
     document.body.style.margin = '0';
     document.body.style.padding = '0';
     document.body.style.minHeight = '100vh';
-    
+
     return () => {
       document.body.style.backgroundImage = '';
       document.body.style.backgroundSize = '';
@@ -52,7 +52,7 @@ const Dashboard = () => {
         <div className="alert alert-danger">
           <h4>Error al cargar el dashboard</h4>
           <p>{error}</p>
-          <button 
+          <button
             className="btn btn-primary"
             onClick={() => window.location.reload()}
           >

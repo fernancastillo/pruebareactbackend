@@ -3,7 +3,7 @@ import { Container } from 'react-bootstrap';
 
 const LoadingState = () => {
   return (
-    <div 
+    <div
       className="min-vh-100 w-100"
       style={{
         backgroundImage: 'url("https://images3.alphacoders.com/126/1269904.png")',

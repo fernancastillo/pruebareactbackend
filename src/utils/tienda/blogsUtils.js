@@ -133,7 +133,7 @@ export const manejarSuscripcion = (email, setEmail, setShowAlert, setAlertMessag
 // Obtener noticias relacionadas basadas en el título del blog
 export const obtenerNoticiasRelacionadas = (tituloBlog) => {
   const palabrasClave = tituloBlog.toLowerCase().split(' ');
-  
+
   // Base de datos de noticias relacionadas
   const todasLasNoticias = [
     {
@@ -190,7 +190,7 @@ export const obtenerNoticiasRelacionadas = (tituloBlog) => {
     const noticiasGenerales = todasLasNoticias
       .filter(noticia => !noticiasRelacionadas.some(n => n.id === noticia.id))
       .slice(0, 2 - noticiasRelacionadas.length);
-    
+
     return [...noticiasRelacionadas, ...noticiasGenerales];
   }
 

@@ -3,14 +3,14 @@ import { canAccessAdmin, getRedirectRoute } from '../../utils/admin/routeProtect
 
 const AdminProtectedRoute = ({ children }) => {
   const location = useLocation();
-  
+
   const redirectTo = getRedirectRoute();
-  
+
   if (redirectTo) {
     // Redirigir guardando la ubicación intentada
     return <Navigate to={redirectTo} state={{ from: location }} replace />;
   }
-  
+
   // Si puede acceder, mostrar el contenido
   return children;
 };

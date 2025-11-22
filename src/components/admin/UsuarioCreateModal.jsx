@@ -77,50 +77,50 @@ const UsuarioCreateModal = ({ show, usuario, onSave, onClose }) => {
   // Función para validar RUN con algoritmo módulo 11
   const validarRUN = (run) => {
     if (!run.trim()) return 'El RUN es requerido';
-    
+
     // Solo números, sin puntos ni dígito verificador
     if (!/^\d+$/.test(run)) {
       return 'El RUN debe contener solo números (sin puntos ni guión)';
     }
-    
+
     // ✅ Entre 8 y 9 caracteres (sin dígito verificador)
     if (run.length < 8 || run.length > 9) {
       return 'El RUN debe tener entre 8 y 9 dígitos';
     }
-    
+
     return '';
   };
 
   // Función para validar email con dominios específicos
   const validarEmail = (email) => {
     if (!email.trim()) return 'El email es requerido';
-    
+
     const dominiosPermitidos = ['gmail.com', 'duoc.cl', 'profesor.duoc.cl'];
     const regex = new RegExp(`^[a-zA-Z0-9._%+-]+@(${dominiosPermitidos.join('|')})$`);
-    
+
     if (!regex.test(email)) {
       return `El email debe ser de uno de estos dominios: ${dominiosPermitidos.join(', ')}`;
     }
-    
+
     return '';
   };
 
   // Función para validar teléfono (opcional)
   const validarTelefono = (telefono) => {
     if (!telefono || telefono.trim() === '') return ''; // Teléfono es opcional
-    
+
     // Remover todos los caracteres que no sean números
     const soloNumeros = telefono.replace(/\D/g, '');
-    
+
     // Validar que tenga exactamente 9 dígitos y empiece con 9
     if (soloNumeros.length !== 9) {
       return 'El teléfono debe tener 9 dígitos';
     }
-    
+
     if (!soloNumeros.startsWith('9')) {
       return 'El teléfono debe empezar con 9';
     }
-    
+
     return '';
   };
 
@@ -140,15 +140,15 @@ const UsuarioCreateModal = ({ show, usuario, onSave, onClose }) => {
   // Función para validar dirección (OBLIGATORIA)
   const validarDireccion = (direccion) => {
     if (!direccion.trim()) return 'La dirección es obligatoria';
-    
+
     if (direccion.trim().length < 5) {
       return 'La dirección debe tener al menos 5 caracteres';
     }
-    
+
     if (direccion.trim().length > 100) {
       return 'La dirección no puede tener más de 100 caracteres';
     }
-    
+
     return '';
   };
 
@@ -174,15 +174,15 @@ const UsuarioCreateModal = ({ show, usuario, onSave, onClose }) => {
   const calcularEdad = (fechaNacimiento) => {
     const hoy = new Date();
     const fechaNac = new Date(fechaNacimiento);
-    
+
     let edad = hoy.getFullYear() - fechaNac.getFullYear();
     const mes = hoy.getMonth() - fechaNac.getMonth();
-    
+
     // Ajustar si aún no ha pasado el mes de cumpleaños este año
     if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNac.getDate())) {
       edad--;
     }
-    
+
     return edad;
   };
 
@@ -229,11 +229,11 @@ const UsuarioCreateModal = ({ show, usuario, onSave, onClose }) => {
       newErrors.fecha_nacimiento = 'La fecha de nacimiento es requerida';
     } else {
       const edad = calcularEdad(formData.fecha_nacimiento);
-      
+
       if (edad < 10) {
         newErrors.fecha_nacimiento = 'El usuario debe ser mayor de 10 años';
       }
-      
+
       // Validar que no sea una fecha futura
       const fechaNac = new Date(formData.fecha_nacimiento);
       const hoy = new Date();
@@ -274,7 +274,7 @@ const UsuarioCreateModal = ({ show, usuario, onSave, onClose }) => {
   // Función para manejar cambio de región
   const handleRegionChange = (e) => {
     const regionSeleccionada = e.target.value;
-    
+
     setFormData(prev => ({
       ...prev,
       region: regionSeleccionada,
@@ -307,7 +307,7 @@ const UsuarioCreateModal = ({ show, usuario, onSave, onClose }) => {
   // Función para manejar cambio de comuna
   const handleComunaChange = (e) => {
     const comunaSeleccionada = e.target.value;
-    
+
     setFormData(prev => ({
       ...prev,
       comuna: comunaSeleccionada
@@ -324,7 +324,7 @@ const UsuarioCreateModal = ({ show, usuario, onSave, onClose }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    
+
     setFormData(prev => ({
       ...prev,
       [name]: value
@@ -352,62 +352,62 @@ const UsuarioCreateModal = ({ show, usuario, onSave, onClose }) => {
     setShowConfirmPassword(!showConfirmPassword);
   };
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  
-  console.log('📝 Iniciando validación del formulario...');
-  
-  if (validateForm()) {
-    console.log('✅ Formulario válido, procediendo con guardado...');
-    console.log('📦 Datos del formulario:', {
-      ...formData,
-      password: '***', // No mostrar contraseña en logs
-      confirmarPassword: '***'
-    });
-    
-    try {
-      setLoading(true);
-      setSubmitError('');
-      
-      // ✅ CORREGIDO: Enviar la contraseña del campo password
-      const usuarioData = {
-        run: parseInt(formData.run), // ✅ Asegurar que sea número
-        nombre: formData.nombre.trim(),
-        apellidos: formData.apellidos.trim(),
-        correo: formData.correo.trim(),
-        telefono: formData.telefono ? parseInt(formData.telefono) : null,
-        direccion: formData.direccion.trim(), 
-        comuna: formData.comuna || '',
-        region: formData.region || '',
-        tipo: formData.tipo,
-        fecha_nacimiento: formData.fecha_nacimiento,
-        contrasenha: formData.password // ✅ ENVIAR LA CONTRASEÑA DEL CAMPO PASSWORD
-      };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-      console.log('Enviando datos de usuario (contraseña del campo password):', {
-        ...usuarioData,
-        contrasenha: '***' // No mostrar contraseña en logs
+    console.log('📝 Iniciando validación del formulario...');
+
+    if (validateForm()) {
+      console.log('✅ Formulario válido, procediendo con guardado...');
+      console.log('📦 Datos del formulario:', {
+        ...formData,
+        password: '***', // No mostrar contraseña en logs
+        confirmarPassword: '***'
       });
 
-      await onSave(usuarioData);
-      
-    } catch (error) {
-      console.error('💥 Error guardando usuario:', error);
-      setSubmitError(error.message || 'Error al guardar el usuario');
-    } finally {
-      setLoading(false);
+      try {
+        setLoading(true);
+        setSubmitError('');
+
+        // ✅ CORREGIDO: Enviar la contraseña del campo password
+        const usuarioData = {
+          run: parseInt(formData.run), // ✅ Asegurar que sea número
+          nombre: formData.nombre.trim(),
+          apellidos: formData.apellidos.trim(),
+          correo: formData.correo.trim(),
+          telefono: formData.telefono ? parseInt(formData.telefono) : null,
+          direccion: formData.direccion.trim(),
+          comuna: formData.comuna || '',
+          region: formData.region || '',
+          tipo: formData.tipo,
+          fecha_nacimiento: formData.fecha_nacimiento,
+          contrasenha: formData.password // ✅ ENVIAR LA CONTRASEÑA DEL CAMPO PASSWORD
+        };
+
+        console.log('Enviando datos de usuario (contraseña del campo password):', {
+          ...usuarioData,
+          contrasenha: '***' // No mostrar contraseña en logs
+        });
+
+        await onSave(usuarioData);
+
+      } catch (error) {
+        console.error('💥 Error guardando usuario:', error);
+        setSubmitError(error.message || 'Error al guardar el usuario');
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      console.log('❌ Formulario inválido, errores:', errors);
     }
-  } else {
-    console.log('❌ Formulario inválido, errores:', errors);
-  }
-};
+  };
 
   if (!show) return null;
 
   return (
     <Modal show={show} onHide={onClose} size="lg" centered>
-      <Modal.Header 
-        closeButton 
+      <Modal.Header
+        closeButton
         className="border-3 border-dark"
         style={{
           backgroundColor: '#87CEEB',
@@ -420,15 +420,15 @@ const handleSubmit = async (e) => {
           </span>
         </Modal.Title>
       </Modal.Header>
-      
+
       <Modal.Body
         style={{
           backgroundColor: '#87CEEB',
         }}
       >
         {submitError && (
-          <Alert 
-            variant="danger" 
+          <Alert
+            variant="danger"
             className="mb-3 border-3 border-dark rounded-3"
             style={{
               backgroundColor: '#FFB6C1',
@@ -440,7 +440,7 @@ const handleSubmit = async (e) => {
             {submitError}
           </Alert>
         )}
-        
+
         <Form onSubmit={handleSubmit}>
           <div className="row">
             <div className="col-md-6">
@@ -716,7 +716,7 @@ const handleSubmit = async (e) => {
           {/* CAMPOS DE CONTRASEÑA - Solo en creación o si el usuario quiere cambiarla */}
           {!usuario && (
             <>
-              <h6 
+              <h6
                 className="mb-3 fw-bold mt-4"
                 style={{
                   color: '#000000',
@@ -726,7 +726,7 @@ const handleSubmit = async (e) => {
               >
                 Seguridad
               </h6>
-              
+
               <div className="row">
                 <div className="col-md-6">
                   <Form.Group className="mb-3">
@@ -809,8 +809,8 @@ const handleSubmit = async (e) => {
           )}
 
           <div className="d-flex justify-content-end gap-2 mt-4">
-            <Button 
-              variant="secondary" 
+            <Button
+              variant="secondary"
               onClick={onClose}
               disabled={loading}
               className="rounded-pill px-4 py-2 border-3 border-dark fw-bold"
@@ -834,8 +834,8 @@ const handleSubmit = async (e) => {
               <i className="bi bi-x-circle me-2"></i>
               Cancelar
             </Button>
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               variant="primary"
               disabled={loading}
               className="rounded-pill px-4 py-2 border-3 border-dark fw-bold"
@@ -872,8 +872,8 @@ const handleSubmit = async (e) => {
 
           {/* Mensaje de campos obligatorios */}
           <div className="text-center mt-3">
-            <p 
-              style={{ 
+            <p
+              style={{
                 color: '#000000',
                 fontFamily: "'Lato', sans-serif",
                 fontWeight: '500',

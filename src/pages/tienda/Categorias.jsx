@@ -22,13 +22,13 @@ const Categorias = () => {
 
   const aplicarOfertasConfiguradas = (productos) => {
     return productos.map(producto => {
-      const ofertaConfig = ofertasConfig.find(oferta => 
+      const ofertaConfig = ofertasConfig.find(oferta =>
         oferta.codigo === producto.codigo
       );
-      
+
       if (ofertaConfig) {
         const precioOferta = Math.round(producto.precio * (1 - ofertaConfig.descuento / 100));
-        
+
         return {
           ...producto,
           precioOriginal: producto.precio,
@@ -39,7 +39,7 @@ const Categorias = () => {
           enOferta: true
         };
       }
-      
+
       return producto;
     });
   };
@@ -87,7 +87,7 @@ const Categorias = () => {
 
     try {
       const stockDisponible = await verificarStockDisponible(product.codigo, 1);
-      
+
       if (!stockDisponible) {
         const stockActual = await obtenerStockDisponible(product.codigo);
         alert(`No hay stock disponible de ${product.nombre}. Stock actual: ${stockActual}`);
@@ -96,16 +96,16 @@ const Categorias = () => {
 
       const carritoActual = JSON.parse(localStorage.getItem('junimoCart')) || [];
       const productoEnCarrito = carritoActual.find(item => item.codigo === product.codigo);
-      
+
       let nuevoCarrito;
       if (productoEnCarrito) {
         nuevoCarrito = carritoActual.map(item =>
           item.codigo === product.codigo
             ? {
-                ...item,
-                cantidad: item.cantidad + 1,
-                subtotal: (item.cantidad + 1) * (product.precioOferta || product.precio)
-              }
+              ...item,
+              cantidad: item.cantidad + 1,
+              subtotal: (item.cantidad + 1) * (product.precioOferta || product.precio)
+            }
             : item
         );
       } else {
@@ -117,7 +117,7 @@ const Categorias = () => {
       }
 
       localStorage.setItem('junimoCart', JSON.stringify(nuevoCarrito));
-      
+
       alert(`${product.nombre} agregado al carrito`);
 
       window.dispatchEvent(new Event('cartUpdated'));
@@ -133,20 +133,20 @@ const Categorias = () => {
       setLoading(true);
       try {
         const productosDesdeBD = await dataService.getProductos();
-        
+
         if (productosDesdeBD && productosDesdeBD.length > 0) {
           const productosAdaptados = adaptarProductosDesdeBD(productosDesdeBD);
           const productosConOfertas = aplicarOfertasConfiguradas(productosAdaptados);
-          
+
           const totalOfertas = contarProductosEnOferta(productosConOfertas);
           setOfertasCount(totalOfertas);
-          
+
           const categoriasUnicas = [...new Set(productosConOfertas.map(product => product.categoria))];
-          
+
           const categoriasConInfo = categoriasUnicas.map(categoria => {
             const productosCategoria = productosConOfertas.filter(product => product.categoria === categoria);
             const ofertasEnCategoria = productosCategoria.filter(product => product.enOferta).length;
-            
+
             return {
               nombre: categoria,
               cantidadProductos: productosCategoria.length,
@@ -174,17 +174,17 @@ const Categorias = () => {
 
   const handleCategoryClick = (categoria) => {
     setProductsLoading(true);
-    
+
     setTimeout(() => {
       setSelectedCategory(categoria);
       setProductsLoading(false);
-      
+
       setTimeout(() => {
         const productosElement = document.getElementById('productos-categoria');
         if (productosElement) {
-          productosElement.scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'start' 
+          productosElement.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
           });
         }
       }, 100);
@@ -223,8 +223,8 @@ const Categorias = () => {
                 src="../src/assets/tienda/categorias.png"
                 alt="Nuestras Categorías"
                 className="img-fluid mb-4"
-                style={{ 
-                  maxWidth: '1000px', 
+                style={{
+                  maxWidth: '1000px',
                   width: '100%',
                   filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.5))'
                 }}
@@ -243,15 +243,15 @@ const Categorias = () => {
                 Nuestras Categorías
               </h1>
             )}
-            
-            <p 
+
+            <p
               className="fs-5 mb-4"
-              style={{ 
-                color: 'rgba(255,255,255,0.9)', 
-                textShadow: '2px 2px 4px rgba(0,0,0,0.5)' 
+              style={{
+                color: 'rgba(255,255,255,0.9)',
+                textShadow: '2px 2px 4px rgba(0,0,0,0.5)'
               }}
             >
-              {selectedCategory 
+              {selectedCategory
                 ? `Explora todos los productos de ${selectedCategory.nombre}`
                 : 'Descubre todos nuestros productos organizados por categorías'
               }
@@ -266,7 +266,7 @@ const Categorias = () => {
             {selectedCategory && (
               <div className="d-flex justify-content-center gap-3 flex-wrap">
                 <Button
-                  style={{ 
+                  style={{
                     backgroundColor: '#dedd8ff5',
                     color: '#000000',
                     border: '2px solid #000000',
@@ -276,7 +276,7 @@ const Categorias = () => {
                 >
                   Volver a Categorías
                 </Button>
-                
+
                 {selectedCategory.ofertasEnCategoria > 0 && (
                   <Badge bg="warning" text="dark" className="fs-6 px-3 py-2">
                     {selectedCategory.ofertasEnCategoria} oferta(s) en esta categoría
@@ -299,14 +299,14 @@ const Categorias = () => {
             <div id="productos-categoria">
               <Row className="mb-4">
                 <Col>
-                  <div 
+                  <div
                     className="rounded-4 p-4 text-center"
                     style={{
                       backgroundColor: 'rgba(222, 221, 143, 0.95)',
                       border: '3px solid #000000'
                     }}
                   >
-                    <h3 
+                    <h3
                       className="fw-bold mb-2 text-dark"
                       style={{ fontFamily: "'Indie Flower', cursive" }}
                     >
@@ -344,7 +344,7 @@ const Categorias = () => {
                       calcularPorcentajeDescuento={calcularPorcentajeDescuento}
                     />
                   ))}
-                  
+
                   {selectedCategory.productos.length === 0 && (
                     <Col className="text-center py-5">
                       <div
@@ -360,7 +360,7 @@ const Categorias = () => {
                           No hay productos en esta categoría
                         </h4>
                         <Button
-                          style={{ 
+                          style={{
                             backgroundColor: '#87CEEB',
                             color: '#000000',
                             border: '2px solid #000000',
@@ -383,16 +383,16 @@ const Categorias = () => {
             {ofertasCount > 0 && (
               <Row className="mb-4">
                 <Col>
-                  <div 
+                  <div
                     className="rounded-4 p-4 text-center shadow-lg border-3 border-warning"
                     style={{
                       background: 'linear-gradient(135deg, rgba(255, 107, 107, 0.9), rgba(255, 193, 7, 0.9))',
                       backdropFilter: 'blur(10px)'
                     }}
                   >
-                    <h3 
+                    <h3
                       className="fw-bold mb-3 text-white"
-                      style={{ 
+                      style={{
                         fontFamily: "'Indie Flower', cursive",
                         fontSize: '2rem',
                         textShadow: '2px 2px 4px rgba(0,0,0,0.5)'
@@ -416,7 +416,7 @@ const Categorias = () => {
                   onCategoryClick={handleCategoryClick}
                 />
               ))}
-              
+
               {categories.length === 0 && !loading && (
                 <Col className="text-center py-5">
                   <div

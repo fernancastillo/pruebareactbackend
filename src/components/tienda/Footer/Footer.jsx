@@ -10,7 +10,7 @@ const Footer = () => {
   const handleLinkClick = (to) => {
     // Navegar a la ruta
     navigate(to);
-    
+
     // Scroll al top después de un pequeño delay para asegurar la navegación
     setTimeout(() => {
       window.scrollTo({
@@ -40,9 +40,9 @@ const Footer = () => {
                 ¡Bienvenido a Junimo Store!
               </h5>
               <p className="footer-description mb-0">
-                Es una tienda online creada por y para fanáticos del popular juego indie. 
-                Ofrecemos merchandising, ropa, accesorios, guías ilustradas y servicios 
-                digitales como mods y paquetes de recursos. Realizamos envíos a todo el 
+                Es una tienda online creada por y para fanáticos del popular juego indie.
+                Ofrecemos merchandising, ropa, accesorios, guías ilustradas y servicios
+                digitales como mods y paquetes de recursos. Realizamos envíos a todo el
                 país y buscamos ser un espacio de encuentro para la comunidad de jugadores.
               </p>
             </div>
@@ -58,8 +58,8 @@ const Footer = () => {
               </h5>
               <ul className="list-unstyled">
                 <li className="mb-2">
-                  <Link 
-                    to="/" 
+                  <Link
+                    to="/"
                     className="footer-link"
                     onClick={() => handleLinkClick('/')}
                   >
@@ -67,8 +67,8 @@ const Footer = () => {
                   </Link>
                 </li>
                 <li className="mb-2">
-                  <Link 
-                    to="/categorias" 
+                  <Link
+                    to="/categorias"
                     className="footer-link"
                     onClick={() => handleLinkClick('/categorias')}
                   >
@@ -76,8 +76,8 @@ const Footer = () => {
                   </Link>
                 </li>
                 <li className="mb-2">
-                  <Link 
-                    to="/ofertas" 
+                  <Link
+                    to="/ofertas"
                     className="footer-link"
                     onClick={() => handleLinkClick('/ofertas')}
                   >
@@ -85,8 +85,8 @@ const Footer = () => {
                   </Link>
                 </li>
                 <li className="mb-2">
-                  <Link 
-                    to="/carrito" 
+                  <Link
+                    to="/carrito"
                     className="footer-link"
                     onClick={() => handleLinkClick('/carrito')}
                   >
@@ -94,8 +94,8 @@ const Footer = () => {
                   </Link>
                 </li>
                 <li className="mb-2">
-                  <Link 
-                    to="/blogs" 
+                  <Link
+                    to="/blogs"
                     className="footer-link"
                     onClick={() => handleLinkClick('/blogs')}
                   >
@@ -103,8 +103,8 @@ const Footer = () => {
                   </Link>
                 </li>
                 <li className="mb-2">
-                  <Link 
-                    to="/contacto" 
+                  <Link
+                    to="/contacto"
                     className="footer-link"
                     onClick={() => handleLinkClick('/contacto')}
                   >
@@ -112,8 +112,8 @@ const Footer = () => {
                   </Link>
                 </li>
                 <li className="mb-2">
-                  <Link 
-                    to="/nosotros" 
+                  <Link
+                    to="/nosotros"
                     className="footer-link"
                     onClick={() => handleLinkClick('/nosotros')}
                   >
@@ -131,16 +131,16 @@ const Footer = () => {
                 Síguenos :D
               </h5>
               <div className="d-flex justify-content-center gap-3 mb-3">
-                <a 
-                  href="https://github.com/fernancastillo" 
+                <a
+                  href="https://github.com/fernancastillo"
                   aria-label="GitHub Fernan"
                   className="social-link"
                   onClick={handleScrollToTop}
                 >
                   <i className="bi bi-github"></i>
                 </a>
-                <a 
-                  href="https://github.com/ScarthPz" 
+                <a
+                  href="https://github.com/ScarthPz"
                   aria-label="GitHub Scarth"
                   className="social-link"
                   onClick={handleScrollToTop}
@@ -148,14 +148,14 @@ const Footer = () => {
                   <i className="bi bi-github"></i>
                 </a>
               </div>
-              
+
               <div className="mt-3">
                 <h6 className="footer-subtitle mb-2">
                   Contáctanos
                 </h6>
-                <a 
-                  href="https://i.pinimg.com/736x/3d/6c/57/3d6c577dc24561124b094681759aa24a.jpg" 
-                  target="_blank" 
+                <a
+                  href="https://i.pinimg.com/736x/3d/6c/57/3d6c577dc24561124b094681759aa24a.jpg"
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="whatsapp-link"
                   aria-label="Contactar por WhatsApp"
@@ -172,9 +172,9 @@ const Footer = () => {
         <Row className="mt-4">
           <Col className="text-center">
             <div className="py-3">
-              <img 
-                src="../src/assets/tienda/developed-stardew.png" 
-                alt="Developed by Tankator and Ninikyu" 
+              <img
+                src="../src/assets/tienda/developed-stardew.png"
+                alt="Developed by Tankator and Ninikyu"
                 className="img-fluid developer-img"
                 onClick={handleScrollToTop}
                 style={{ cursor: 'pointer' }}
@@ -182,7 +182,7 @@ const Footer = () => {
             </div>
           </Col>
         </Row>
-        
+
         {/* Pie de página */}
         <Row className="mt-4">
           <Col>

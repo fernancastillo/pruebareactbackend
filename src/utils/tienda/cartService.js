@@ -26,12 +26,12 @@ export const cartService = {
   getCurrentStock: async (productCode) => {
     try {
       const producto = await dataService.getProductoById(productCode);
-      
-      const stock = 
+
+      const stock =
         producto.stockActual !== undefined ? producto.stockActual :
-        producto.stock_actual !== undefined ? producto.stock_actual :
-        producto.stock !== undefined ? producto.stock : 0;
-      
+          producto.stock_actual !== undefined ? producto.stock_actual :
+            producto.stock !== undefined ? producto.stock : 0;
+
       return stock;
     } catch (error) {
       return 0;
@@ -41,11 +41,11 @@ export const cartService = {
   checkAvailableStock: async (productCode, cantidadDeseada) => {
     try {
       const currentStock = await cartService.getCurrentStock(productCode);
-      
+
       if (currentStock === undefined || currentStock === null) {
         return false;
       }
-      
+
       return currentStock >= cantidadDeseada;
     } catch (error) {
       return false;
@@ -58,7 +58,7 @@ export const cartService = {
 
   hasDuocDiscount: (user) => {
     if (!user || !user.email) return false;
-    
+
     const email = user.email.toLowerCase();
     return email.endsWith('@duoc.cl') || email.endsWith('@duocuc.cl');
   },
@@ -75,9 +75,9 @@ export const cartService = {
       }
 
       const cartItems = cartService.getCart();
-      
+
       const safeQuantity = newQuantity === 0 ? 1 : Math.max(1, newQuantity);
-      
+
       const updatedCart = cartItems.map(item =>
         item.codigo === productCode
           ? { ...item, cantidad: safeQuantity }
@@ -85,7 +85,7 @@ export const cartService = {
       );
 
       cartService.saveCart(updatedCart);
-      
+
       return updatedCart;
     } catch (error) {
       throw error;
@@ -96,9 +96,9 @@ export const cartService = {
     try {
       const cartItems = cartService.getCart();
       const updatedCart = cartItems.filter(item => item.codigo !== productCode);
-      
+
       cartService.saveCart(updatedCart);
-      
+
       return updatedCart;
     } catch (error) {
       return cartService.getCart();
@@ -126,41 +126,41 @@ export const cartService = {
   addToCart: async (producto, cantidad = 1) => {
     try {
       const cartItems = cartService.getCart();
-      
+
       const stockDisponible = await cartService.checkAvailableStock(producto.codigo, cantidad);
       if (!stockDisponible) {
         throw new Error('No hay suficiente stock disponible');
       }
 
       const existingItemIndex = cartItems.findIndex(item => item.codigo === producto.codigo);
-      
+
       if (existingItemIndex !== -1) {
         const nuevaCantidadTotal = cartItems[existingItemIndex].cantidad + cantidad;
         const stockParaNuevaCantidad = await cartService.checkAvailableStock(producto.codigo, nuevaCantidadTotal);
-        
+
         if (!stockParaNuevaCantidad) {
           throw new Error('No hay suficiente stock disponible para la cantidad solicitada');
         }
-        
+
         cartItems[existingItemIndex].cantidad += cantidad;
       } else {
         const productoParaCarrito = {
           ...producto,
           cantidad: cantidad
         };
-        
+
         if (producto.precioOferta && producto.enOferta) {
           productoParaCarrito.precioOriginal = producto.precio;
           productoParaCarrito.precio = producto.precioOferta;
           productoParaCarrito.enOferta = true;
           productoParaCarrito.descuento = producto.descuento;
         }
-        
+
         cartItems.push(productoParaCarrito);
       }
-      
+
       cartService.saveCart(cartItems);
-      
+
       return cartItems;
     } catch (error) {
       throw error;
@@ -227,14 +227,14 @@ export const cartService = {
 
   calculateFinalTotal: (subtotal, shipping, duocDiscount = 0, discountCode = '') => {
     const codeDiscount = cartService.calculateDiscount(subtotal, discountCode);
-    
+
     let envioFinal = shipping;
     if (discountCode === 'ENVIOGRATIS') {
       envioFinal = 0;
     }
-    
+
     let finalTotal = subtotal - duocDiscount - codeDiscount + envioFinal;
-    
+
     return Math.max(0, finalTotal);
   },
 
@@ -247,31 +247,31 @@ export const cartService = {
     try {
       const cartItems = cartService.getCart();
       const updatedCartItems = [];
-      
+
       for (const item of cartItems) {
         try {
           const productoActualizado = await dataService.getProductoById(item.codigo);
-          
+
           if (productoActualizado) {
             const productoParaCarrito = {
               ...productoActualizado,
               cantidad: item.cantidad
             };
-            
+
             if (productoActualizado.precioOferta && productoActualizado.enOferta) {
               productoParaCarrito.precioOriginal = productoActualizado.precio;
               productoParaCarrito.precio = productoActualizado.precioOferta;
               productoParaCarrito.enOferta = true;
               productoParaCarrito.descuento = productoActualizado.descuento;
             }
-            
+
             updatedCartItems.push(productoParaCarrito);
           }
         } catch (error) {
           updatedCartItems.push(item);
         }
       }
-      
+
       cartService.saveCart(updatedCartItems);
       return updatedCartItems;
     } catch (error) {

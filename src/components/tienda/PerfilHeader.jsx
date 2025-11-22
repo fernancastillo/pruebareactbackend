@@ -26,9 +26,9 @@ const PerfilHeader = () => {
           }}
         />
       </div>
-      
+
       {/* Texto alternativo que se muestra si la imagen no carga */}
-      <h1 
+      <h1
         id="fallback-title"
         className="mb-3"
         style={{
@@ -42,8 +42,8 @@ const PerfilHeader = () => {
       >
         Mi Perfil
       </h1>
-      
-      <p 
+
+      <p
         className="fs-5"
         style={{
           color: '#FFFFFF',

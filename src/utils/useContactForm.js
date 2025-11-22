@@ -9,7 +9,7 @@ export const useContactForm = () => {
     asunto: '',
     mensaje: ''
   });
-  
+
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
@@ -22,7 +22,7 @@ export const useContactForm = () => {
       ...prev,
       [name]: value
     }));
-    
+
     // Limpiar error del campo cuando el usuario empiece a escribir
     if (errors[name]) {
       setErrors(prev => ({
@@ -34,7 +34,7 @@ export const useContactForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Validar formulario
     const validationErrors = contactService.validateContactForm(formData);
     if (Object.keys(validationErrors).length > 0) {
@@ -43,14 +43,14 @@ export const useContactForm = () => {
     }
 
     setIsSubmitting(true);
-    
+
     try {
       const result = await contactService.submitContactForm(formData);
-      
+
       setAlertMessage(result.message);
       setAlertVariant('success');
       setShowAlert(true);
-      
+
       if (result.success) {
         // Resetear formulario
         setFormData({
@@ -62,7 +62,7 @@ export const useContactForm = () => {
         });
         setErrors({});
       }
-      
+
     } catch (error) {
       setAlertMessage('Error al enviar el formulario. Por favor, intenta nuevamente.');
       setAlertVariant('danger');

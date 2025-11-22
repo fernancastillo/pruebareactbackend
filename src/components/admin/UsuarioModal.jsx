@@ -56,7 +56,7 @@ const UsuarioModal = ({ show, usuario, onClose, onUpdate }) => {
     try {
       setCargandoCompras(true);
       console.log('Cargando historial de compras para usuario:', run);
-      
+
       // Usar usuarioService para obtener órdenes del usuario
       const ordenesUsuario = await usuarioService.getOrdenesPorUsuario(run);
       console.log('Órdenes obtenidas:', ordenesUsuario);

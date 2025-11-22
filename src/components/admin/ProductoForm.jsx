@@ -46,7 +46,7 @@ const ProductoForm = ({ producto, categorias, getCodigoAutomatico, onSubmit, onC
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    
+
     setFormData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value
@@ -74,7 +74,7 @@ const ProductoForm = ({ producto, categorias, getCodigoAutomatico, onSubmit, onC
 
   const handleCategoriaChange = (e) => {
     const { value } = e.target;
-    
+
     if (value === '_nueva') {
       // Seleccionó "Nueva categoría"
       setFormData(prev => ({
@@ -103,7 +103,7 @@ const ProductoForm = ({ producto, categorias, getCodigoAutomatico, onSubmit, onC
 
   const handleNuevaCategoriaChange = (e) => {
     const { value } = e.target;
-    
+
     setFormData(prev => ({
       ...prev,
       nuevaCategoria: value
@@ -141,14 +141,14 @@ const ProductoForm = ({ producto, categorias, getCodigoAutomatico, onSubmit, onC
 
     if (!formData.nombre.trim()) newErrors.nombre = 'El nombre es requerido';
     if (!formData.descripcion.trim()) newErrors.descripcion = 'La descripción es requerida';
-    
+
     if (formData.esNuevaCategoria) {
       if (!formData.nuevaCategoria.trim()) newErrors.nuevaCategoria = 'La nueva categoría es requerida';
       else if (formData.nuevaCategoria.trim().length < 2) newErrors.nuevaCategoria = 'La categoría debe tener al menos 2 caracteres';
     } else {
       if (!formData.categoria) newErrors.categoria = 'La categoría es requerida';
     }
-    
+
     if (!formData.precio || formData.precio <= 0) newErrors.precio = 'El precio debe ser mayor a 0';
     if (!formData.stock || formData.stock < 0) newErrors.stock = 'El stock no puede ser negativo';
     if (!formData.stock_critico || formData.stock_critico < 0) newErrors.stock_critico = 'El stock crítico no puede ser negativo';
@@ -159,7 +159,7 @@ const ProductoForm = ({ producto, categorias, getCodigoAutomatico, onSubmit, onC
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
 
     // Preparar datos para enviar
@@ -343,13 +343,13 @@ const ProductoForm = ({ producto, categorias, getCodigoAutomatico, onSubmit, onC
         <label htmlFor="imagen" className="form-label">
           Imagen del Producto
         </label>
-        
+
         {/* Previsualización de imagen */}
         {imagenPrevia && (
           <div className="mb-2">
-            <img 
-              src={imagenPrevia} 
-              alt="Previsualización" 
+            <img
+              src={imagenPrevia}
+              alt="Previsualización"
               className="img-thumbnail"
               style={{ maxWidth: '200px', maxHeight: '200px', objectFit: 'cover' }}
               onError={(e) => {

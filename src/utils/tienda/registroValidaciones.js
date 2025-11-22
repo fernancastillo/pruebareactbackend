@@ -26,25 +26,25 @@ export const registroValidaciones = {
     // Algoritmo módulo 11 para RUN chileno
     const runSinDV = run.slice(0, -1);
     const digitoVerificador = run.slice(-1).toUpperCase();
-    
+
     let suma = 0;
     let multiplicador = 2;
-    
+
     // Recorrer el RUN de derecha a izquierda
     for (let i = runSinDV.length - 1; i >= 0; i--) {
       suma += parseInt(runSinDV.charAt(i)) * multiplicador;
       multiplicador = multiplicador === 7 ? 2 : multiplicador + 1;
     }
-    
+
     const resto = suma % 11;
     let dvCalculado = 11 - resto;
-    
+
     // Casos especiales del dígito verificador
     if (dvCalculado === 11) dvCalculado = 0;
     if (dvCalculado === 10) dvCalculado = 'K';
-    
+
     const valido = dvCalculado.toString() === digitoVerificador;
-    
+
     return {
       valido: valido,
       mensaje: valido ? '' : 'El RUN no es válido. Verifica el dígito verificador.'
@@ -84,7 +84,7 @@ export const registroValidaciones = {
     const nacimiento = new Date(fechaNacimiento);
     const edad = hoy.getFullYear() - nacimiento.getFullYear();
     const mes = hoy.getMonth() - nacimiento.getMonth();
-    
+
     if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) {
       return edad - 1;
     }

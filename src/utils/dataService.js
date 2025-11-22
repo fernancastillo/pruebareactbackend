@@ -13,12 +13,12 @@ const apiCall = async (endpoint, options = {}) => {
     if (!response.ok) {
       let errorMessage = `Error HTTP ${response.status}`;
       let errorDetails = '';
-      
+
       try {
         const errorData = await response.json();
         errorMessage = errorData.message || errorMessage;
         errorDetails = errorData.error || JSON.stringify(errorData);
-        
+
         if (errorData.error) {
           errorMessage = errorData.error;
         }
@@ -27,7 +27,7 @@ const apiCall = async (endpoint, options = {}) => {
         errorMessage = errorText || errorMessage;
         errorDetails = errorText;
       }
-      
+
       throw new Error(`${errorMessage} ${errorDetails ? `- Detalles: ${errorDetails}` : ''}`);
     }
 
@@ -37,7 +37,7 @@ const apiCall = async (endpoint, options = {}) => {
     } catch (jsonError) {
       return { success: true };
     }
-    
+
   } catch (error) {
     throw new Error(`Error al llamar ${endpoint}: ${error.message}`);
   }
@@ -171,7 +171,7 @@ export const dataService = {
       numeroOrden: orden.numeroOrden,
       estadoEnvio: orden.estadoEnvio
     };
-    
+
     return await apiCall('/updateOrden', {
       method: 'PUT',
       body: JSON.stringify(ordenParaEnviar),
@@ -183,7 +183,7 @@ export const dataService = {
       numeroOrden: numeroOrden,
       estadoEnvio: nuevoEstado
     };
-    
+
     return await apiCall('/updateOrdenEstado', {
       method: 'PUT',
       body: JSON.stringify(ordenParaEnviar),
@@ -215,7 +215,7 @@ export const dataService = {
     try {
       const categorias = await dataService.getCategorias();
       const categoria = categorias.find(cat => cat.nombre === categoriaNombre);
-      
+
       if (categoria) {
         return await dataService.getProductosByCategoria(categoria.id);
       }
@@ -231,7 +231,7 @@ export const dataService = {
       const productos = await dataService.getProductos();
       const usuarios = await dataService.getUsuarios();
       const ordenes = await dataService.getOrdenes();
-      
+
       return {
         productos: {
           count: productos.length,

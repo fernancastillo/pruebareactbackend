@@ -23,7 +23,7 @@ export const obtenerOrdenesDesdeAppOrdenes = async () => {
       // Asegurar que siempre retorne un array
       return Array.isArray(ordenes) ? ordenes : [];
     }
-    
+
     // Si no existe app_ordenes, intentar cargar desde el servicio
     const ordenService = await import('./ordenService');
     const ordenes = await ordenService.ordenService.getOrdenes();
@@ -42,7 +42,7 @@ export const verificarYMigrarDatosOrdenes = async () => {
   try {
     const adminOrdenes = localStorage.getItem('admin_ordenes');
     const appOrdenes = localStorage.getItem('app_ordenes');
-    
+
     if (adminOrdenes && !appOrdenes) {
       // Migrar datos
       const ordenes = JSON.parse(adminOrdenes);
@@ -51,7 +51,7 @@ export const verificarYMigrarDatosOrdenes = async () => {
       console.log('Datos de órdenes migrados de admin_ordenes a app_ordenes');
       return true;
     }
-    
+
     return false;
   } catch (error) {
     console.error('Error en migración de órdenes:', error);
@@ -68,7 +68,7 @@ verificarYMigrarDatosOrdenes();
 export const generarReporteCSV = (productos) => {
   // Agregar BOM para UTF-8 (importante para Excel)
   const BOM = '\uFEFF';
-  
+
   const headers = [
     'Código',
     'Nombre',
@@ -81,10 +81,10 @@ export const generarReporteCSV = (productos) => {
   ].join(',');
 
   const rows = productos.map(producto => {
-    const estadoStock = producto.stock === 0 
-      ? 'SIN STOCK' 
-      : producto.stock <= producto.stock_critico 
-        ? 'STOCK CRÍTICO' 
+    const estadoStock = producto.stock === 0
+      ? 'SIN STOCK'
+      : producto.stock <= producto.stock_critico
+        ? 'STOCK CRÍTICO'
         : 'NORMAL';
 
     // Limpiar y formatear campos para CSV
@@ -113,7 +113,7 @@ export const generarReporteCSV = (productos) => {
  */
 export const generarReporteCSVExcel = (productos) => {
   const BOM = '\uFEFF';
-  
+
   const headers = [
     'Código',
     'Nombre',
@@ -126,10 +126,10 @@ export const generarReporteCSVExcel = (productos) => {
   ].join(';'); // Usar punto y coma como separador
 
   const rows = productos.map(producto => {
-    const estadoStock = producto.stock === 0 
-      ? 'SIN STOCK' 
-      : producto.stock <= producto.stock_critico 
-        ? 'STOCK CRÍTICO' 
+    const estadoStock = producto.stock === 0
+      ? 'SIN STOCK'
+      : producto.stock <= producto.stock_critico
+        ? 'STOCK CRÍTICO'
         : 'NORMAL';
 
     return [
@@ -156,10 +156,10 @@ export const generarReporteJSON = (productos) => {
     totalProductos: productos.length,
     productos: productos.map(producto => ({
       ...producto,
-      estadoStock: producto.stock === 0 
-        ? 'SIN STOCK' 
-        : producto.stock <= producto.stock_critico 
-          ? 'STOCK CRÍTICO' 
+      estadoStock: producto.stock === 0
+        ? 'SIN STOCK'
+        : producto.stock <= producto.stock_critico
+          ? 'STOCK CRÍTICO'
           : 'NORMAL'
     }))
   };
@@ -172,14 +172,14 @@ export const generarReporteJSON = (productos) => {
  */
 export const descargarArchivo = (contenido, nombreArchivo, tipoMIME) => {
   // Especificar UTF-8 explícitamente para CSV
-  const mimeType = tipoMIME.includes('csv') 
-    ? 'text/csv;charset=utf-8;' 
+  const mimeType = tipoMIME.includes('csv')
+    ? 'text/csv;charset=utf-8;'
     : tipoMIME;
-  
+
   const blob = new Blob([contenido], { type: mimeType });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
-  
+
   link.href = url;
   link.download = nombreArchivo;
   link.style.display = 'none';
@@ -197,7 +197,7 @@ export const generarEstadisticas = (productos) => {
   const sinStock = productos.filter(p => p.stock === 0).length;
   const stockCritico = productos.filter(p => p.stock > 0 && p.stock <= p.stock_critico).length;
   const stockNormal = productos.filter(p => p.stock > p.stock_critico).length;
-  
+
   // Calcular número de categorías únicas
   const categoriasUnicas = new Set(productos.map(p => p.categoria));
   const numeroCategorias = categoriasUnicas.size;
@@ -223,7 +223,7 @@ export const generarEstadisticas = (productos) => {
  */
 export const generarReporteOrdenes = async (formato, ordenesParam = null) => {
   const fecha = formatearFecha();
-  
+
   try {
     // Obtener órdenes - usar las proporcionadas o cargar desde app_ordenes
     let ordenes = ordenesParam;
@@ -231,15 +231,15 @@ export const generarReporteOrdenes = async (formato, ordenesParam = null) => {
       console.log('Obteniendo órdenes desde app_ordenes...');
       ordenes = await obtenerOrdenesDesdeAppOrdenes();
     }
-    
+
     // Validar que ordenes sea un array
     if (!Array.isArray(ordenes)) {
       console.error('Error: ordenes no es un array:', ordenes);
       ordenes = [];
     }
-    
+
     console.log('Órdenes para reporte:', ordenes.length, 'elementos');
-    
+
     // Obtener estadísticas actualizadas
     const estadisticas = generarEstadisticasOrdenes(ordenes);
 
@@ -260,7 +260,7 @@ export const generarReporteOrdenes = async (formato, ordenesParam = null) => {
     }
 
     descargarArchivo(contenido, nombreArchivo, tipoMIME);
-    
+
   } catch (error) {
     console.error('Error al generar reporte:', error);
     alert('Error al generar el reporte. Por favor, intenta nuevamente.');
@@ -276,7 +276,7 @@ export const generarReporteOrdenes = async (formato, ordenesParam = null) => {
 const generarCSVOrdenes = (ordenes) => {
   // Agregar BOM para UTF-8 (importante para Excel y tildes)
   const BOM = '\uFEFF';
-  
+
   const headers = ['Número Orden', 'Fecha', 'RUN Cliente', 'Estado', 'Total', 'Cantidad Productos'];
   let csv = headers.join(',') + '\n';
 
@@ -300,7 +300,7 @@ const generarCSVOrdenes = (ordenes) => {
  */
 const generarCSVOrdenesExcel = (ordenes) => {
   const BOM = '\uFEFF';
-  
+
   const headers = ['Número Orden', 'Fecha', 'RUN Cliente', 'Estado', 'Total', 'Cantidad Productos'];
   let csv = BOM + headers.join(';') + '\n';
 
@@ -351,7 +351,7 @@ export const generarEstadisticasOrdenes = (ordenes) => {
     console.warn('generarEstadisticasOrdenes: ordenes no es un array, usando array vacío');
     ordenes = [];
   }
-  
+
   const totalOrdenes = ordenes.length;
   const pendientes = ordenes.filter(o => o.estadoEnvio === 'Pendiente').length;
   const enviadas = ordenes.filter(o => o.estadoEnvio === 'Enviado').length;
@@ -380,17 +380,17 @@ export const generarEstadisticasOrdenes = (ordenes) => {
  */
 export const generarReporteUsuarios = async (formato, usuariosParam = null, estadisticasParam = null) => {
   const fecha = formatearFecha();
-  
+
   try {
     // Obtener usuarios - usar los proporcionados o cargar desde app_usuarios
     let usuarios = usuariosParam;
     let estadisticas = estadisticasParam;
-    
+
     if (!usuarios || !Array.isArray(usuarios)) {
       const usuarioService = await import('./usuarioService');
       usuarios = await usuarioService.usuarioService.getUsuarios();
     }
-    
+
     if (!estadisticas) {
       // Calcular estadísticas actualizadas
       const usuarioStats = await import('./usuarioStats');
@@ -414,7 +414,7 @@ export const generarReporteUsuarios = async (formato, usuariosParam = null, esta
     }
 
     descargarArchivo(contenido, nombreArchivo, tipoMIME);
-    
+
   } catch (error) {
     console.error('Error al generar reporte:', error);
     alert('Error al generar el reporte. Por favor, intenta nuevamente.');
@@ -452,7 +452,7 @@ const generarCSVUsuarios = (usuarios) => {
  * Genera CSV optimizado para Excel
  */
 const generarCSVUsuariosExcel = (usuarios) => {
-  const BOM = '\uFEFF'; 
+  const BOM = '\uFEFF';
   const headers = ['RUN', 'Nombre', 'Apellidos', 'Email', 'Teléfono', 'Tipo', 'Total Compras', 'Total Gastado', 'Región', 'Comuna'];
   let csv = '\uFEFF' + headers.join(';') + '\n';
 

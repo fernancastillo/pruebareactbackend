@@ -36,7 +36,7 @@ const SeccionValores = () => {
       <Col>
         <CardNosotros>
           <div className="p-4">
-            <h2 
+            <h2
               style={{
                 fontFamily: "'Indie Flower', cursive",
                 fontSize: '2.2rem',
@@ -52,7 +52,7 @@ const SeccionValores = () => {
               {valores.map((valor, index) => (
                 <Col md={4} className="text-center mb-4" key={index}>
                   <div style={{ padding: '1rem' }}>
-                    <ImagenNosotros 
+                    <ImagenNosotros
                       src={valor.imagen}
                       alt={`${valor.titulo} - Stardew Valley`}
                       maxWidth={valor.maxWidth}

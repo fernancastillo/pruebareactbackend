@@ -6,7 +6,7 @@ const BlogModal = ({ show, onHide, blog }) => {
 
   return (
     <Modal show={show} onHide={onHide} size="xl" centered scrollable>
-      <Modal.Header 
+      <Modal.Header
         closeButton
         style={{
           background: '#dedd8ff5', // Amarillo Mostaza
@@ -14,19 +14,19 @@ const BlogModal = ({ show, onHide, blog }) => {
           borderBottom: '3px solid #87CEEB' // Azul Cielo
         }}
       >
-        <Modal.Title style={{ 
-          fontFamily: "'Indie Flower', cursive", 
+        <Modal.Title style={{
+          fontFamily: "'Indie Flower', cursive",
           fontSize: '1.8rem',
           fontWeight: '700'
         }}>
           {blog.titulo}
         </Modal.Title>
       </Modal.Header>
-      <Modal.Body style={{ 
+      <Modal.Body style={{
         padding: '2rem',
         background: '#FFFFFF' // Blanco
       }}>
-        <div 
+        <div
           dangerouslySetInnerHTML={{ __html: blog.contenido }}
           style={{
             fontFamily: "'Lato', sans-serif",
@@ -39,7 +39,7 @@ const BlogModal = ({ show, onHide, blog }) => {
         background: '#87CEEB', // Azul Cielo
         borderTop: '3px solid #dedd8ff5' // Amarillo Mostaza
       }}>
-        <Button 
+        <Button
           style={{
             background: '#dedd8ff5', // Amarillo Mostaza
             border: '2px solid #000000',

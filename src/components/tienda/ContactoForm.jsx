@@ -129,8 +129,8 @@ export const ContactoForm = ({
           </Form.Group>
 
           <div className="text-center">
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               className="fw-bold border-2"
               disabled={enviando}
               style={{

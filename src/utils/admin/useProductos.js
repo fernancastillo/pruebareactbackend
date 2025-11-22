@@ -4,27 +4,27 @@ import { dataService } from '../dataService';
 const guardarCategoria = (nuevaCategoria) => {
   const categoriasGuardadas = localStorage.getItem('admin_categorias');
   let categoriasPersonalizadas = [];
-  
+
   if (categoriasGuardadas) {
     categoriasPersonalizadas = JSON.parse(categoriasGuardadas);
   }
-  
+
   if (!categoriasPersonalizadas.includes(nuevaCategoria)) {
     categoriasPersonalizadas.push(nuevaCategoria);
     localStorage.setItem('admin_categorias', JSON.stringify(categoriasPersonalizadas));
     return true;
   }
-  
+
   return false;
 };
 
 const normalizarProductos = (productosBD) => {
   if (!Array.isArray(productosBD)) return [];
-  
+
   return productosBD.map(producto => {
     const stockActual = producto.stockActual || producto.stock || producto.stock_actual || 0;
     const stockCritico = producto.stockCritico || producto.stock_critico || 5;
-    
+
     let categoriaNombre = 'Sin categoría';
     if (producto.categoria) {
       if (typeof producto.categoria === 'object') {
@@ -33,7 +33,7 @@ const normalizarProductos = (productosBD) => {
         categoriaNombre = producto.categoria;
       }
     }
-    
+
     return {
       codigo: producto.codigo || producto.codigo_producto || '',
       nombre: producto.nombre || '',
@@ -57,47 +57,47 @@ const codigoExiste = (codigo, productos) => {
 const generarPrefijoUnico = (categoria, productos) => {
   let prefijoBase = categoria.substring(0, 2).toUpperCase();
   let prefijo = prefijoBase;
-  
-  const prefijoExiste = productos.some(producto => 
+
+  const prefijoExiste = productos.some(producto =>
     producto.codigo.startsWith(prefijoBase)
   );
-  
+
   if (!prefijoExiste) {
     return prefijoBase;
   }
-  
+
   const letras = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  
+
   if (categoria.length >= 3) {
     prefijo = (categoria.substring(0, 1) + categoria.substring(2, 3)).toUpperCase();
-    const prefijoAlternativoExiste = productos.some(producto => 
+    const prefijoAlternativoExiste = productos.some(producto =>
       producto.codigo.startsWith(prefijo)
     );
     if (!prefijoAlternativoExiste) {
       return prefijo;
     }
   }
-  
+
   for (let i = 0; i < letras.length; i++) {
     for (let j = 0; j < letras.length; j++) {
       const prefijoTest = prefijoBase[0] + letras[j];
-      const prefijoTestExiste = productos.some(producto => 
+      const prefijoTestExiste = productos.some(producto =>
         producto.codigo.startsWith(prefijoTest)
       );
       if (!prefijoTestExiste) {
         return prefijoTest;
       }
     }
-    
+
     const prefijoTest2 = prefijoBase[1] + letras[i];
-    const prefijoTest2Existe = productos.some(producto => 
+    const prefijoTest2Existe = productos.some(producto =>
       producto.codigo.startsWith(prefijoTest2)
     );
     if (!prefijoTest2Existe) {
       return prefijoTest2;
     }
   }
-  
+
   return prefijoBase + 'X';
 };
 
@@ -111,25 +111,25 @@ const generarCodigo = (categoria, productos) => {
     'Peluches': 'PE',
     'Polera Personalizada': 'PP'
   };
-  
+
   let prefijo;
-  
+
   if (prefijos[categoria]) {
     prefijo = prefijos[categoria];
   } else {
     prefijo = generarPrefijoUnico(categoria, productos);
   }
-  
+
   const productosCategoria = productos.filter(p => p.codigo.startsWith(prefijo));
-  
+
   if (productosCategoria.length === 0) {
     const codigoPropuesto = `${prefijo}001`;
-    
+
     if (!codigoExiste(codigoPropuesto, productos)) {
       return codigoPropuesto;
     }
   }
-  
+
   let ultimoNumero = 0;
   productosCategoria.forEach(p => {
     const numeroStr = p.codigo.replace(prefijo, '');
@@ -138,22 +138,22 @@ const generarCodigo = (categoria, productos) => {
       ultimoNumero = numero;
     }
   });
-  
+
   let nuevoNumero = ultimoNumero + 1;
   let codigoPropuesto = `${prefijo}${nuevoNumero.toString().padStart(3, '0')}`;
-  
+
   let intentos = 0;
   while (codigoExiste(codigoPropuesto, productos) && intentos < 100) {
     nuevoNumero++;
     codigoPropuesto = `${prefijo}${nuevoNumero.toString().padStart(3, '0')}`;
     intentos++;
   }
-  
+
   if (codigoExiste(codigoPropuesto, productos)) {
     const timestamp = Date.now().toString().slice(-6);
     codigoPropuesto = `${prefijo}${timestamp}`;
   }
-  
+
   return codigoPropuesto;
 };
 
@@ -166,7 +166,7 @@ export const useProductos = () => {
   const [editingProducto, setEditingProducto] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [error, setError] = useState(null);
-  
+
   const [successMessage, setSuccessMessage] = useState('');
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
@@ -193,16 +193,16 @@ export const useProductos = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const [productosResponse, categoriasResponse] = await Promise.all([
         dataService.getProductos(),
         dataService.getCategorias()
       ]);
-      
+
       const productosNormalizados = normalizarProductos(productosResponse);
-      
+
       setProductos(productosNormalizados);
-      
+
       if (categoriasResponse && Array.isArray(categoriasResponse)) {
         const nombresCategorias = categoriasResponse.map(cat => cat.nombre);
         setCategorias(nombresCategorias);
@@ -218,7 +218,7 @@ export const useProductos = () => {
           'Peluches',
           'Polera Personalizada'
         ];
-        
+
         if (categoriasGuardadas) {
           const categoriasPersonalizadas = JSON.parse(categoriasGuardadas);
           setCategorias([...new Set([...categoriasBase, ...categoriasPersonalizadas])]);
@@ -226,7 +226,7 @@ export const useProductos = () => {
           setCategorias(categoriasBase);
         }
       }
-      
+
     } catch (error) {
       setError(`Error al cargar productos: ${error.message}`);
       setProductos([]);
@@ -240,21 +240,21 @@ export const useProductos = () => {
   const obtenerCategoriaPorNombre = async (nombreCategoria) => {
     try {
       const categoriaExistente = categoriasCompletas.find(cat => cat.nombre === nombreCategoria);
-      
+
       if (categoriaExistente) {
         return categoriaExistente;
       }
-      
+
       const nuevaCategoria = await dataService.addCategoria({
         nombre: nombreCategoria
       });
-      
+
       if (nuevaCategoria) {
         setCategoriasCompletas(prev => [...prev, nuevaCategoria]);
         setCategorias(prev => [...prev, nombreCategoria]);
         return nuevaCategoria;
       }
-      
+
       return { nombre: nombreCategoria };
     } catch (error) {
       return { nombre: nombreCategoria };
@@ -263,7 +263,7 @@ export const useProductos = () => {
 
   const prepararProductoParaBackend = async (productoData, esEdicion = false, codigoOriginal = null) => {
     const categoriaObj = await obtenerCategoriaPorNombre(productoData.categoria);
-    
+
     const productoParaBackend = {
       codigo: esEdicion ? codigoOriginal : productoData.codigo,
       nombre: productoData.nombre,
@@ -274,7 +274,7 @@ export const useProductos = () => {
       stockCritico: parseInt(productoData.stock_critico),
       imagen: productoData.imagen || ''
     };
-    
+
     return productoParaBackend;
   };
 
@@ -283,15 +283,15 @@ export const useProductos = () => {
       const categoriaCreada = await dataService.addCategoria({
         nombre: nuevaCategoria
       });
-      
+
       if (categoriaCreada) {
         setCategorias(prev => [...new Set([...prev, nuevaCategoria])]);
         setCategoriasCompletas(prev => [...prev, categoriaCreada]);
         return true;
       }
-      
+
       return guardarCategoria(nuevaCategoria);
-      
+
     } catch (error) {
       return guardarCategoria(nuevaCategoria);
     }
@@ -306,19 +306,19 @@ export const useProductos = () => {
     let productosFiltrados = [...productos];
 
     if (filtros.codigo) {
-      productosFiltrados = productosFiltrados.filter(p => 
+      productosFiltrados = productosFiltrados.filter(p =>
         p.codigo && p.codigo.toLowerCase().includes(filtros.codigo.toLowerCase())
       );
     }
 
     if (filtros.nombre) {
-      productosFiltrados = productosFiltrados.filter(p => 
+      productosFiltrados = productosFiltrados.filter(p =>
         p.nombre && p.nombre.toLowerCase().includes(filtros.nombre.toLowerCase())
       );
     }
 
     if (filtros.categoria) {
-      productosFiltrados = productosFiltrados.filter(p => 
+      productosFiltrados = productosFiltrados.filter(p =>
         p.categoria === filtros.categoria
       );
     }
@@ -329,12 +329,12 @@ export const useProductos = () => {
           productosFiltrados = productosFiltrados.filter(p => p.stock === 0);
           break;
         case 'critico':
-          productosFiltrados = productosFiltrados.filter(p => 
+          productosFiltrados = productosFiltrados.filter(p =>
             p.stock > 0 && p.stock <= p.stock_critico
           );
           break;
         case 'normal':
-          productosFiltrados = productosFiltrados.filter(p => 
+          productosFiltrados = productosFiltrados.filter(p =>
             p.stock > p.stock_critico
           );
           break;
@@ -342,19 +342,19 @@ export const useProductos = () => {
     }
 
     if (filtros.precioMin) {
-      productosFiltrados = productosFiltrados.filter(p => 
+      productosFiltrados = productosFiltrados.filter(p =>
         p.precio >= parseFloat(filtros.precioMin)
       );
     }
 
     if (filtros.precioMax) {
-      productosFiltrados = productosFiltrados.filter(p => 
+      productosFiltrados = productosFiltrados.filter(p =>
         p.precio <= parseFloat(filtros.precioMax)
       );
     }
 
     if (filtros.stockMin) {
-      productosFiltrados = productosFiltrados.filter(p => 
+      productosFiltrados = productosFiltrados.filter(p =>
         p.stock >= parseInt(filtros.stockMin)
       );
     }
@@ -366,9 +366,9 @@ export const useProductos = () => {
 
   const ordenarProductos = (productos, criterio) => {
     if (!Array.isArray(productos)) return [];
-    
+
     const productosOrdenados = [...productos];
-    
+
     switch (criterio) {
       case 'nombre':
         return productosOrdenados.sort((a, b) => a.nombre.localeCompare(b.nombre));
@@ -421,24 +421,24 @@ export const useProductos = () => {
         await guardarCategoriaEnBD(productoData.nuevaCategoria);
         productoData.categoria = productoData.nuevaCategoria;
       }
-      
+
       productoData.codigo = generarCodigo(productoData.categoria, productos);
-      
+
       if (codigoExiste(productoData.codigo, productos)) {
         const timestamp = Date.now().toString().slice(-6);
         productoData.codigo = `${productoData.codigo.substring(0, 2)}${timestamp}`;
       }
-      
+
       const productoParaBackend = await prepararProductoParaBackend(productoData, false);
       await dataService.addProducto(productoParaBackend);
-      
+
       await loadProductos();
       setShowModal(false);
-      
+
       setSuccessMessage('Producto agregado con éxito');
       setShowSuccessMessage(true);
       setTimeout(() => setShowSuccessMessage(false), 3000);
-      
+
       return { success: true };
     } catch (error) {
       return { success: false, error: error.message };
@@ -451,18 +451,18 @@ export const useProductos = () => {
         await guardarCategoriaEnBD(productoData.nuevaCategoria);
         productoData.categoria = productoData.nuevaCategoria;
       }
-      
+
       const productoParaBackend = await prepararProductoParaBackend(productoData, true, codigo);
       await dataService.updateProducto(productoParaBackend);
-      
+
       await loadProductos();
       setShowModal(false);
       setEditingProducto(null);
-      
+
       setSuccessMessage('Producto actualizado con éxito');
       setShowSuccessMessage(true);
       setTimeout(() => setShowSuccessMessage(false), 3000);
-      
+
       return { success: true };
     } catch (error) {
       return { success: false, error: error.message };

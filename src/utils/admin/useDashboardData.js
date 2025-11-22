@@ -22,14 +22,14 @@ export const useDashboardData = () => {
 
   const normalizarProductos = (productosBD) => {
     if (!Array.isArray(productosBD)) return [];
-    
+
     return productosBD.map(producto => {
       const stockActual = producto.stockActual || producto.stock || producto.stock_actual || 0;
       const stockCritico = producto.stockCritico || producto.stock_critico || 5;
-      const categoria = typeof producto.categoria === 'object' 
+      const categoria = typeof producto.categoria === 'object'
         ? (producto.categoria.nombre || producto.categoria.name || 'Sin categoría')
         : (producto.categoria || 'Sin categoría');
-      
+
       return {
         codigo: producto.codigo || producto.codigo_producto || '',
         nombre: producto.nombre || '',
@@ -62,11 +62,11 @@ export const useDashboardData = () => {
 
       const productos = normalizarProductos(productosBD);
 
-      const ordenesPendientes = ordenes.filter(o => 
+      const ordenesPendientes = ordenes.filter(o =>
         o.estadoEnvio && o.estadoEnvio.toLowerCase() === 'pendiente'
       ).length;
-      
-      const ordenesEntregadas = ordenes.filter(o => 
+
+      const ordenesEntregadas = ordenes.filter(o =>
         o.estadoEnvio && o.estadoEnvio.toLowerCase() === 'entregado'
       ).length;
 
@@ -88,7 +88,7 @@ export const useDashboardData = () => {
         const stockCritico = p.stockCritico || p.stock_critico || 5;
         return stock <= stockCritico;
       });
-      
+
       setProductosStockCritico(stockCritico);
 
       const ordenesOrdenadas = [...ordenes]
@@ -98,12 +98,12 @@ export const useDashboardData = () => {
           return dateB - dateA;
         })
         .slice(0, 5);
-      
+
       setUltimasOrdenes(ordenesOrdenadas);
 
     } catch (error) {
       setError(error.message);
-      
+
       setStats({
         totalUsuarios: 0,
         totalProductos: 0,

@@ -2,7 +2,7 @@ import React from 'react';
 import { Row, Col, Card } from 'react-bootstrap';
 import CardNosotros from './CardNosotros';
 import ImagenNosotros from './ImagenNosotros';
-import historiaImage from '../../assets/tienda/junimoshop.png'; 
+import historiaImage from '../../assets/tienda/junimoshop.png';
 
 const SeccionHistoria = () => {
   return (
@@ -10,7 +10,7 @@ const SeccionHistoria = () => {
       <Col lg={8} className="mx-auto">
         <CardNosotros>
           <Card.Body className="p-4">
-            <h2 
+            <h2
               style={{
                 fontFamily: "'Indie Flower', cursive",
                 fontSize: '2.2rem',
@@ -22,16 +22,16 @@ const SeccionHistoria = () => {
             >
               Nuestra Historia
             </h2>
-            
+
             <div className="text-center mb-4">
-              <ImagenNosotros 
+              <ImagenNosotros
                 src={historiaImage} // ✅ USA LA NUEVA IMAGEN
                 alt="Junimo Shop - Nuestra historia"
                 maxWidth="260px"
                 height="190px"
               />
             </div>
-            
+
             <p style={{
               fontFamily: "'Lato', sans-serif",
               fontSize: '1.1rem',
@@ -39,9 +39,9 @@ const SeccionHistoria = () => {
               color: '#000000',
               marginBottom: '1rem'
             }}>
-              Junimos Store nació del amor compartido por Stardew Valley, ese mágico lugar 
-              donde podemos escapar de la rutina y construir nuestra granja soñada. Como 
-              verdaderos fans del juego, entendemos la magia que envuelve cada detalle del 
+              Junimos Store nació del amor compartido por Stardew Valley, ese mágico lugar
+              donde podemos escapar de la rutina y construir nuestra granja soñada. Como
+              verdaderos fans del juego, entendemos la magia que envuelve cada detalle del
               valle y queremos llevar esa experiencia a tu vida cotidiana.
             </p>
             <p style={{
@@ -51,9 +51,9 @@ const SeccionHistoria = () => {
               color: '#000000',
               marginBottom: '0'
             }}>
-              Somos una iniciativa de fanáticos para fanáticos, creada por jugadores 
-              apasionados que queremos compartir nuestro entusiasmo por este maravilloso 
-              mundo. Aunque no tenemos una ubicación física, nuestro corazón está en cada 
+              Somos una iniciativa de fanáticos para fanáticos, creada por jugadores
+              apasionados que queremos compartir nuestro entusiasmo por este maravilloso
+              mundo. Aunque no tenemos una ubicación física, nuestro corazón está en cada
               producto que enviamos a lo largo de todo Chile.
             </p>
           </Card.Body>

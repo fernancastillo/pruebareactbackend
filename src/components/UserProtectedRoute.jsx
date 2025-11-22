@@ -11,14 +11,14 @@ const UserProtectedRoute = ({ children }) => {
         console.log('✅ Usuario encontrado en auth_user');
         return JSON.parse(authUser);
       }
-      
+
       // 2. Buscar en 'currentUser' (para compatibilidad)
       const currentUser = localStorage.getItem('currentUser');
       if (currentUser) {
         console.log('✅ Usuario encontrado en currentUser');
         return JSON.parse(currentUser);
       }
-      
+
       // 3. Buscar en sessionStorage
       const sessionAuthUser = sessionStorage.getItem('auth_user');
       if (sessionAuthUser) {
@@ -36,7 +36,7 @@ const UserProtectedRoute = ({ children }) => {
   };
 
   const currentUser = getCurrentUser();
-  
+
   console.log(' Estado de autenticación:', {
     tieneUsuario: !!currentUser,
     usuario: currentUser,
@@ -47,7 +47,7 @@ const UserProtectedRoute = ({ children }) => {
     console.log(' Redirigiendo a login - usuario no autenticado');
     return <Navigate to="/login" replace />;
   }
-  
+
   console.log('Acceso permitido - usuario autenticado correctamente');
   return children;
 };

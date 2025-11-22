@@ -5,7 +5,7 @@ import Index from './pages/tienda/Index'
 import Login from './pages/tienda/Login'
 import RegistroUsuario from './pages/tienda/RegistroUsuario'
 import Dashboard from './pages/admin/Dashboard'
-import Ordenes from './pages/admin/Ordenes'
+import OrdenesAdmin from './pages/admin/Ordenes'
 import Usuarios from './pages/admin/Usuarios'
 import Perfil from './pages/admin/Perfil'
 import ProductoDetalle from './pages/tienda/productoDetalle'
@@ -23,6 +23,10 @@ import Productos from './pages/admin/Productos'
 import Categorias from './pages/tienda/Categorias'
 import IndexVendedor from './pages/vendedor/IndexVendedor'
 import VendedorProtectedRoute from './components/vendedor/VendedorProtectedRoute'
+import VendedorLayout from './components/vendedor/VendedorLayout'
+import OrdenesVendedor from './pages/vendedor/Ordenes'
+import ProductosVendedor from './pages/vendedor/Productos'
+import PerfilVendedor from './pages/vendedor/Perfil'
 
 function App() {
   return (
@@ -44,7 +48,7 @@ function App() {
                   <div className="container-fluid mt-4">
                     <Routes>
                       <Route path='/dashboard' element={<Dashboard />} />
-                      <Route path='/ordenes' element={<Ordenes />} />
+                      <Route path='/ordenes' element={<OrdenesAdmin />} />  {/* ← Admin */}
                       <Route path='/usuarios' element={<Usuarios />} />
                       <Route path='/perfil' element={<Perfil />} />
                       <Route path='/productos' element={<Productos />} />
@@ -58,19 +62,18 @@ function App() {
           </AdminProtectedRoute>
         } />
 
-        {/* RUTAS DE VENDEDOR - ACTUALIZADO */}
+        {/* RUTAS DE VENDEDOR*/}
         <Route path="/vendedor/*" element={
           <VendedorProtectedRoute>
-            <div className="d-flex flex-column min-vh-100">
-              <Navbar />
-              <main className="flex-grow-1">
-                <Routes>
-                  <Route path='/' element={<IndexVendedor />} />
-                  <Route path='*' element={<Navigate to="/vendedor" replace />} />
-                </Routes>
-              </main>
-              <Footer />
-            </div>
+            <VendedorLayout>
+              <Routes>
+                <Route path='/' element={<IndexVendedor />} />
+                <Route path='/productos' element={<ProductosVendedor />} />
+                <Route path='/ordenes' element={<OrdenesVendedor />} />
+                <Route path='/perfil' element={<PerfilVendedor />} />
+                <Route path='*' element={<Navigate to="/vendedor" replace />} />
+              </Routes>
+            </VendedorLayout>
           </VendedorProtectedRoute>
         } />
 

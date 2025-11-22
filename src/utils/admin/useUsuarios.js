@@ -47,10 +47,10 @@ export const useUsuarios = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const data = await usuarioService.getUsuarios();
       setUsuarios(data);
-      
+
     } catch (error) {
       setError(error.message);
       setUsuarios([]);
@@ -83,17 +83,17 @@ export const useUsuarios = () => {
       if (usuarioOriginal && usuarioOriginal.tipo === 'Admin') {
         throw new Error('No se pueden modificar usuarios administradores');
       }
-      
+
       await usuarioService.updateUsuario(run, datosActualizados);
       await loadUsuarios();
-      
+
       setSuccessMessage('Usuario actualizado con éxito');
       setShowSuccessMessage(true);
-      
+
       setTimeout(() => {
         setShowSuccessMessage(false);
       }, 3000);
-      
+
     } catch (error) {
       throw error;
     }
@@ -105,17 +105,17 @@ export const useUsuarios = () => {
       if (usuario && usuario.tipo === 'Admin') {
         throw new Error('No se pueden eliminar usuarios administradores');
       }
-      
+
       await usuarioService.deleteUsuario(run);
       await loadUsuarios();
-      
+
       setSuccessMessage('Usuario eliminado con éxito');
       setShowSuccessMessage(true);
-      
+
       setTimeout(() => {
         setShowSuccessMessage(false);
       }, 3000);
-      
+
       return { success: true };
     } catch (error) {
       return { success: false, error: error.message };
@@ -142,14 +142,14 @@ export const useUsuarios = () => {
       await usuarioService.createUsuario(usuarioData);
       await loadUsuarios();
       setShowCreateModal(false);
-      
+
       setSuccessMessage('Usuario creado con éxito');
       setShowSuccessMessage(true);
-      
+
       setTimeout(() => {
         setShowSuccessMessage(false);
       }, 3000);
-      
+
     } catch (error) {
       throw error;
     }

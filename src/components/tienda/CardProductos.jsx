@@ -32,7 +32,7 @@ const ProductCard = ({ product, handleAddToCart, handleDetailsClick }) => {
 
     window.addEventListener('cartUpdated', actualizarStock);
     window.addEventListener('stockUpdated', actualizarStock);
-    
+
     return () => {
       window.removeEventListener('cartUpdated', actualizarStock);
       window.removeEventListener('stockUpdated', actualizarStock);
@@ -41,11 +41,11 @@ const ProductCard = ({ product, handleAddToCart, handleDetailsClick }) => {
 
   useEffect(() => {
     setIsLoggedIn(!!authService.getCurrentUser());
-    
+
     const checkAuth = () => {
       setIsLoggedIn(!!authService.getCurrentUser());
     };
-    
+
     window.addEventListener('authStateChanged', checkAuth);
     return () => window.removeEventListener('authStateChanged', checkAuth);
   }, []);
@@ -126,10 +126,10 @@ const ProductCard = ({ product, handleAddToCart, handleDetailsClick }) => {
     >
       {/* BADGE DE OFERTA */}
       {estaEnOferta && (
-        <Badge 
-          bg="danger" 
+        <Badge
+          bg="danger"
           className="position-absolute top-0 start-0 m-2 px-3 py-2 border-2 border-white fw-bold"
-          style={{ 
+          style={{
             zIndex: 2,
             fontSize: '0.9rem',
             textShadow: '1px 1px 2px rgba(0,0,0,0.5)'
@@ -236,7 +236,7 @@ const ProductCard = ({ product, handleAddToCart, handleDetailsClick }) => {
             {estaEnOferta ? (
               <div>
                 {/* Precio original tachado */}
-                <div 
+                <div
                   className="text-muted text-decoration-line-through small"
                   style={{ lineHeight: '1' }}
                 >
@@ -274,7 +274,7 @@ const ProductCard = ({ product, handleAddToCart, handleDetailsClick }) => {
             >
               Ver Detalles
             </Button>
-            
+
             <OverlayTrigger
               placement="top"
               overlay={

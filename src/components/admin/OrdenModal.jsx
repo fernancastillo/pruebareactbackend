@@ -9,30 +9,30 @@ const OrdenModal = ({ show, orden, onClose, onUpdateEstado }) => {
 
   if (!show || !orden) return null;
 
-const handleEstadoChange = async (nuevoEstado) => {
-  if (window.confirm(`¿Cambiar estado de orden ${orden.numeroOrden} a "${nuevoEstado}"?`)) {
-    try {
-      setIsUpdating(true);
-      setActionError('');
-      
-      console.log('Iniciando cambio de estado en modal...');
-      const resultado = await onUpdateEstado(orden.numeroOrden, nuevoEstado);
-      
-      if (!resultado.success) {
-        console.error('Error en cambio de estado:', resultado.error);
-        setActionError(resultado.error || 'No se pudo actualizar el estado');
-      } else {
-        console.log('Estado cambiado exitosamente desde modal');
-        onClose();
+  const handleEstadoChange = async (nuevoEstado) => {
+    if (window.confirm(`¿Cambiar estado de orden ${orden.numeroOrden} a "${nuevoEstado}"?`)) {
+      try {
+        setIsUpdating(true);
+        setActionError('');
+
+        console.log('Iniciando cambio de estado en modal...');
+        const resultado = await onUpdateEstado(orden.numeroOrden, nuevoEstado);
+
+        if (!resultado.success) {
+          console.error('Error en cambio de estado:', resultado.error);
+          setActionError(resultado.error || 'No se pudo actualizar el estado');
+        } else {
+          console.log('Estado cambiado exitosamente desde modal');
+          onClose();
+        }
+      } catch (error) {
+        console.error('Error inesperado:', error);
+        setActionError('Error al actualizar el estado: ' + error.message);
+      } finally {
+        setIsUpdating(false);
       }
-    } catch (error) {
-      console.error('Error inesperado:', error);
-      setActionError('Error al actualizar el estado: ' + error.message);
-    } finally {
-      setIsUpdating(false);
     }
-  }
-};
+  };
 
   const handleDescargarBoleta = () => {
     setShowSelectorFormato(true);
@@ -40,7 +40,7 @@ const handleEstadoChange = async (nuevoEstado) => {
 
   const handleSeleccionFormato = async (formato) => {
     setShowSelectorFormato(false);
-    
+
     try {
       switch (formato) {
         case 'html':
@@ -108,13 +108,13 @@ const handleEstadoChange = async (nuevoEstado) => {
               <button type="button" className="btn-close" onClick={onClose}></button>
             </div>
             <div className="modal-body">
-              
+
               {actionError && (
                 <div className="alert alert-danger alert-dismissible fade show" role="alert">
                   <strong>Error:</strong> {actionError}
-                  <button 
-                    type="button" 
-                    className="btn-close" 
+                  <button
+                    type="button"
+                    className="btn-close"
                     onClick={() => setActionError('')}
                   ></button>
                 </div>
@@ -164,7 +164,7 @@ const handleEstadoChange = async (nuevoEstado) => {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="col-md-6">
                   <div className="card h-100">
                     <div className="card-header bg-light">
@@ -179,11 +179,11 @@ const handleEstadoChange = async (nuevoEstado) => {
                           {orden.estadoEnvio}
                         </span>
                       </div>
-                      
+
                       <div className="d-grid gap-2">
-                        {botonesEstado.map((boton) => 
+                        {botonesEstado.map((boton) =>
                           boton.mostrar && (
-                            <button 
+                            <button
                               key={boton.estado}
                               className={`btn ${boton.clase} btn-sm`}
                               onClick={() => handleEstadoChange(boton.estado)}
@@ -248,8 +248,8 @@ const handleEstadoChange = async (nuevoEstado) => {
               </div>
             </div>
             <div className="modal-footer">
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className="btn btn-success"
                 onClick={handleDescargarBoleta}
                 disabled={isUpdating}
@@ -257,9 +257,9 @@ const handleEstadoChange = async (nuevoEstado) => {
                 <i className="bi bi-download me-2"></i>
                 Descargar Boleta
               </button>
-              <button 
-                type="button" 
-                className="btn btn-secondary" 
+              <button
+                type="button"
+                className="btn btn-secondary"
                 onClick={onClose}
                 disabled={isUpdating}
               >
@@ -285,7 +285,7 @@ const handleEstadoChange = async (nuevoEstado) => {
               <div className="modal-body">
                 <p className="text-muted mb-3">Elige el formato para descargar la boleta:</p>
                 <div className="d-grid gap-2">
-                  <button 
+                  <button
                     className="btn btn-outline-primary text-start"
                     onClick={() => handleSeleccionFormato('html')}
                   >
@@ -294,7 +294,7 @@ const handleEstadoChange = async (nuevoEstado) => {
                     <br />
                     <small className="text-muted">Para imprimir y mejor visualización</small>
                   </button>
-                  <button 
+                  <button
                     className="btn btn-outline-success text-start"
                     onClick={() => handleSeleccionFormato('csv')}
                   >
@@ -303,7 +303,7 @@ const handleEstadoChange = async (nuevoEstado) => {
                     <br />
                     <small className="text-muted">Para abrir en Excel</small>
                   </button>
-                  <button 
+                  <button
                     className="btn btn-outline-secondary text-start"
                     onClick={() => handleSeleccionFormato('txt')}
                   >
@@ -315,9 +315,9 @@ const handleEstadoChange = async (nuevoEstado) => {
                 </div>
               </div>
               <div className="modal-footer">
-                <button 
-                  type="button" 
-                  className="btn btn-outline-secondary" 
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary"
                   onClick={handleCerrarSelector}
                 >
                   Cancelar

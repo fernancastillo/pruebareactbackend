@@ -22,7 +22,7 @@ const Login = () => {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [loginResult, setLoginResult] = useState({});
-  
+
   const navigate = useNavigate();
   const { handleLogin, getRedirectPath, checkExistingAuth } = useLoginLogic();
 
@@ -55,7 +55,7 @@ const Login = () => {
 
     try {
       const result = await handleLogin(formData.email, formData.password);
-      
+
       if (result.success) {
         // Guardar resultado para mostrar en el modal
         setLoginResult({
@@ -84,11 +84,11 @@ const Login = () => {
 
   const handleSuccessContinue = () => {
     setShowSuccessModal(false);
-    
+
     // Redirigir según el tipo de usuario
     const userType = authService.getUserType();
     const finalRedirectTo = getRedirectPath(userType);
-    
+
     navigate(finalRedirectTo, { replace: true });
   };
 
@@ -103,7 +103,7 @@ const Login = () => {
   };
 
   return (
-    <div 
+    <div
       className="min-vh-100 w-100 py-5"
       style={{
         backgroundImage: 'url("src/assets/tienda/fondostardew.png")',
@@ -122,7 +122,7 @@ const Login = () => {
 
         <Row className="justify-content-center">
           <Col md={8} lg={6}>
-            <LoginForm 
+            <LoginForm
               formData={formData}
               loading={loading}
               error={error}
@@ -136,14 +136,14 @@ const Login = () => {
       </Container>
 
       {/* Modales */}
-      <SuccessModal 
+      <SuccessModal
         show={showSuccessModal}
         onHide={handleSuccessContinue}
         user={loginResult.user}
         userType={loginResult.userType}
       />
 
-      <ErrorModal 
+      <ErrorModal
         show={showErrorModal}
         onHide={handleErrorContinue}
         error={loginResult.error}

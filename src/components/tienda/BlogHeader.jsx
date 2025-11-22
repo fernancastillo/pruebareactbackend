@@ -25,9 +25,9 @@ const BlogHeader = () => {
               }}
             />
           </div>
-          
+
           {/* Texto descriptivo debajo de la imagen */}
-          <p 
+          <p
             className="fs-4 mt-3"
             style={{
               fontFamily: "'Lato', sans-serif",

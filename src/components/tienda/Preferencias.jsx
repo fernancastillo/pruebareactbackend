@@ -4,9 +4,9 @@ import { Form } from 'react-bootstrap';
 const Preferencias = () => {
   return (
     <>
-      <h5 
+      <h5
         className="mb-4 fw-bold"
-        style={{ 
+        style={{
           color: '#000000',
           fontFamily: "'Lato', sans-serif",
           fontSize: '1.3rem'

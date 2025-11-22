@@ -30,8 +30,8 @@ const NewsletterCard = ({ email, setEmail, onSubmit }) => {
           Recibe las últimas guías, noticias y secretos de Stardew Valley directamente en tu email.
         </p>
         <Form onSubmit={onSubmit} className="d-flex gap-2 justify-content-center flex-wrap">
-          <Form.Control 
-            type="email" 
+          <Form.Control
+            type="email"
             placeholder="tu@email.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -46,7 +46,7 @@ const NewsletterCard = ({ email, setEmail, onSubmit }) => {
               minWidth: '250px'
             }}
           />
-          <Button 
+          <Button
             type="submit"
             style={{
               fontFamily: "'Lato', sans-serif",

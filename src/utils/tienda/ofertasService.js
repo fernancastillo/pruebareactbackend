@@ -4,10 +4,10 @@ import { ofertasConfig } from './ofertasData';
 // Función para aplicar ofertas a un producto individual
 export const aplicarOfertaAProducto = (producto) => {
   const ofertaConfig = ofertasConfig.find(oferta => oferta.codigo === producto.codigo);
-  
+
   if (ofertaConfig) {
     const precioOferta = producto.precio * (1 - ofertaConfig.descuento / 100);
-    
+
     return {
       ...producto,
       precioOriginal: producto.precio, // Guardar precio original
@@ -19,7 +19,7 @@ export const aplicarOfertaAProducto = (producto) => {
       enOferta: true
     };
   }
-  
+
   return producto;
 };
 

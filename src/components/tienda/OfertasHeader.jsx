@@ -11,7 +11,7 @@ const OfertasHeader = ({ user }) => {
             src="/src/assets/tienda/ofertas.png"
             alt="Ofertas Especiales"
             className="img-fluid mb-4"
-            style={{ 
+            style={{
               maxWidth: '700px',
               width: '100%',
               height: 'auto',
@@ -24,7 +24,7 @@ const OfertasHeader = ({ user }) => {
             }}
           />
           {/* Fallback en caso de error de imagen */}
-          <h1 
+          <h1
             className="fw-bold mb-4"
             style={{
               fontFamily: "'Indie Flower', cursive",
@@ -37,8 +37,8 @@ const OfertasHeader = ({ user }) => {
           >
             🔥 Ofertas Especiales
           </h1>
-          
-          <p 
+
+          <p
             className="fs-4 mb-4"
             style={{
               fontFamily: "'Lato', sans-serif",
@@ -49,7 +49,7 @@ const OfertasHeader = ({ user }) => {
           >
             Descuentos exclusivos por tiempo limitado
           </p>
-          <Badge 
+          <Badge
             className="fs-5 px-4 py-3 border-3 border-white fw-bold"
             style={{
               background: 'linear-gradient(135deg, #FF6B6B, #FF8E8E)',
