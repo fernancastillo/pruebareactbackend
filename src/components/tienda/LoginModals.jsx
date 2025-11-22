@@ -60,8 +60,10 @@ export const SuccessModal = ({ show, onHide, user, userType }) => {
               fontWeight: '400'
             }}
           >
-            {userType === 'Administrador' || userType === 'Admin'
+            {userType === 'Administrador' 
               ? 'Serás redirigido al panel de administración.' 
+              : userType === 'Vendedor'
+              ? 'Serás redirigido al panel de vendedor.'
               : 'Serás redirigido a la página principal.'}
           </p>
         </div>

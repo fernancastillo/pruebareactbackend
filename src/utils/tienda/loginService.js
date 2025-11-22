@@ -24,8 +24,7 @@ export const useLoginLogic = () => {
   };
 
   const getRedirectPath = (userType) => {
-    const isAdmin = userType === 'Administrador';
-    return isAdmin ? '/admin/dashboard' : '/index';
+    return authService.getRedirectPath(userType);
   };
 
   const checkExistingAuth = (navigate) => {

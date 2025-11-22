@@ -22,6 +22,7 @@ import UserProtectedRoute from './components/UserProtectedRoute'
 import Productos from './pages/admin/Productos'
 import Categorias from './pages/tienda/Categorias'
 import IndexVendedor from './pages/vendedor/IndexVendedor'
+import VendedorProtectedRoute from './components/vendedor/VendedorProtectedRoute'
 
 function App() {
   return (
@@ -57,18 +58,20 @@ function App() {
           </AdminProtectedRoute>
         } />
 
-        {/* RUTAS DE VENDEDOR */}
+        {/* RUTAS DE VENDEDOR - ACTUALIZADO */}
         <Route path="/vendedor/*" element={
-          <div className="d-flex flex-column min-vh-100">
-            <Navbar />
-            <main className="flex-grow-1">
-              <Routes>
-                <Route path='/' element={<IndexVendedor />} />
-                <Route path='*' element={<Navigate to="/vendedor" replace />} />
-              </Routes>
-            </main>
-            <Footer />
-          </div>
+          <VendedorProtectedRoute>
+            <div className="d-flex flex-column min-vh-100">
+              <Navbar />
+              <main className="flex-grow-1">
+                <Routes>
+                  <Route path='/' element={<IndexVendedor />} />
+                  <Route path='*' element={<Navigate to="/vendedor" replace />} />
+                </Routes>
+              </main>
+              <Footer />
+            </div>
+          </VendedorProtectedRoute>
         } />
 
         {/* RUTAS PÚBLICAS */}

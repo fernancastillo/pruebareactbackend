@@ -32,6 +32,14 @@ export const authService = {
             // Normalizar el tipo de usuario
             const tipoUsuario = authService.normalizeUserType(usuarioDesdeBD.tipo);
             
+            // Determinar la redirección según el tipo de usuario
+            let redirectTo = '/index';
+            if (tipoUsuario === 'Administrador') {
+              redirectTo = '/admin/dashboard';
+            } else if (tipoUsuario === 'Vendedor') {
+              redirectTo = '/vendedor';
+            }
+            
             const userData = {
               id: usuarioDesdeBD.run || usuarioDesdeBD.id,
               nombre: usuarioDesdeBD.nombre || '',
@@ -54,7 +62,7 @@ export const authService = {
             return {
               success: true,
               user: userData,
-              redirectTo: tipoUsuario === 'Administrador' ? '/admin/dashboard' : '/index'
+              redirectTo: redirectTo
             };
           } else {
             return {
@@ -167,9 +175,26 @@ export const authService = {
     return userType === 'Administrador';
   },
 
+  isVendedor: () => {
+    const userType = authService.getUserType();
+    return userType === 'Vendedor';
+  },
+
   isClient: () => {
     const userType = authService.getUserType();
     return userType === 'Cliente';
+  },
+
+  // Obtener ruta de redirección según tipo de usuario
+  getRedirectPath: (userType) => {
+    switch(userType) {
+      case 'Administrador':
+        return '/admin/dashboard';
+      case 'Vendedor':
+        return '/vendedor';
+      default:
+        return '/index';
+    }
   },
 
   // Verificar si un email existe en la BD
