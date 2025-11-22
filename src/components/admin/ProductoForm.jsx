@@ -18,7 +18,7 @@ const ProductoForm = ({ producto, categorias, getCodigoAutomatico, onSubmit, onC
   const [codigoGenerado, setCodigoGenerado] = useState(''); // Estado para mostrar el código generado
 
   // Imagen por defecto
-  const imagenPorDefecto = '/src/assets/admin/producto-default.png';
+  const imagenPorDefecto = '/src/assets/admin/productodefault.png';
 
   useEffect(() => {
     if (producto) {
