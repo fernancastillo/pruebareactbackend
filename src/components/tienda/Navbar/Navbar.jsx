@@ -5,6 +5,7 @@ import { authService } from '../../../utils/tienda/authService';
 import junimoLogo from '../../../assets/tienda/junimoss.png';
 import polloPerfil from '../../../assets/tienda/polloperfil.png';
 import './Navbar.css';
+import cerrarSesionImg from '../../../assets/tienda/cerrarsesion.webp';
 
 const CustomNavbar = () => {
   const [currentUser, setCurrentUser] = useState(null);
@@ -76,19 +77,19 @@ const CustomNavbar = () => {
   const handleLogoutConfirm = () => {
     // ✅ BORRAR CARRITO AL CERRAR SESIÓN
     localStorage.removeItem('junimoCart');
-    
+
     authService.logout();
     setCurrentUser(null);
-    
+
     // Actualizar contador del carrito
     updateCartCount();
-    
+
     // Disparar evento para actualizar otros componentes
     window.dispatchEvent(new Event('cartUpdated'));
-    
+
     // Cerrar modal
     setShowLogoutModal(false);
-    
+
     // Redirigir al index
     navigate('/index');
     scrollToTop();
@@ -112,9 +113,9 @@ const CustomNavbar = () => {
       <Navbar expand="lg" className="custom-navbar py-1" fixed="top">
         <Container fluid="xxl">
           {/* Logo */}
-          <Navbar.Brand 
-            as={Link} 
-            to="/index" 
+          <Navbar.Brand
+            as={Link}
+            to="/index"
             className="d-flex align-items-center"
             onClick={scrollToTop}
           >
@@ -144,15 +145,15 @@ const CustomNavbar = () => {
             {/* User Actions */}
             <Nav className="align-items-center">
               {/* Cart con ícono de Bootstrap y badge corregido */}
-              <Nav.Link 
-                as={Link} 
-                to="/carrito" 
+              <Nav.Link
+                as={Link}
+                to="/carrito"
                 className="position-relative me-3"
                 onClick={scrollToTop}
               >
                 <i className="bi bi-cart3 fs-5"></i>
                 {cartItemCount > 0 && (
-                  <span 
+                  <span
                     className={`cart-badge ${cartItemCount < 10 ? 'small-number' : ''}`}
                   >
                     {cartItemCount > 99 ? '99+' : cartItemCount}
@@ -163,8 +164,8 @@ const CustomNavbar = () => {
               {/* User Menu */}
               {currentUser ? (
                 <Dropdown align="end">
-                  <Dropdown.Toggle 
-                    as="div" 
+                  <Dropdown.Toggle
+                    as="div"
                     className="d-flex align-items-center cursor-pointer user-dropdown-toggle"
                   >
                     <img src={polloPerfil} alt="Perfil" className="user-avatar me-2" />
@@ -172,7 +173,7 @@ const CustomNavbar = () => {
                       {currentUser.nombre}
                     </span>
                     {/* ✅ FLECHA HACIA ABAJO */}
-                    
+
                   </Dropdown.Toggle>
 
                   <Dropdown.Menu className="border-0 shadow custom-dropdown-menu">
@@ -191,30 +192,30 @@ const CustomNavbar = () => {
                         </div>
                       </div>
                     </div>
-                    
+
                     <Dropdown.Divider className="dropdown-divider" />
-                    
+
                     {/* Menu Items */}
-                    <Dropdown.Item 
+                    <Dropdown.Item
                       onClick={() => handleDropdownClick('/perfil')}
                       className="custom-dropdown-item"
                     >
                       <img src={polloPerfil} alt="Perfil" className="dropdown-icon me-2" />
                       Mi Perfil
                     </Dropdown.Item>
-                    
-                    <Dropdown.Item 
+
+                    <Dropdown.Item
                       onClick={() => handleDropdownClick('/pedidos')}
                       className="custom-dropdown-item"
                     >
                       <span className="me-2">📦</span>
                       Mis Pedidos
                     </Dropdown.Item>
-                    
+
                     <Dropdown.Divider className="dropdown-divider" />
-                    
-                    <Dropdown.Item 
-                      onClick={handleLogoutClick} 
+
+                    <Dropdown.Item
+                      onClick={handleLogoutClick}
                       className="custom-dropdown-item text-danger"
                     >
                       <span className="me-2">🚪</span>
@@ -224,9 +225,9 @@ const CustomNavbar = () => {
                 </Dropdown>
               ) : (
                 // Texto en lugar de imagen
-                <Nav.Link 
-                  as={Link} 
-                  to="/login" 
+                <Nav.Link
+                  as={Link}
+                  to="/login"
                   className="login-text-btn fw-bold"
                   onClick={scrollToTop}
                 >
@@ -246,7 +247,7 @@ const CustomNavbar = () => {
         size="md"
         style={{ fontFamily: "'Lato', sans-serif" }}
       >
-        <Modal.Header 
+        <Modal.Header
           className="border-3 border-dark"
           style={{
             backgroundColor: '#dedd8ff5',
@@ -254,7 +255,7 @@ const CustomNavbar = () => {
         >
           <Modal.Title className="fw-bold text-center w-100" style={{ color: '#000000' }}>
             <span style={{ fontFamily: "'Indie Flower', cursive", fontSize: '1.5rem' }}>
-              🚪 Confirmar Cierre de Sesión
+              Confirmar Cierre de Sesión
             </span>
           </Modal.Title>
         </Modal.Header>
@@ -265,24 +266,29 @@ const CustomNavbar = () => {
           }}
         >
           <div className="mb-4">
-            <div 
-              className="display-1 mb-3"
-              style={{ color: '#000000' }}
-            >
-              ❓
+             <div className="mb-3 d-flex justify-content-center">
+    <img 
+      src={cerrarSesionImg} 
+      alt="Cerrar Sesión" 
+      style={{ 
+        width: '150px', 
+        height: '150px',
+        objectFit: 'contain'
+      }} 
+    />
             </div>
-            <h4 
+            <h4
               className="fw-bold mb-3"
-              style={{ 
+              style={{
                 color: '#000000',
                 fontFamily: "'Lato', sans-serif"
               }}
             >
               ¿Estás seguro de que quieres cerrar sesión?
             </h4>
-            <p 
+            <p
               className="fs-6"
-              style={{ 
+              style={{
                 color: '#000000',
                 fontWeight: '400'
               }}
@@ -297,7 +303,7 @@ const CustomNavbar = () => {
             backgroundColor: '#dedd8ff5',
           }}
         >
-          <Button 
+          <Button
             variant="outline-dark"
             onClick={handleCancelLogout}
             className="rounded-pill px-4 py-2 border-3 fw-bold me-3"
@@ -321,7 +327,7 @@ const CustomNavbar = () => {
           >
             Cancelar
           </Button>
-          <Button 
+          <Button
             onClick={handleLogoutConfirm}
             className="rounded-pill px-4 py-2 border-3 border-dark fw-bold"
             style={{
